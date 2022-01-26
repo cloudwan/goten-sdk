@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package goten.query_result;
+
+import "google/protobuf/any.proto";
+
+option go_package = "github.com/cloudwan/goten-sdk/runtime/resource/query_result";
+option java_multiple_files = true;
+option java_package = "com.ntt.goten.runtime.query_result";
+
+// Object representing query result snapshot OR change.
+// In case of snapshot, it contains list of resources.
+// Otherwise contains list of changes from previous QueryResult.
+message QueryResult {
+  repeated google.protobuf.Any results = 1;
+
+  bytes next_cursor = 2;
+
+  bytes prev_cursor = 3;
+}
