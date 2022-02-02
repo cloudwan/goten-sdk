@@ -1,6 +1,7 @@
 package validate
 
 import (
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"net"
@@ -145,4 +146,22 @@ func ValidateHostname(s string) error {
 func ValidateUUID(s string) error {
 	_, err := uuid.Parse(s)
 	return err
+}
+
+func ValidatePEM(s string) error {
+	var block *pem.Block
+	rest := []byte(s)
+	bytesOk := 0
+
+	for {
+		block, rest = pem.Decode([]byte(rest))
+		if block == nil {
+			if len(rest) > 0 {
+				return fmt.Errorf("PEM encoding not satisfied starting at byte %d", bytesOk+1)
+			} else {
+				return nil
+			}
+		}
+		bytesOk += len(block.Bytes)
+	}
 }
