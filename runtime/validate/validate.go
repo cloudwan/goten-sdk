@@ -98,6 +98,9 @@ func (vErr *validationError) Error() string {
 }
 
 func ValidateEmail(s string) error {
+	if s == "" {
+		return nil
+	}
 	a, err := mail.ParseAddress(s)
 	if err != nil {
 		return err
@@ -108,6 +111,9 @@ func ValidateEmail(s string) error {
 }
 
 func ValidateAddress(s string) error {
+	if s == "" {
+		return nil
+	}
 	if net.ParseIP(s) == nil {
 		return nil
 	}
@@ -118,6 +124,9 @@ func ValidateAddress(s string) error {
 }
 
 func ValidateHostname(s string) error {
+	if s == "" {
+		return nil
+	}
 	if len(s) > 253 {
 		return errors.New("hostname cannot exceed 253 characters")
 	}
