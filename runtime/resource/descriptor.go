@@ -6,11 +6,17 @@ import (
 	"github.com/cloudwan/goten-sdk/runtime/object"
 )
 
+// Descriptor allows writing code operating on resources without knowing exact type.
+// It can be used to create Resource instance, all derivative types, access information
+// about name type.
 type Descriptor interface {
 	NewResource() Resource
 	NewResourceChange() ResourceChange
 	NewResourceName() Name
 	NewResourceCursor() Cursor
+	NewResourceFilter() Filter
+	NewResourceOrderBy() OrderBy
+	NewResourceFieldMask() object.FieldMask
 
 	NewGetQuery() GetQuery
 	NewListQuery() ListQuery
@@ -86,10 +92,11 @@ type TypeName struct {
 	singular string
 	plural   string
 	domain   string
+	version  string
 }
 
-func NewTypeName(singular, plural, domain string) *TypeName {
-	return &TypeName{singular: singular, plural: plural, domain: domain}
+func NewTypeName(singular, plural, domain, version string) *TypeName {
+	return &TypeName{singular: singular, plural: plural, domain: domain, version: version}
 }
 
 func (rtn *TypeName) Singular() string {
@@ -98,6 +105,10 @@ func (rtn *TypeName) Singular() string {
 
 func (rtn *TypeName) Plural() string {
 	return rtn.plural
+}
+
+func (rtn *TypeName) Version() string {
+	return rtn.version
 }
 
 func (rtn *TypeName) JSONSingular() string {
@@ -110,4 +121,8 @@ func (rtn *TypeName) JSONPlural() string {
 
 func (rtn *TypeName) FullyQualifiedTypeName() string {
 	return rtn.domain + "/" + rtn.singular
+}
+
+func (rtn *TypeName) ServiceDomain() string {
+	return rtn.domain
 }

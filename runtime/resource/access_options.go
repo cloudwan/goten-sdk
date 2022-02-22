@@ -1,7 +1,16 @@
 package resource
 
+import (
+	"github.com/cloudwan/goten-sdk/runtime/object"
+)
+
 type saveOptions struct {
 	previousResource Resource
+	forceUpdate      bool
+	forceCreate      bool
+	updateMask       object.FieldMask
+	compareMask      object.FieldMask
+	compareRes       Resource
 }
 
 type deleteOptions struct {
@@ -13,7 +22,11 @@ type batchGetOptions struct {
 }
 
 type SaveOptions interface {
+	OnlyCreate() bool
+	OnlyUpdate() bool
 	GetPreviousResource() Resource
+	GetUpdateMask() object.FieldMask
+	GetCAS() (object.FieldMask, Resource)
 }
 
 type DeleteOptions interface {
@@ -26,6 +39,22 @@ type BatchGetOptions interface {
 
 func (so *saveOptions) GetPreviousResource() Resource {
 	return so.previousResource
+}
+
+func (so *saveOptions) OnlyCreate() bool {
+	return so.forceCreate
+}
+
+func (so *saveOptions) OnlyUpdate() bool {
+	return so.forceUpdate
+}
+
+func (so *saveOptions) GetUpdateMask() object.FieldMask {
+	return so.updateMask
+}
+
+func (so *saveOptions) GetCAS() (object.FieldMask, Resource) {
+	return so.compareMask, so.compareRes
 }
 
 func (do *deleteOptions) GetDeletedResource() Resource {
@@ -81,5 +110,44 @@ func WithCurrentResource(current Resource) DeleteOption {
 func WithMustResolveAll() BatchGetOption {
 	return func(o *batchGetOptions) {
 		o.mustResolveAll = true
+	}
+}
+
+func WithCreateModeOnly() SaveOption {
+	return func(o *saveOptions) {
+		if o.forceUpdate {
+			panic("WithCreateModeOnly called after WithUpdateModeOnly")
+		}
+		o.forceCreate = true
+	}
+}
+
+func WithUpdateModeOnly() SaveOption {
+	return func(o *saveOptions) {
+		if o.forceCreate {
+			panic("WithUpdateModeOnly called after WithCreateModeOnly")
+		}
+		o.forceUpdate = true
+	}
+}
+
+func WithUpdateMask(mask object.FieldMask) SaveOption {
+	return func(o *saveOptions) {
+		if o.forceCreate {
+			panic("WithUpdateMask called after WithCreateModeOnly")
+		}
+		o.forceUpdate = true
+		o.updateMask = mask
+	}
+}
+
+func WithCompareAndSwap(state Resource, mask object.FieldMask) SaveOption {
+	return func(o *saveOptions) {
+		if o.forceCreate {
+			panic("WithCompareAndSwap called after WithCreateModeOnly")
+		}
+		o.forceUpdate = true
+		o.compareMask = mask
+		o.compareRes = state
 	}
 }
