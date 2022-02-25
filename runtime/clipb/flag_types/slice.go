@@ -30,7 +30,10 @@ func (v *SliceVar) String() string {
 }
 
 func (v *SliceVar) Set(raw string) error {
-	current, _ := v.Fp.GetSingleRaw(v.Msg)
+	current, isCurrentSet := v.Fp.GetSingleRaw(v.Msg)
+	if !isCurrentSet {
+		current = reflect.New(reflect.TypeOf(v.Fp.GetDefault())).Elem().Interface()
+	}
 	elemType := reflect.TypeOf(current).Elem()
 	val, err := makeProtoValue(raw, v.Fd, elemType)
 	if err != nil {
