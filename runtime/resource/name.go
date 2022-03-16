@@ -32,17 +32,15 @@ type Name interface {
 	// current Name.
 	Matches(other interface{}) bool
 
-	// IsSpecified informs if Name has active pattern
+	// IsSpecified informs if Name has active pattern and all segments provided (can be wildcards)
 	IsSpecified() bool
 
 	// IsFullyQualified informs if Name has all id segments filled according
-	// to it's active pattern. Non-Fully Qualified Names
-	// can be used as path filters
+	// to it's active pattern without wildcards. Non-Fully Qualified Names can be used as path filters
 	IsFullyQualified() bool
 
 	// FullyQualifiedName gives resource name with service identifier
-	// If IsFullyQualified is not true, then error will be
-	// returned.
+	// If IsFullyQualified is not true, then error will be returned.
 	// Format is: "//($SERVICE_NAME)/($RESOURCE_NAME), where $RESOURCE_NAME is equal to output of method String()
 	FullyQualifiedName() (string, error)
 

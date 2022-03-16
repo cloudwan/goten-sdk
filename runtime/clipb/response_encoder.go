@@ -59,7 +59,8 @@ func NewResponseEncoder(writer io.Writer, format ResponseEncoderFormat) (Respons
 	case TableEncoderFormat:
 		return &encoderTypeCheckingWrapper{
 			impl: &tableResponseEncoder{
-				table: tablewriter.NewWriter(writer),
+				writer: writer,
+				table:  tablewriter.NewWriter(writer),
 			},
 		}, nil
 	default:
@@ -153,6 +154,7 @@ func (jre *jsonResponseEncoder) Close() error {
 
 type tableResponseEncoder struct {
 	// Note: tablewriter.Table does no checking for I/O errors
+	writer                       io.Writer
 	paths                        []object.FieldPath
 	table                        *tablewriter.Table
 	nextPageToken, prevPageToken resource.Cursor
@@ -217,25 +219,25 @@ func (tfe *tableResponseEncoder) Close() error {
 	}
 	if len(tfe.responseHeaders) > 0 {
 		for k, vals := range tfe.responseHeaders {
-			_, err := os.Stdout.WriteString(fmt.Sprintf("%s: %s\n", k, strings.Join(vals, ", ")))
+			_, err := tfe.writer.Write([]byte(fmt.Sprintf("%s: %s\n", k, strings.Join(vals, ", "))))
 			if err != nil {
 				return err
 			}
 		}
-		_, _ = os.Stdout.WriteString("\n")
+		_, _ = tfe.writer.Write([]byte("\n"))
 	}
 	// Special case: if response has no fields, then don't print anything
 	if len(tfe.paths) != 0 {
 		tfe.table.Render()
 	}
 	if tfe.nextPageToken != nil && !reflect.ValueOf(tfe.nextPageToken).IsNil() {
-		_, err := os.Stdout.WriteString(fmt.Sprintf("NextPageToken: %s\n", tfe.nextPageToken))
+		_, err := tfe.writer.Write([]byte(fmt.Sprintf("NextPageToken: %s\n", tfe.nextPageToken)))
 		if err != nil {
 			return err
 		}
 	}
 	if tfe.prevPageToken != nil && !reflect.ValueOf(tfe.prevPageToken).IsNil() {
-		_, err := os.Stdout.WriteString(fmt.Sprintf("PrevPageToken: %s\n", tfe.prevPageToken))
+		_, err := tfe.writer.Write([]byte(fmt.Sprintf("PrevPageToken: %s\n", tfe.prevPageToken)))
 		if err != nil {
 			return err
 		}
