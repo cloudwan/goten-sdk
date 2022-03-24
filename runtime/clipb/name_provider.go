@@ -115,15 +115,14 @@ func (p *NameProvider) FillName(name resource.Name) {
 	// Undefined segments populate with wildcards.
 
 	var bestPath *pathSelection
+	currentIds := name.GetIdParts()
 	for _, pattern := range nameDescriptor.GetNamePatterns() {
 		if name.GetPattern() != "" && name.GetPattern() != pattern {
 			continue
 		}
 
 		path := &pathSelection{}
-		if currentSegments := name.GetSegments(); len(currentSegments) > 0 {
-			path.segments = currentSegments
-		} else if isParentName {
+		if isParentName {
 			path.segments = make([]resource.NameSegment, pattern.SegmentsCount()-1)
 		} else {
 			path.segments = make([]resource.NameSegment, pattern.SegmentsCount())
@@ -131,7 +130,8 @@ func (p *NameProvider) FillName(name resource.Name) {
 		segmentPatterns := pattern.SegmentPatterns()[:len(path.segments)]
 
 		for i, segmentPattern := range segmentPatterns {
-			if path.segments[i].Id != "" {
+			if valueFromName := currentIds[strcase.ToLowerCamel(segmentPattern.IdFieldName())]; valueFromName != "" {
+				path.segments[i] = segmentPattern.MakeSegment(valueFromName)
 				continue
 			}
 			segmentKey := strcase.ToKebab(segmentPattern.SingularLowerJson)
