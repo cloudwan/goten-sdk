@@ -2,6 +2,7 @@ package object
 
 import (
 	"reflect"
+	"strings"
 
 	"google.golang.org/protobuf/proto"
 	preflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -140,6 +141,7 @@ func (reflection *fieldMaskReflection) Range(f func(preflect.FieldDescriptor, pr
 	}
 	fields := reflection.Descriptor().Fields()
 	protoMask := reflection.Mask.ToProtoFieldMask()
+	origPaths := strings.Join(protoMask.GetPaths(), ",")
 	protoReflect := protoMask.ProtoReflect()
 	for i := 0; i < fields.Len(); i++ {
 		fd := fields.Get(i)
@@ -148,8 +150,16 @@ func (reflection *fieldMaskReflection) Range(f func(preflect.FieldDescriptor, pr
 			f(fd, v)
 		}
 	}
-	if err := reflection.Mask.FromProtoFieldMask(protoMask); err != nil {
-		panic(err)
+
+	// Set only if modifications were made. Then, if Range is used only
+	// for read, we dont have races (multiple goroutines can call Range for read purpose)
+	// If one goroutine uses Range for writing and others for reading, then
+	// its not problem for us.
+	maybeNewPaths := strings.Join(protoMask.GetPaths(), ",")
+	if origPaths != maybeNewPaths {
+		if err := reflection.Mask.FromProtoFieldMask(protoMask); err != nil {
+			panic(err)
+		}
 	}
 }
 
