@@ -8,7 +8,7 @@ option go_package = "github.com/cloudwan/goten-sdk/runtime/resource/query_result
 option java_multiple_files = true;
 option java_package = "com.ntt.goten.runtime.query_result";
 
-// Object representing query result snapshot OR change.
+// Internal object representing query result snapshot OR change.
 // In case of snapshot, it contains list of resources.
 // Otherwise contains list of changes from previous QueryResult.
 message QueryResult {
@@ -17,4 +17,20 @@ message QueryResult {
   bytes next_cursor = 2;
 
   bytes prev_cursor = 3;
+
+  // search specific
+  int32 total_count = 4;
+
+  int32 offset = 5;
+
+  // watch-specific
+  bool is_current = 6;
+
+  bool is_soft_reset = 7;
+
+  bool is_hard_reset = 8;
+
+  int64 snapshot_size = 9;
+
+  string resume_token = 10;
 }
