@@ -18,7 +18,7 @@ type ResourceChange interface {
 	IsModify() bool
 	IsDelete() bool
 	IsCurrent() bool
-	GetResource() Resource
+	GetRawResource() Resource
 	GetRawName() Name
 	SetAddedRaw(Resource, int)
 	SetModifiedRaw(Name, Resource, int, int)

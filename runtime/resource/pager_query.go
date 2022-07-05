@@ -143,7 +143,7 @@ func (wp *ChangesWatchPager) ProcessChanges(changes ResourceChangeList) (Cursor,
 		if change.IsAdd() {
 			// insert at index
 			viewIdx := int(change.GetCurrentViewIndex())
-			wp.view = wp.view.Slice(0, viewIdx).Append(change.GetResource()).AppendList(wp.view.Slice(viewIdx, 0))
+			wp.view = wp.view.Slice(0, viewIdx).Append(change.GetRawResource()).AppendList(wp.view.Slice(viewIdx, 0))
 		} else if change.IsDelete() {
 			// remove at idx
 			viewIdx := int(change.GetPreviousViewIndex())
@@ -154,7 +154,7 @@ func (wp *ChangesWatchPager) ProcessChanges(changes ResourceChangeList) (Cursor,
 			newViewIdx := int(change.GetCurrentViewIndex())
 			if prevViewIdx != newViewIdx {
 				wp.view = wp.view.Slice(0, prevViewIdx).AppendList(wp.view.Slice(prevViewIdx+1, 0))
-				wp.view = wp.view.Slice(0, newViewIdx).Append(change.GetResource()).AppendList(wp.view.Slice(newViewIdx, 0))
+				wp.view = wp.view.Slice(0, newViewIdx).Append(change.GetRawResource()).AppendList(wp.view.Slice(newViewIdx, 0))
 			}
 			// modify may affect present forward cursor with property update or position shift
 			if hadForwardTokenBeforeChanges && prevViewIdx == fwdIdx || newViewIdx == fwdIdx {
