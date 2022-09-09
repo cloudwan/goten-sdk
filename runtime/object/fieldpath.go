@@ -47,6 +47,7 @@ type FieldPath interface {
 	WithRawIArrayOfValues(values interface{}) FieldPathArrayOfValues
 	WithRawIArrayItemValue(value interface{}) FieldPathArrayItemValue
 	IsLeaf() bool
+	SplitIntoTerminalIPaths() []FieldPath
 }
 
 type FieldPathValue interface {

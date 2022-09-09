@@ -162,7 +162,17 @@ type Value struct {
 	Null    bool     `(  @"NULL"`
 	Boolean *Boolean ` | @("TRUE" | "FALSE")`
 	Number  *string  ` | @Number`
-	String  *string  ` | @String )`
+	String  *string  ` | @String`
+	Map     *Map     ` | @@ )`
+}
+
+type Map struct {
+	Entries []*MapEntry `"{" ( @@ ( ( "," )? @@ )* )? "}"`
+}
+
+type MapEntry struct {
+	Key   *Value `@@`
+	Value *Value `":"? @@`
 }
 
 func (v Value) MarshalJSON() ([]byte, error) {
@@ -174,6 +184,21 @@ func (v Value) MarshalJSON() ([]byte, error) {
 		return []byte(*v.Number), nil
 	} else if v.String != nil {
 		return json.Marshal(v.String)
+	} else if v.Map != nil {
+		jsonEntries := make([]string, 0, len(v.Map.Entries))
+		for _, entry := range v.Map.Entries {
+			jsonKey, err := entry.Key.MarshalJSON()
+			if err != nil {
+				return nil, errors.New("error marshaling map key: " + err.Error())
+			}
+			jsonValue, err := entry.Value.MarshalJSON()
+			if err != nil {
+				return nil, errors.New("error marshaling map value: " + err.Error())
+			}
+			jsonEntries = append(jsonEntries, fmt.Sprintf("%s:%s", string(jsonKey), string(jsonValue)))
+		}
+		value := fmt.Sprintf("{%s}", strings.Join(jsonEntries, ","))
+		return []byte(value), nil
 	} else {
 		return nil, errors.New("primitive value contains none of Null, Boolean, Number nor String")
 	}

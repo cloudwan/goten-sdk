@@ -62,6 +62,18 @@ type Name interface {
 
 	// GetSegments returns list of segments according to the active name pattern
 	GetSegments() NameSegments
+
+	// GetIParentName returns parent name field from current name (nil, if this is already parent name or
+	// resource cannot have any parent at all).
+	// Unlike GetIUnderlyingParentName, returned object is still bound to the same resource. In other words, go type
+	// is actually of ParentName struct type - not actual name of the parent!
+	GetIParentName() Name
+
+	// GetIUnderlyingParentName returns parent name according to current name pattern or NIL if it has no parent
+	// (either pattern points to nil parent itself or resource cannot have any parent).
+	// Unlike GetIParentName, it returns actual active parent - and GetResourceDescriptor returns different
+	// descriptor instance.
+	GetIUnderlyingParentName() Name
 }
 
 // NamePattern represents structure of a resource name

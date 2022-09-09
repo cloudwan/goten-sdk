@@ -7,6 +7,11 @@ type PagerQuery interface {
 	GetLimit() int
 	GetPeekForward() bool
 	PageDirection() PageDirection
+	SetCursor(Cursor)
+	SetOrderBy(OrderBy)
+	SetLimit(int)
+	SetPeekForward(bool)
+	SetPageDirection(PageDirection)
 	GetResourceDescriptor() Descriptor
 }
 
