@@ -6,6 +6,7 @@ import (
 
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/cloudwan/goten-sdk/runtime/api/watch_type"
 	"github.com/cloudwan/goten-sdk/runtime/object"
@@ -45,9 +46,11 @@ type WatchQuery interface {
 	GetWatchType() watch_type.WatchType
 	GetMaximumChunkSize() int
 	GetResumeToken() string
+	GetStartingTime() *timestamppb.Timestamp
 	SetWatchType(watch_type.WatchType)
 	SetMaximumChunkSize(int)
 	SetResumeToken(string)
+	SetStartingTime(*timestamppb.Timestamp)
 }
 
 type SearchQuery interface {

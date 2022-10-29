@@ -16,6 +16,7 @@ type Descriptor interface {
 	NewResourceCursor() Cursor
 	NewResourceFilter() Filter
 	NewResourceOrderBy() OrderBy
+	NewResourcePager() PagerQuery
 	NewResourceFieldMask() object.FieldMask
 
 	NewGetQuery() GetQuery

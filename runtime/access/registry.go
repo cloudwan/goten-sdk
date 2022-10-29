@@ -1,6 +1,9 @@
 package access
 
 import (
+	"time"
+
+	timestamppb "github.com/golang/protobuf/ptypes/timestamp"
 	"google.golang.org/grpc"
 
 	"github.com/cloudwan/goten-sdk/runtime/api/view"
@@ -26,6 +29,10 @@ func (r *Registry) FindApiAccessBuilder(descriptor resource.Descriptor) *ApiAcce
 
 func (r *Registry) RegisterWatcherConstructor(descriptor resource.Descriptor, constructor WatcherConstructor) {
 	r.getOrMakeEntry(descriptor).watcherConstructor = constructor
+}
+
+func (r *Registry) RegisterQueryWatcherConstructor(descriptor resource.Descriptor, constructor QueryWatcherConstructor) {
+	r.getOrMakeEntry(descriptor).queryWatcherConstructor = constructor
 }
 
 func (r *Registry) RegisterWatcherFilterConstructor(descriptor resource.Descriptor, constructor WatcherFilterConstructor) {
@@ -72,6 +79,23 @@ type WatcherConfigParams struct {
 	ChunkSize  int
 }
 
+type QueryWatcherConfigParams struct {
+	Parent           resource.Reference
+	Filter           resource.Filter
+	Cursor           resource.Cursor
+	FieldMask        object.FieldMask
+	OrderBy          resource.OrderBy
+	WatchType        watch_type.WatchType
+	View             view.View
+	ChunkSize        int
+	PageSize         int
+	StartingTime     *timestamppb.Timestamp
+	RecoveryDeadline time.Duration
+	RetryTimeout     time.Duration
+}
+
+type QueryWatcherConstructor func(id int, grpcConn grpc.ClientConnInterface, params *QueryWatcherConfigParams, ch chan QueryWatcherEvent) QueryWatcher
+
 type WatcherConstructor func(grpcConn grpc.ClientConnInterface, params *WatcherConfigParams, filters ...WatcherFilterParams) Watcher
 
 type WatcherFilterConstructor func(filter resource.Filter, parentRef resource.Reference) WatcherFilterParams
@@ -83,6 +107,7 @@ type ApiAccessConstructor func(grpcConn grpc.ClientConnInterface) resource.Acces
 type ApiAccessBuilder struct {
 	descriptor               resource.Descriptor
 	watcherConstructor       WatcherConstructor
+	queryWatcherConstructor  QueryWatcherConstructor
 	watcherFilterConstructor WatcherFilterConstructor
 	apiAccessConstructor     ApiAccessConstructor
 }
@@ -97,6 +122,10 @@ func (re *ApiAccessBuilder) MakeWatcherFilterParams(filter resource.Filter, pare
 
 func (re *ApiAccessBuilder) MakeWatcher(grpcConn grpc.ClientConnInterface, params *WatcherConfigParams, filters ...WatcherFilterParams) Watcher {
 	return re.watcherConstructor(grpcConn, params, filters...)
+}
+
+func (re *ApiAccessBuilder) MakeQueryWatcher(id int, grpcConn grpc.ClientConnInterface, params *QueryWatcherConfigParams, ch chan QueryWatcherEvent) QueryWatcher {
+	return re.queryWatcherConstructor(id, grpcConn, params, ch)
 }
 
 func (re *ApiAccessBuilder) MakeApiAccess(grpcConn grpc.ClientConnInterface) resource.Access {
