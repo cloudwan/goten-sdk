@@ -18,7 +18,6 @@ message QueryResult {
 
   bytes prev_cursor = 3;
 
-  // search specific
   int32 total_count = 4;
 
   int32 offset = 5;

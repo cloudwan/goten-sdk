@@ -36,9 +36,11 @@ type ListQuery interface {
 	GetFilter() Filter
 	GetPager() PagerQuery
 	GetFieldMask() object.FieldMask
+	GetWithPagingInfo() bool
 	SetFilter(Filter)
 	SetPager(PagerQuery)
 	SetFieldMask(object.FieldMask)
+	SetWithPagingInfo(bool)
 }
 
 type WatchQuery interface {
@@ -63,13 +65,9 @@ type QueryResultSnapshot interface {
 	GetResults() ResourceList
 	GetNextPageCursor() Cursor
 	GetPrevPageCursor() Cursor
+	GetPagingInfo() (totalCount, offset int32)
 	SetResults(ResourceList)
 	SetCursors(Cursor, Cursor)
-}
-
-type SearchQueryResultSnapshot interface {
-	QueryResultSnapshot
-	GetPagingInfo() (totalCount, offset int32)
 	SetPagingInfo(totalCount, offset int32)
 }
 
@@ -99,16 +97,18 @@ func MakeSQLGetString(query GetQuery) string {
 }
 
 func MakeSQLListString(query ListQuery) string {
-	return fmt.Sprintf("SELECT %s FROM %s%s%s;",
+	return fmt.Sprintf("SELECT %s%s FROM %s%s%s;",
 		fieldMaskAsSQLParam(query.GetFieldMask()),
+		withPagingInfoAsSQLParam(query.GetWithPagingInfo()),
 		query.GetResourceDescriptor().GetResourceTypeName().JSONPlural(),
 		maybeAppendFilterAsSQLLikeParam(query.GetFilter()),
 		maybeAppendPagerAsSQLLikeParam(query.GetPager()))
 }
 
 func MakeSQLSearchString(query SearchQuery) string {
-	return fmt.Sprintf("SELECT %s WITH PHRASE (%s) FROM %s%s%s;",
+	return fmt.Sprintf("SELECT %s%s WITH PHRASE (%s) FROM %s%s%s;",
 		fieldMaskAsSQLParam(query.GetFieldMask()),
+		withPagingInfoAsSQLParam(true),
 		query.GetPhrase(),
 		query.GetResourceDescriptor().GetResourceTypeName().JSONPlural(),
 		maybeAppendFilterAsSQLLikeParam(query.GetFilter()),
@@ -127,20 +127,6 @@ func MakeSQLWatchString(query WatchQuery) string {
 }
 
 func MarshalQueryResultSnapshot(qres QueryResultSnapshot) ([]byte, error) {
-	if qres == nil {
-		return nil, nil
-	}
-	anyResult := &query_result.QueryResult{}
-	if err := marshalResourceResults(qres.GetResults(), anyResult); err != nil {
-		return nil, err
-	}
-	if err := marshalNextAndPrevPageCursors(qres.GetNextPageCursor(), qres.GetPrevPageCursor(), anyResult); err != nil {
-		return nil, err
-	}
-	return proto.Marshal(anyResult)
-}
-
-func MarshalSearchQueryResultSnapshot(qres SearchQueryResultSnapshot) ([]byte, error) {
 	if qres == nil {
 		return nil, nil
 	}
@@ -193,6 +179,7 @@ func UnmarshalQueryResultSnapshot(qres QueryResultSnapshot, descriptor Descripto
 	} else {
 		qres.SetCursors(next, prev)
 	}
+	qres.SetPagingInfo(anyResult.GetTotalCount(), anyResult.GetOffset())
 	return nil
 }
 
@@ -225,23 +212,11 @@ func UnmarshalQueryResultChange(qres QueryResultChange, descriptor Descriptor, d
 	return nil
 }
 
-func UnmarshalSearchQueryResultSnapshot(qres SearchQueryResultSnapshot, descriptor Descriptor, data []byte) error {
-	anyResult := &query_result.QueryResult{}
-	if err := proto.Unmarshal(data, anyResult); err != nil {
-		return err
+func withPagingInfoAsSQLParam(withPagingInfo bool) string {
+	if withPagingInfo {
+		return " WITH COUNT"
 	}
-	if results, err := unmarshalResourceResults(descriptor, anyResult); err != nil {
-		return err
-	} else {
-		qres.SetResults(results)
-	}
-	if next, prev, err := unmarshalNextAndPrevPageCursors(descriptor, anyResult); err != nil {
-		return err
-	} else {
-		qres.SetCursors(next, prev)
-	}
-	qres.SetPagingInfo(anyResult.GetTotalCount(), anyResult.GetOffset())
-	return nil
+	return ""
 }
 
 func fieldMaskAsSQLParam(mask object.FieldMask) string {

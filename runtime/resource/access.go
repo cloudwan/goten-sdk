@@ -14,7 +14,7 @@ type Access interface {
 	Query(ctx context.Context, q ListQuery) (QueryResultSnapshot, error)
 
 	// Search is like Query, but also provides results based on text-search
-	Search(ctx context.Context, q SearchQuery) (SearchQueryResultSnapshot, error)
+	Search(ctx context.Context, q SearchQuery) (QueryResultSnapshot, error)
 
 	// Watch is blocking call till is finished or error occurred.
 	// Initially, provides ResourceChange of Add type containing full
@@ -80,7 +80,7 @@ func (ca *compositeAccess) Query(ctx context.Context, q ListQuery) (QueryResultS
 	return ca.items[q.GetResourceDescriptor()].Query(ctx, q)
 }
 
-func (ca *compositeAccess) Search(ctx context.Context, q SearchQuery) (SearchQueryResultSnapshot, error) {
+func (ca *compositeAccess) Search(ctx context.Context, q SearchQuery) (QueryResultSnapshot, error) {
 	return ca.items[q.GetResourceDescriptor()].Search(ctx, q)
 }
 

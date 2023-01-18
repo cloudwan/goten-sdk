@@ -24,7 +24,6 @@ type Descriptor interface {
 	NewSearchQuery() SearchQuery
 	NewWatchQuery() WatchQuery
 	NewQueryResultSnapshot() QueryResultSnapshot
-	NewSearchQueryResultSnapshot() SearchQueryResultSnapshot
 	NewQueryResultChange() QueryResultChange
 
 	NewResourceList(size, reserved int) ResourceList
