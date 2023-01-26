@@ -1,6 +1,8 @@
 package resource
 
 import (
+	"sort"
+
 	"github.com/iancoleman/strcase"
 
 	"github.com/cloudwan/goten-sdk/runtime/object"
@@ -125,4 +127,52 @@ func (rtn *TypeName) FullyQualifiedTypeName() string {
 
 func (rtn *TypeName) ServiceDomain() string {
 	return rtn.domain
+}
+
+func SortedResourceIdRefNameSegments(descriptor Descriptor) []string {
+	nameToSegment := make(map[string]NameSegmentPattern)
+	havingOnTheLeftSide := make(map[string]map[string]NameSegmentPattern)
+	havingOnTheRightSide := make(map[string]map[string]NameSegmentPattern)
+
+	for _, namePattern := range descriptor.GetNameDescriptor().GetNamePatterns() {
+		segmentPatterns := namePattern.SegmentPatterns()
+		for i, segmentPattern := range segmentPatterns {
+			collection := segmentPattern.CollectionLowerJson
+			nameToSegment[collection] = segmentPattern
+			if havingOnTheLeftSide[collection] == nil {
+				havingOnTheLeftSide[collection] = make(map[string]NameSegmentPattern)
+			}
+			if havingOnTheRightSide[collection] == nil {
+				havingOnTheRightSide[collection] = make(map[string]NameSegmentPattern)
+			}
+			onTheLeftSide := segmentPatterns[0:i]
+			for _, segmentOnTheLeftSide := range onTheLeftSide {
+				leftCollection := segmentOnTheLeftSide.CollectionLowerJson
+				havingOnTheRightSide[leftCollection][collection] = segmentPattern
+				havingOnTheLeftSide[collection][leftCollection] = segmentOnTheLeftSide
+			}
+		}
+	}
+
+	result := make([]string, 0)
+	for len(havingOnTheLeftSide) > 0 {
+		toAppend := make([]NameSegmentPattern, 0)
+		for segmentName, remainingLeftNeighbours := range havingOnTheLeftSide {
+			if len(remainingLeftNeighbours) == 0 {
+				toAppend = append(toAppend, nameToSegment[segmentName])
+			}
+		}
+		sort.Slice(toAppend, func(i, j int) bool {
+			return toAppend[i].IdFieldName() < toAppend[j].IdFieldName()
+		})
+		for _, nameSegment := range toAppend {
+			delete(havingOnTheLeftSide, nameSegment.CollectionLowerJson)
+			neighboursOnRight := havingOnTheRightSide[nameSegment.CollectionLowerJson]
+			for rightNeighbourName := range neighboursOnRight {
+				delete(havingOnTheLeftSide[rightNeighbourName], nameSegment.CollectionLowerJson)
+			}
+			result = append(result, nameSegment.IdFieldName())
+		}
+	}
+	return result
 }
