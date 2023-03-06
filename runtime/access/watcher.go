@@ -29,7 +29,11 @@ type Watcher interface {
 
 	// ResetIFilters resets active filters. It will trigger LostSync event.
 	// It can be called anytime during watcher runtime.
-	ResetIFilters(ctx context.Context, filters ...WatcherFilterParams) error
+	// Watcher will no longer send events related to old filters, but there
+	// may be still old events already in the events queue. It is necessary to check
+	// integer number (filter versions) returned by this function and compare
+	// with filter version returned by any WatcherEvent.
+	ResetIFilters(ctx context.Context, filters ...WatcherFilterParams) (int32, error)
 
 	// Run starts watcher.
 	Run(ctx context.Context) error
@@ -80,6 +84,9 @@ type WatcherEvent interface {
 
 	// AppendRawChange adds additional change. Panic for incorrect type
 	AppendRawChange(change WatcherEventChange)
+
+	// FilterVersion returns version of filter that generated this event.
+	FilterVersion() int32
 }
 
 // WatcherFilterParams is a wrap over resource filter and parent.
@@ -116,16 +123,17 @@ func NewWatcherConfigBase() *WatcherConfigBase {
 
 // WatcherEventBase is a base struct for all actual implementations of WatcherEvent.
 type WatcherEventBase struct {
-	lostSync bool
-	resync   bool
+	lostSync  bool
+	resync    bool
+	filterVer int32
 }
 
-func NewWatcherEventBase(resync bool) WatcherEventBase {
-	return WatcherEventBase{lostSync: false, resync: resync}
+func NewWatcherEventBase(resync bool, filterVer int32) WatcherEventBase {
+	return WatcherEventBase{lostSync: false, resync: resync, filterVer: filterVer}
 }
 
-func NewWatcherEventBaseLostSync() WatcherEventBase {
-	return WatcherEventBase{lostSync: true, resync: false}
+func NewWatcherEventBaseLostSync(filterVer int32) WatcherEventBase {
+	return WatcherEventBase{lostSync: true, resync: false, filterVer: filterVer}
 }
 
 func (eb WatcherEventBase) LostSync() bool {
@@ -134,4 +142,8 @@ func (eb WatcherEventBase) LostSync() bool {
 
 func (eb WatcherEventBase) Resync() bool {
 	return eb.resync
+}
+
+func (eb WatcherEventBase) FilterVersion() int32 {
+	return eb.filterVer
 }
