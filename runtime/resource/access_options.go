@@ -19,6 +19,7 @@ type deleteOptions struct {
 
 type batchGetOptions struct {
 	mustResolveAll bool
+	masks          map[Descriptor]object.FieldMask
 }
 
 type SaveOptions interface {
@@ -35,6 +36,8 @@ type DeleteOptions interface {
 
 type BatchGetOptions interface {
 	MustResolveAll() bool
+	GetFieldMask(Descriptor) object.FieldMask
+	GetFieldMasks() map[Descriptor]object.FieldMask
 }
 
 func (so *saveOptions) GetPreviousResource() Resource {
@@ -63,6 +66,14 @@ func (do *deleteOptions) GetDeletedResource() Resource {
 
 func (bgo *batchGetOptions) MustResolveAll() bool {
 	return bgo.mustResolveAll
+}
+
+func (bgo *batchGetOptions) GetFieldMask(descriptor Descriptor) object.FieldMask {
+	return bgo.masks[descriptor]
+}
+
+func (bgo *batchGetOptions) GetFieldMasks() map[Descriptor]object.FieldMask {
+	return bgo.masks
 }
 
 type SaveOption func(*saveOptions)
@@ -110,6 +121,15 @@ func WithCurrentResource(current Resource) DeleteOption {
 func WithMustResolveAll() BatchGetOption {
 	return func(o *batchGetOptions) {
 		o.mustResolveAll = true
+	}
+}
+
+func WithBatchGetFieldMask(desc Descriptor, mask object.FieldMask) BatchGetOption {
+	return func(o *batchGetOptions) {
+		if o.masks == nil {
+			o.masks = map[Descriptor]object.FieldMask{}
+		}
+		o.masks[desc] = mask
 	}
 }
 

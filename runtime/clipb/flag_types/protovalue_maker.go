@@ -4,6 +4,9 @@ import (
 	"encoding/base64"
 	"reflect"
 	"strconv"
+	"time"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -84,8 +87,19 @@ func makeProtoValue(raw string, fd preflect.FieldDescriptor, tp reflect.Type) (p
 		return preflect.ValueOfEnum(enValDes.Number()), nil
 	case preflect.MessageKind, preflect.GroupKind:
 		subMsg := reflect.New(tp.Elem()).Interface().(proto.Message)
-		if err := protojson.Unmarshal([]byte(raw), subMsg); err != nil {
-			return preflect.Value{}, err
+		// those timestamps somewhat dont work in protojson...
+		if asTimestamp, isTimestamp := subMsg.(*timestamppb.Timestamp); isTimestamp {
+			t, err := time.Parse(time.RFC3339Nano, raw)
+			if err != nil {
+				return preflect.Value{}, status.Errorf(
+					codes.InvalidArgument, "Failed to parse timestamp %s: %s", raw, err)
+			}
+			asTimestamp.Seconds = t.Unix()
+			asTimestamp.Nanos = int32(t.Nanosecond())
+		} else {
+			if err := protojson.Unmarshal([]byte(raw), subMsg); err != nil {
+				return preflect.Value{}, err
+			}
 		}
 		return preflect.ValueOfMessage(subMsg.ProtoReflect()), nil
 	}

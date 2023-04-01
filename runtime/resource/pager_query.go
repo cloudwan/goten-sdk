@@ -135,6 +135,7 @@ func (wp *ChangesWatchPager) ProcessChanges(changes ResourceChangeList) (Cursor,
 		fwdIdx = -1
 		hadForwardTokenBeforeChanges = false
 	} else {
+		hadForwardTokenBeforeChanges = true
 		if wp.pager.PageDirection().IsRight() {
 			fwdIdx = wp.pager.GetLimit() - 1
 		} else {
