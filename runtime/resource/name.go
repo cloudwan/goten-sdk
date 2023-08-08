@@ -89,11 +89,11 @@ func (np NamePattern) SegmentsCount() int {
 
 func (np NamePattern) SegmentPatterns() NameSegmentPatterns {
 	items := strings.Split(string(np), "/")
-	segmentPatterns := make(NameSegmentPatterns, 0, len(items) / 2)
+	segmentPatterns := make(NameSegmentPatterns, 0, len(items)/2)
 	for i := 0; i < len(items); i += 2 {
 		segmentPatterns = append(segmentPatterns, NameSegmentPattern{
 			CollectionLowerJson: items[i],
-			SingularLowerJson:   strcase.ToLowerCamel(items[i+1][1:len(items[i+1])-1]),
+			SingularLowerJson:   strcase.ToLowerCamel(items[i+1][1 : len(items[i+1])-1]),
 		})
 	}
 	return segmentPatterns
@@ -171,33 +171,86 @@ func min(a, b int) int {
 	}
 }
 
-var idCharsUnicode = regexp.MustCompile(`[\p{L}\d]+`)
 var idChars = regexp.MustCompile(`[\dA-Za-z]+`)
 var idremalphabet = []rune("0123456789abcdefghijkmnopqrstuvwxyz")
 
 func randStringRunes(n int) string {
 	b := make([]rune, n)
 	for i := 0; i < n; i++ {
-		b[i] = idremalphabet[rand.Intn(len(idremalphabet))]
+		if i > 0 {
+			b[i] = idremalphabet[rand.Intn(len(idremalphabet))]
+		} else {
+			b[i] = idremalphabet[10+rand.Intn(len(idremalphabet)-10)]
+		}
 	}
 	return string(b)
 }
 
-func GenerateResourceId(res Resource) string {
-	var segments = make([]string, 0)
-	var idPrefix string
-	if dres, ok := res.(DisplayableResource); ok && dres.GetDisplayName() != "" {
-		words := idChars.FindAllString(strings.ToLower(dres.GetDisplayName()), -1)
-		idPrefix = strings.Join(words, "-")
-		idPrefix = idPrefix[:min(24, len(idPrefix))]
-	}
-	if idPrefix != "" {
-		segments = append(segments, idPrefix)
-	}
-	rem := randStringRunes(max(6, 16-len(idPrefix)))
-	if rem != "" {
-		segments = append(segments, rem)
+func GenerateResourceIdFromElements(elements ...string) string {
+	const maxStringLen = 30
+	const reservedForRandom = 6
+	const maxElementsCount = 5
+
+	cleanElements := make([]string, 0, len(elements))
+	cleanElementsLen := 0
+	for _, element := range elements {
+		words := idChars.FindAllString(strings.ToLower(element), -1)
+		element = strings.Join(words, "-")
+		skippedPrefixLen := 0
+		for _, ch := range element {
+			if ch == '-' || (ch >= '0' && ch <= '9') {
+				skippedPrefixLen++
+			} else {
+				break
+			}
+		}
+		if skippedPrefixLen > 0 {
+			element = element[skippedPrefixLen:]
+		}
+		if len(element) > maxStringLen-reservedForRandom {
+			element = element[:maxStringLen-reservedForRandom]
+		}
+		if len(element) > 0 {
+			cleanElements = append(cleanElements, element)
+			cleanElementsLen += len(element)
+			if len(cleanElements) >= maxElementsCount {
+				break
+			}
+		}
 	}
 
-	return strings.Join(segments, "-")
+	// Cut always from the longest element
+	maxForAllElements := maxStringLen - reservedForRandom - len(cleanElements)
+	charsToCut := cleanElementsLen - maxForAllElements
+	for charsToCut > 0 {
+		longestElement, nextLongest := "", ""
+		longestElIdx := -1
+		for i, element := range cleanElements {
+			if len(element) > len(longestElement) {
+				nextLongest = longestElement
+				longestElement = element
+				longestElIdx = i
+			}
+		}
+		cut := min(charsToCut, len(longestElement)-len(nextLongest)+1)
+		cleanElements[longestElIdx] = longestElement[:len(longestElement)-cut]
+		charsToCut -= cut
+	}
+
+	resId := ""
+	for _, element := range cleanElements {
+		resId += element
+		if !strings.HasSuffix(resId, "-") {
+			resId += "-"
+		}
+	}
+	resId += randStringRunes(max(reservedForRandom, maxStringLen/2-len(resId)+1))
+	return resId
+}
+
+func GenerateResourceId(res Resource) string {
+	if dres, ok := res.(DisplayableResource); ok && dres.GetDisplayName() != "" {
+		return GenerateResourceIdFromElements(dres.GetDisplayName())
+	}
+	return GenerateResourceIdFromElements("")
 }
