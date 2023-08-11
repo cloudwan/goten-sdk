@@ -230,6 +230,8 @@ func GenerateResourceIdFromElements(elements ...string) string {
 				nextLongest = longestElement
 				longestElement = element
 				longestElIdx = i
+			} else if len(element) == len(longestElement) || len(element) > len(nextLongest) {
+				nextLongest = element
 			}
 		}
 		cut := min(charsToCut, len(longestElement)-len(nextLongest)+1)
