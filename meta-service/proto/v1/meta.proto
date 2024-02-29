@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package goten.meta.v1;
+
+import "google/api/annotations.proto";
+import "google/api/client.proto";
+import "google/protobuf/empty.proto";
+import "goten-sdk/meta-service/proto/v1/deployment.proto";
+import "goten-sdk/meta-service/proto/v1/deployment_custom.proto";
+import "goten-sdk/meta-service/proto/v1/deployment_service.proto";
+import "goten-sdk/meta-service/proto/v1/region.proto";
+import "goten-sdk/meta-service/proto/v1/region_service.proto";
+import "goten-sdk/meta-service/proto/v1/resource.proto";
+import "goten-sdk/meta-service/proto/v1/resource_service.proto";
+import "goten-sdk/meta-service/proto/v1/service.proto";
+import "goten-sdk/meta-service/proto/v1/service_service.proto";
+
+option go_package = "github.com/cloudwan/goten-sdk/meta-service/client/v1/meta;meta_client";
+option java_multiple_files = true;
+option java_outer_classname = "MetaProto";
+option java_package = "com.goten.meta.pb.v1";

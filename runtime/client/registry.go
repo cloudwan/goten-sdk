@@ -40,6 +40,28 @@ func (r *Registry) FindAllVersionsOfServiceDescriptors(serviceDomain string) []S
 	return svcDescriptors
 }
 
+func (r *Registry) GetVersionSortedServiceDescriptors(serviceDomain string) ([]ServiceDescriptor, error) {
+	allVersionDescs := r.FindAllVersionsOfServiceDescriptors(serviceDomain)
+	sortedDescs := make([]ServiceDescriptor, 0)
+	nextVersion := ""
+	for len(sortedDescs) < len(allVersionDescs) {
+		found := false
+		for _, desc := range allVersionDescs {
+			if desc.GetNextVersion() == nextVersion {
+				sortedDescs = append(sortedDescs, desc)
+				nextVersion = desc.GetVersion()
+				found = true
+				break
+			}
+		}
+		if !found {
+			return nil, fmt.Errorf("could not find service %s with version %s, ensure client package is imported",
+				serviceDomain, nextVersion)
+		}
+	}
+	return sortedDescs, nil
+}
+
 func (r *Registry) FindNewestVersionServiceDescriptor(serviceDomain string) ServiceDescriptor {
 	for _, svcDescriptor := range r.svcDescriptors {
 		if svcDescriptor.GetServiceDomain() == serviceDomain && svcDescriptor.GetNextVersion() == "" {

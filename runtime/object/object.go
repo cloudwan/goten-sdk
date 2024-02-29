@@ -12,8 +12,8 @@ import (
 // of a regular go-protobuf object containing many additional
 // goten-specific features like type-safe embedded field paths,
 // field masks, diff support, customized merge support etc.
-// Those extensions are mandatory for request or resource objects,
-// but can be turned off for most other types.
+// Those extensions are mandatory resources, optional for
+// others.
 type GotenObjectExt interface {
 	fmt.Stringer
 	proto.Message

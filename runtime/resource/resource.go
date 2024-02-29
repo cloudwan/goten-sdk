@@ -3,6 +3,7 @@ package resource
 import (
 	"github.com/cloudwan/goten-sdk/runtime/goten"
 	"github.com/cloudwan/goten-sdk/runtime/object"
+	"github.com/cloudwan/goten-sdk/types/meta"
 )
 
 type Resource interface {
@@ -10,6 +11,8 @@ type Resource interface {
 	object.GotenObjectExt
 	GetRawName() Name
 	GetResourceDescriptor() Descriptor
+	GetMetadata() *meta.Meta
+	EnsureMetadata() *meta.Meta
 }
 
 type ResourceChange interface {

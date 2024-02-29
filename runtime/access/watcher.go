@@ -92,7 +92,7 @@ type WatcherEvent interface {
 // WatcherFilterParams is a wrap over resource filter and parent.
 // Parent may not apply (by always nil) if resource does not have any parent.
 type WatcherFilterParams interface {
-	GetIParentRef() resource.Reference
+	GetIParentName() resource.Name
 	GetIFilter() resource.Filter
 }
 

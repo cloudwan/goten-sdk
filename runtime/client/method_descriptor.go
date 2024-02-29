@@ -66,7 +66,7 @@ type MethodDescriptor interface {
 	GetApiName() string
 
 	// GetServiceDomain returns domain of Goten service, as defined by field "name" in api-skeleton yaml file,
-	// for example library.edgelq.com
+	// for example library.goten.com
 	GetServiceDomain() string
 
 	// GetServiceVersion returns version of Goten service, as defined by field "proto.package.currentVersion"
@@ -104,9 +104,23 @@ type MethodMsgHandle interface {
 	// at this moment we dont code-gen anything for responses - although if user provides "Override", then it can).
 	ExtractCollectionName(msg proto.Message) resource.Name
 
+	// ExtractResourceBody returns resource body from relevant request/response objects. For example,
+	// handle for Create<Resource>/Create<Resource>Request will return value of "<resource>" field. For
+	// response object (in this case), it will return a message itself (as create returns resource).
+	ExtractResourceBody(msg proto.Message) resource.Resource
+
+	// ExtractResourceBodies returns resource bodies for plural methods - formally it is valid for
+	// request/responses, but in practice, it will be hard to find plural method requests with
+	// resource bodies (create/update are single!). It will be valid for responses for list/search/watch
+	// for collection.
+	ExtractResourceBodies(msg proto.Message) resource.ResourceList
+
 	// Methods below can be implemented by developer for generated MethodMsgHandle in separate, non-pb go file.
 	// If they are defined, methods above will use below versions:
 	// OverrideExtractResourceName(msg *<concrete_msg>) *<concrete_name>
 	// OverrideExtractResourceNames(msg *<concrete_msg>) []*<concrete_name>
 	// OverrideExtractCollectionName(msg *<concrete_msg>) *<concrete_name>
+	// OverrideExtractCollectionName(msg *<concrete_msg>) *<concrete_name>
+	// OverrideExtractResourceBody(msg *<concrete_msg>) *<concrete_name>
+	// OverrideExtractResourceBodies(msg *<concrete_msg>) []*<concrete_name>
 }

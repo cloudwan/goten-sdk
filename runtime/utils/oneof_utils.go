@@ -24,10 +24,12 @@ func GetFieldTypeForOneOf(protoMsg proto.Message, fieldDesc preflect.FieldDescri
 	// It would be nice if  protoMsg.ProtoReflect().NewField(fieldDesc) would return us
 	// something better (which may be problem for ProtoStringer types especially).
 	oneOfTypeForThisField := strcase.ToCamel(string(fieldDesc.Name()))
+	oneOfTypeForThisFieldAlternative := oneOfTypeForThisField + "_"
 	parentDesc := fieldDesc.Parent()
 	for parentDesc != nil {
 		if _, isMsg := parentDesc.(preflect.MessageDescriptor); isMsg {
 			oneOfTypeForThisField = fmt.Sprintf("%s_%s", parentDesc.Name(), oneOfTypeForThisField)
+			oneOfTypeForThisFieldAlternative = oneOfTypeForThisField + "_"
 		} else {
 			break
 		}
@@ -37,8 +39,11 @@ func GetFieldTypeForOneOf(protoMsg proto.Message, fieldDesc preflect.FieldDescri
 	hiddenMsgInfo := reflect.ValueOf(protoMsg.ProtoReflect().Type().(interface{}))
 	for _, oneOfWrapper := range hiddenMsgInfo.Elem().FieldByName("OneofWrappers").Interface().([]interface{}) {
 		tf := reflect.TypeOf(oneOfWrapper).Elem()
-		if tf.Name() == oneOfTypeForThisField {
-			fieldType, _ := tf.FieldByName(strcase.ToCamel(string(fieldDesc.Name())))
+		if tf.Name() == oneOfTypeForThisField || tf.Name() == oneOfTypeForThisFieldAlternative {
+			fieldType, ok := tf.FieldByName(strcase.ToCamel(string(fieldDesc.Name())))
+			if !ok {
+				fieldType, _ = tf.FieldByName(strcase.ToCamel(string(fieldDesc.Name())) + "_")
+			}
 			return fieldType, true
 		}
 	}

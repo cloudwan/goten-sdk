@@ -1,0 +1,125 @@
+syntax = "proto3";
+
+package goten.meta.v1;
+
+import "google/api/resource.proto";
+import "goten-sdk/types/meta.proto";
+
+option go_package = "github.com/cloudwan/goten-sdk/meta-service/resources/v1/deployment;deployment";
+option java_multiple_files = true;
+option java_outer_classname = "DeploymentProto";
+option java_package = "com.goten.meta.pb.v1";
+
+// Deployment Resource describes deployment of service in specific regional
+// cluster (may be multi-zonal). It contains accessibility details.
+message Deployment {
+  option (google.api.resource) = {
+    type : "meta.goten.com/Deployment"
+    pattern : "services/{service}/deployments/{deployment}"
+  };
+
+  // Name of Deployment
+  // ID must be exactly same as region ID it belongs to - it is populated
+  // automatically by Goten components.
+  string name = 1;
+
+  // Metadata is an object with information like create, update and delete time
+  // (for async deleted resources), has user labels/annotations, sharding
+  // information, multi-region syncing information and may have non-schema
+  // owners (useful for taking ownership of resources belonging to lower level
+  // services by higher ones).
+  goten.types.Meta metadata = 2;
+
+  // Service display name - it is lowerCamelCase of service name, but not
+  // domain. It is taken from api-skeleton file, under "service.name" path.
+  string service_name = 3;
+
+  // Informs in which region cluster running this deployment is located.
+  string region = 4;
+
+  // Public domain indicates under which public address service in this
+  // particular region can be accessed.
+  string public_domain = 5;
+
+  // Private domain indicates how to access this service within local private
+  // network. However, this address should not be available for anyone outside
+  // network. It is only to be used by other service deployments that run within
+  // same private network for better performance purposes (less hops). It should
+  // be used in conjunction with field local_network_id.
+  string private_domain = 6;
+
+  // Local network identifier - it can be mostly anything, however if two
+  // deployments for different services hold same value in same region, then
+  // Goten components will try to optimize access by using private_domain field
+  // instead of public_domain.
+  string local_network_id = 7;
+
+  // Location of given deployment. This value is likely to be equal for all
+  // deployments using same underlying cluster. It may be used by Goten to
+  // optimize multi-region routing.
+  Location location = 8;
+
+  // Whether this deployment is disabled. It does not trigger any deployment
+  // deletion - it will just notify others (in different regions) that its
+  // no longer available and no request should be routed there. It can
+  // be used as first step to delete deployment.
+  bool is_disabled = 9;
+
+  // Generation number used by EnvRegistry config to generate this resource.
+  int32 env_registry_generation = 10;
+
+  // The current version of the service. Note this MAY not be the newest
+  // version! At the very least, if there was a fresh db upgrade, it will be old
+  // version till automatic upgrade finishes (or manual switch happens).
+  string current_version = 11;
+
+  // If true, then switch to the new version will be automatic (if there is
+  // newer), once db upgrade finishes. Otherwise it will require manual call
+  // from operator.
+  bool automatic_version_switch = 12;
+
+  // Current state of the upgrade task.
+  UpgradeState upgrade_state = 13;
+
+  // Internal allowed services generation field from Service resource.
+  // Used for metadata synchronization.
+  int64 allowed_services_generation = 14;
+
+  // Location describes deployment location of this deployment. It may be used
+  // for multi-region routing to help determine closest deployment.
+  message Location {
+    // Continent
+    string continent = 1;
+
+    // Country
+    string country = 2;
+
+    // Agglomeration
+    string agglomeration = 3;
+
+    // City
+    string city = 4;
+
+    // Cloud provider (like GCP, Azure, AWS...)
+    string cloud = 5;
+  }
+
+  // UpgradeState describes current state of database upgrade.
+  message UpgradeState {
+    string target_version = 1;
+
+    repeated int64 ready_shards = 2;
+
+    repeated int64 pending_shards = 3;
+
+    Stage stage = 4;
+
+    enum Stage {
+      READY = 0;
+
+      INITIAL_SYNCING = 1;
+
+      SWITCHING = 2;
+    }
+  }
+}

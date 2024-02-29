@@ -8,9 +8,9 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/cloudwan/goten-sdk/runtime/api/watch_type"
 	"github.com/cloudwan/goten-sdk/runtime/object"
 	"github.com/cloudwan/goten-sdk/runtime/resource/query_result"
+	"github.com/cloudwan/goten-sdk/types/watch_type"
 )
 
 const (
@@ -87,6 +87,19 @@ type QueryResultChange interface {
 	SetIsSoftReset()
 	SetSnapshotSize(int64)
 	SetResumeToken(string)
+}
+
+func MakeCountQuery(desc Descriptor, filter Filter) ListQuery {
+	q := desc.NewListQuery()
+	q.SetWithPagingInfo(true)
+	q.SetFilter(filter)
+	pq := desc.NewResourcePager()
+	pq.SetLimit(1)
+	q.SetPager(pq)
+	m := desc.NewResourceFieldMask()
+	m.AppendRawPath(desc.GetNameDescriptor().GetFieldPath())
+	q.SetFieldMask(m)
+	return q
 }
 
 func MakeSQLGetString(query GetQuery) string {

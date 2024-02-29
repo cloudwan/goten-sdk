@@ -4,24 +4,24 @@ import (
 	"encoding/json"
 	"reflect"
 
+	"github.com/iancoleman/strcase"
 	"github.com/spf13/pflag"
 	"google.golang.org/protobuf/proto"
 	preflect "google.golang.org/protobuf/reflect/protoreflect"
-
-	"github.com/cloudwan/goten-sdk/runtime/object"
 )
 
 type SliceVar struct {
-	Fd  preflect.FieldDescriptor
-	Msg proto.Message
-	Fp  object.FieldPath
-	Tp  reflect.Type
+	FdPath []preflect.FieldDescriptor
+	DVals  []interface{}
+	Fd     preflect.FieldDescriptor
+	Msg    proto.Message
+	Tp     reflect.Type
 }
 
 var _ pflag.Value = (*SliceVar)(nil)
 
 func (v *SliceVar) String() string {
-	currentSlice := v.Fp.GetRaw(v.Msg)
+	currentSlice, _ := getCurrentRawValue(v.Msg, v.FdPath)
 	data, err := json.Marshal(currentSlice)
 	if err != nil {
 		panic(err)
@@ -30,9 +30,9 @@ func (v *SliceVar) String() string {
 }
 
 func (v *SliceVar) Set(raw string) error {
-	current, isCurrentSet := v.Fp.GetSingleRaw(v.Msg)
+	current, isCurrentSet := getCurrentRawValue(v.Msg, v.FdPath)
 	if !isCurrentSet {
-		current = reflect.New(reflect.TypeOf(v.Fp.GetDefault())).Elem().Interface()
+		current = reflect.New(reflect.TypeOf(v.DVals[len(v.DVals)-1]).Elem()).Elem().Interface()
 	}
 	elemType := reflect.TypeOf(current).Elem()
 	val, err := makeProtoValue(raw, v.Fd, elemType)
@@ -51,7 +51,15 @@ func (v *SliceVar) Set(raw string) error {
 		newSliceElement = reflect.ValueOf(val.Interface())
 	}
 	newSlice := reflect.Append(reflect.ValueOf(current), newSliceElement)
-	v.Fp.WithRawIValue(newSlice.Interface()).SetToRaw(v.Msg)
+
+	pathDefaults, pathFds := stripPathToLast(v.DVals, v.FdPath)
+	currentMsg := getFieldHolderAndEnsurePath(v.Msg, pathDefaults, pathFds)
+
+	// A bit tricky, but since slices cannot be in oneofs, we can just simply
+	// use reflection and spare effort to convert into preflect.List
+	reflect.ValueOf(currentMsg.Interface()).Elem().
+		FieldByName(strcase.ToCamel(string(v.Fd.Name()))).
+		Set(newSlice)
 	return nil
 }
 

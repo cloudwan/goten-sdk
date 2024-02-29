@@ -13,8 +13,8 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/cloudwan/goten-sdk/runtime/object"
 	"github.com/cloudwan/goten-sdk/runtime/resource"
+	"github.com/cloudwan/goten-sdk/runtime/utils"
 )
 
 const (
@@ -23,13 +23,14 @@ const (
 
 // ResponseEncoder encodes one or more messages in a desired format.
 // There are two types of encoders:
-//   streaming - Output data as quickly as it provided by SetNames and Add.
-//               In case of streaming responses, they output data as soon
-//               as it is received.
-//   non-streaming - Need to know all data upfront in order to be able
-//                   to format it. Data will be produced only after Finish() is called.
+//
+//	streaming - Output data as quickly as it provided by SetNames and Add.
+//	            In case of streaming responses, they output data as soon
+//	            as it is received.
+//	non-streaming - Need to know all data upfront in order to be able
+//	                to format it. Data will be produced only after Finish() is called.
 type ResponseEncoder interface {
-	SetColumns(fieldPaths []object.FieldPath, displayNames []string)
+	SetColumns(protoNames []string, displayNames []string)
 	Add(msg proto.Message) error
 	SetPageTokens(next, prev resource.Cursor) error
 	SetResponseHeaders(headers metadata.MD) error
@@ -72,11 +73,11 @@ type encoderTypeCheckingWrapper struct {
 	impl ResponseEncoder
 }
 
-func (etcw *encoderTypeCheckingWrapper) SetColumns(fieldPaths []object.FieldPath, displayNames []string) {
-	if len(displayNames) != len(fieldPaths) {
-		panic(fmt.Errorf("field paths count %d different from display names count %d", len(fieldPaths), len(displayNames)))
+func (etcw *encoderTypeCheckingWrapper) SetColumns(protoNames []string, displayNames []string) {
+	if len(displayNames) != len(protoNames) {
+		panic(fmt.Errorf("field paths count %d different from display names count %d", len(protoNames), len(displayNames)))
 	}
-	etcw.impl.SetColumns(fieldPaths, displayNames)
+	etcw.impl.SetColumns(protoNames, displayNames)
 }
 
 func (ectw *encoderTypeCheckingWrapper) Add(msg proto.Message) error {
@@ -96,15 +97,12 @@ func (ectw *encoderTypeCheckingWrapper) Close() error {
 }
 
 type jsonResponseEncoder struct {
-	paths  []object.FieldPath
 	writer io.Writer
 }
 
 var _ ResponseEncoder = &jsonResponseEncoder{}
 
-func (jre *jsonResponseEncoder) SetColumns(fieldPaths []object.FieldPath, _ []string) {
-	jre.paths = fieldPaths
-}
+func (jre *jsonResponseEncoder) SetColumns(_ []string, _ []string) {}
 
 func (jre *jsonResponseEncoder) Add(msg proto.Message) error {
 	out, err := protojson.Marshal(msg)
@@ -155,26 +153,31 @@ func (jre *jsonResponseEncoder) Close() error {
 type tableResponseEncoder struct {
 	// Note: tablewriter.Table does no checking for I/O errors
 	writer                       io.Writer
-	paths                        []object.FieldPath
+	paths                        []string
 	table                        *tablewriter.Table
 	nextPageToken, prevPageToken resource.Cursor
 	responseHeaders              metadata.MD
 	clippedColumnsCount          int
 }
 
-func (tfe *tableResponseEncoder) SetColumns(fieldPaths []object.FieldPath, displayNames []string) {
-	tfe.paths = fieldPaths
+func (tfe *tableResponseEncoder) SetColumns(protoNames []string, displayNames []string) {
+	tfe.paths = protoNames
 	tfe.table.SetHeader(displayNames)
 }
 
 func (tfe *tableResponseEncoder) Add(msg proto.Message) error {
 	stringFields := make([]string, 0, len(tfe.paths))
 
-	for _, fieldPath := range tfe.paths {
-		rawValue, ok := fieldPath.GetSingleRaw(msg)
+	for _, protoPath := range tfe.paths {
+		rawValue, ok := utils.GetValueFromProtoPath(msg, protoPath)
 		if !ok {
 			stringFields = append(stringFields, "")
 		} else {
+			rType := reflect.TypeOf(rawValue)
+			isMapOrSlice := rType.Kind() == reflect.Slice || rType.Kind() == reflect.Map
+			if rType.Kind() == reflect.Pointer || rType.Kind() == reflect.Ptr {
+				isMapOrSlice = rType.Elem().Kind() == reflect.Slice || rType.Elem().Kind() == reflect.Map
+			}
 			if m, ok := rawValue.(proto.Message); ok {
 				data, err := protojson.Marshal(m)
 				if err != nil {
@@ -183,6 +186,9 @@ func (tfe *tableResponseEncoder) Add(msg proto.Message) error {
 				stringFields = append(stringFields, string(data))
 			} else if stringer, ok := rawValue.(fmt.Stringer); ok {
 				stringFields = append(stringFields, stringer.String())
+			} else if isMapOrSlice {
+				jsonBytes, _ := json.Marshal(rawValue)
+				stringFields = append(stringFields, string(jsonBytes))
 			} else {
 				stringFields = append(stringFields, fmt.Sprint(rawValue))
 			}
@@ -213,9 +219,9 @@ func (tfe *tableResponseEncoder) SetResponseHeaders(headers metadata.MD) error {
 func (tfe *tableResponseEncoder) Close() error {
 	if tfe.clippedColumnsCount > 0 {
 		_, _ = os.Stdout.WriteString(fmt.Sprintf(
-			"WARNING: %d column values were clipped due to oversize." +
+			"WARNING: %d column values were clipped due to oversize."+
 				" In order to display values in full and more readable format, use \"-o json\" option\n\n",
-				tfe.clippedColumnsCount))
+			tfe.clippedColumnsCount))
 	}
 	if len(tfe.responseHeaders) > 0 {
 		for k, vals := range tfe.responseHeaders {

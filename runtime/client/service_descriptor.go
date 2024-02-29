@@ -13,8 +13,12 @@ type ServiceImportInfo struct {
 // It can be used to access all APIs/Methods, their properties, all resource types.
 // ServiceDescriptor corresponds to service definition in api-skeleton file (one per version).
 type ServiceDescriptor interface {
+	// GetServiceName returns lowerCamelCase value - as defined in service.name field in api-skeleton,
+	// like "library"
+	GetServiceName() string
+
 	// GetServiceDomain returns domain of Goten service, as defined by field "name" in api-skeleton yaml file,
-	// for example library.edgelq.com
+	// for example library.goten.com
 	GetServiceDomain() string
 
 	// GetVersion returns version of Goten service, as defined by field "proto.package.currentVersion"

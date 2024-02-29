@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+package goten.meta.v1;
+
+import "google/api/resource.proto";
+import "goten-sdk/types/meta.proto";
+import "goten-sdk/types/multi_region_policy.proto";
+
+option go_package = "github.com/cloudwan/goten-sdk/meta-service/resources/v1/service;service";
+option java_multiple_files = true;
+option java_outer_classname = "ServiceProto";
+option java_package = "com.goten.meta.pb.v1";
+
+// Service Resource contains service description like domain under which it can
+// be accessed, versions, imported services and their versions.
+message Service {
+  option (google.api.resource) = {
+    type : "meta.goten.com/Service"
+    pattern : "services/{service}"
+  };
+
+  // Name of Service
+  // When creating a new instance, this field is optional and if not provided,
+  // it will be generated automatically. Last ID segment must conform to the
+  // following regex: [a-z][a-z0-9\\-.]{0,28}[a-z0-9]
+  string name = 1;
+
+  // Metadata is an object with information like create, update and delete time
+  // (for async deleted resources), has user labels/annotations, sharding
+  // information, multi-region syncing information and may have non-schema
+  // owners (useful for taking ownership of resources belonging to lower level
+  // services by higher ones).
+  goten.types.Meta metadata = 2;
+
+  // Multi region policy defines in which region all kid resources (and their
+  // kids) will by default belong and cross-region syncing policies.
+  goten.types.MultiRegionPolicy multi_region_policy = 3;
+
+  // Service display name - it is lowerCamelCase of service name, but not
+  // domain. It is taken from api-skeleton file, under "service.name" path.
+  string display_name = 4;
+
+  // All supported versions.
+  // This list will be sorted if created by meta service provided by Goten.
+  // The newest version is first, the oldest last.
+  repeated string all_versions = 5;
+
+  // Globally available domain for this service. Requests to it should
+  // direct to most suitable (usually the nearest/healthy/most performant)
+  // region.
+  string global_domain = 6;
+
+  // All imported on schema-level services. This list declares that resources in
+  // those services can be referenced by this service.
+  repeated string imported_services = 7;
+
+  // All used services. Unlike imported, they are not imported on schema level.
+  // Its just a declaration that given service may access other services, but
+  // does not try to establish any references.
+  repeated string used_services = 8;
+
+  // Information containing which imported service version is used by current
+  // service version. This does not include any used services.
+  repeated ImportedVersions imported_versions = 9;
+
+  // Generation number used by EnvRegistry config to generate this resource.
+  int32 env_registry_generation = 10;
+
+  // If true, then switch to the new version will be automatic (if there is
+  // newer), once db upgrade finishes. Otherwise it will require manual call
+  // from operator.
+  bool automatic_version_switch = 11;
+
+  // Internal field for controlling metadata.services field - used internally by
+  // controller.
+  AllowedServicesCtrlFlag services_ctrl = 12;
+
+  // ImportedVersions contains information which version of the imported service
+  // is used by current service in specific version.
+  message ImportedVersions {
+    // Imported service reference
+    string target_service = 1;
+
+    // Version of the imported service
+    string target_service_version = 2;
+
+    // Version of the current service that imports target service in its
+    // version.
+    string current_service_version = 3;
+  }
+
+  // AllowedServicesCtrlFlag is internal helper field used by controller
+  // for metadata.services synchronization.
+  message AllowedServicesCtrlFlag {
+    // Whether job needs to be done.
+    bool is_dirty = 1;
+
+    // Generation to match in deployments/resources
+    int64 generation = 2;
+  }
+}

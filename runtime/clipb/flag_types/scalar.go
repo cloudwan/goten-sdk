@@ -7,28 +7,24 @@ import (
 	"github.com/spf13/pflag"
 	"google.golang.org/protobuf/proto"
 	preflect "google.golang.org/protobuf/reflect/protoreflect"
-
-	"github.com/cloudwan/goten-sdk/runtime/object"
 )
 
 type ScalarVar struct {
-	Fp  object.FieldPath
-	Fd  preflect.FieldDescriptor
-	Msg proto.Message
-	Tp  reflect.Type
+	FdPath []preflect.FieldDescriptor
+	DVals  []interface{}
+	Fd     preflect.FieldDescriptor
+	Msg    proto.Message
+	Tp     reflect.Type
 }
 
 var _ pflag.Value = (*ScalarVar)(nil)
 
 func (v *ScalarVar) String() string {
-	rawValue, present := v.Fp.GetSingleRaw(v.Msg)
+	rawValue, present := getCurrentRawValue(v.Msg, v.FdPath)
 	if !present {
 		return fmt.Sprint(reflect.New(v.Tp))
 	}
-	if stringer, ok := rawValue.(fmt.Stringer); ok {
-		return stringer.String()
-	}
-	return fmt.Sprint(rawValue)
+	return fmt.Sprintf("%v", rawValue)
 }
 
 func (v *ScalarVar) Set(raw string) error {
@@ -36,16 +32,9 @@ func (v *ScalarVar) Set(raw string) error {
 	if err != nil {
 		return err
 	}
-
-	switch v.Fd.Kind() {
-	case preflect.EnumKind:
-		enumType := reflect.New(v.Tp).Interface().(preflect.Enum).Type()
-		v.Fp.WithRawIValue(enumType.New(val.Enum())).SetToRaw(v.Msg)
-	case preflect.MessageKind, preflect.GroupKind:
-		v.Fp.WithRawIValue(val.Message().Interface()).SetToRaw(v.Msg)
-	default:
-		v.Fp.WithRawIValue(val.Interface()).SetToRaw(v.Msg)
-	}
+	pathDefaults, pathFds := stripPathToLast(v.DVals, v.FdPath)
+	currentMsg := getFieldHolderAndEnsurePath(v.Msg, pathDefaults, pathFds)
+	currentMsg.Set(v.Fd, val)
 	return nil
 }
 

@@ -9,7 +9,7 @@ const (
 	InConditionsMaxArgs = 10
 )
 
-func IterateListQuery(ctx context.Context, query ListQuery, access Access, fc func(results ResourceList) error) error {
+func IterateListQuery(ctx context.Context, query ListQuery, access Access, fc func(results ResourceList) (bool, error)) error {
 	const defaultPageSize = 100
 
 	if query.GetPager().GetLimit() == 0 {
@@ -24,8 +24,10 @@ func IterateListQuery(ctx context.Context, query ListQuery, access Access, fc fu
 		if results.Length() == 0 {
 			return nil
 		}
-		if err = fc(results); err != nil {
+		if cont, err := fc(results); err != nil {
 			return err
+		} else if !cont {
+			return nil
 		}
 		nextPageCursor := qrs.GetNextPageCursor()
 		if nextPageCursor == nil || reflect.ValueOf(nextPageCursor).IsNil() {

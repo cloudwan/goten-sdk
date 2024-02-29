@@ -4,24 +4,24 @@ import (
 	"encoding/json"
 	"reflect"
 
+	"github.com/iancoleman/strcase"
 	"github.com/spf13/pflag"
 	"google.golang.org/protobuf/proto"
 	preflect "google.golang.org/protobuf/reflect/protoreflect"
-
-	"github.com/cloudwan/goten-sdk/runtime/object"
 )
 
 type MapVar struct {
-	Fd  preflect.FieldDescriptor
-	Msg proto.Message
-	Fp  object.FieldPath
-	Tp  reflect.Type
+	FdPath []preflect.FieldDescriptor
+	DVals  []interface{}
+	Fd     preflect.FieldDescriptor
+	Msg    proto.Message
+	Tp     reflect.Type
 }
 
 var _ pflag.Value = (*MapVar)(nil)
 
 func (v *MapVar) String() string {
-	rawMap, present := v.Fp.GetSingleRaw(v.Msg)
+	rawMap, present := getCurrentRawValue(v.Msg, v.FdPath)
 	if !present {
 		return "{}"
 	}
@@ -37,7 +37,14 @@ func (v *MapVar) Set(raw string) error {
 	if err := json.Unmarshal([]byte(raw), mapType); err != nil {
 		return err
 	}
-	v.Fp.WithRawIValue(reflect.ValueOf(mapType).Elem().Interface()).SetToRaw(v.Msg)
+	pathDefaults, pathFds := stripPathToLast(v.DVals, v.FdPath)
+	currentMsg := getFieldHolderAndEnsurePath(v.Msg, pathDefaults, pathFds)
+
+	// A bit tricky, but since maps cannot be in oneofs, we can just simply
+	// use reflection and spare effort to convert into preflect.Map
+	reflect.ValueOf(currentMsg.Interface()).Elem().
+		FieldByName(strcase.ToCamel(string(v.Fd.Name()))).
+		Set(reflect.ValueOf(mapType).Elem())
 	return nil
 }
 

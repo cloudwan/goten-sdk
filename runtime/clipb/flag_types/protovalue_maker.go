@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"google.golang.org/grpc/codes"
@@ -86,7 +87,10 @@ func makeProtoValue(raw string, fd preflect.FieldDescriptor, tp reflect.Type) (p
 		}
 		return preflect.ValueOfEnum(enValDes.Number()), nil
 	case preflect.MessageKind, preflect.GroupKind:
-		subMsg := reflect.New(tp.Elem()).Interface().(proto.Message)
+		if tp.Kind() == reflect.Pointer {
+			tp = tp.Elem()
+		}
+		subMsg := reflect.New(tp).Interface().(proto.Message)
 		// those timestamps somewhat dont work in protojson...
 		if asTimestamp, isTimestamp := subMsg.(*timestamppb.Timestamp); isTimestamp {
 			t, err := time.Parse(time.RFC3339Nano, raw)
@@ -96,6 +100,14 @@ func makeProtoValue(raw string, fd preflect.FieldDescriptor, tp reflect.Type) (p
 			}
 			asTimestamp.Seconds = t.Unix()
 			asTimestamp.Nanos = int32(t.Nanosecond())
+		} else if asDuration, isDuration := subMsg.(*durationpb.Duration); isDuration {
+			d, err := time.ParseDuration(raw)
+			if err != nil {
+				return preflect.Value{}, status.Errorf(
+					codes.InvalidArgument, "Failed to parse duration %s: %s", raw, err)
+			}
+			asDuration.Seconds = int64(d / time.Second)
+			asDuration.Nanos = int32(d % time.Nanosecond)
 		} else {
 			if err := protojson.Unmarshal([]byte(raw), subMsg); err != nil {
 				return preflect.Value{}, err

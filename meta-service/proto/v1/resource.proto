@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package goten.meta.v1;
+
+import "google/api/resource.proto";
+import "goten-sdk/types/meta.proto";
+
+option go_package = "github.com/cloudwan/goten-sdk/meta-service/resources/v1/resource;resource";
+option java_multiple_files = true;
+option java_outer_classname = "ResourceProto";
+option java_package = "com.goten.meta.pb.v1";
+
+// Resource Resource
+message Resource {
+  option (google.api.resource) = {
+    type : "meta.goten.com/Resource"
+    pattern : "services/{service}/resources/{resource}"
+  };
+
+  // Name of Resource
+  // When creating a new instance, this field is optional and if not provided,
+  // it will be generated automatically. Last ID segment must conform to the
+  // following regex: [a-zA-Z]{1,128}
+  string name = 1;
+
+  // Metadata is an object with information like create, update and delete time
+  // (for async deleted resources), has user labels/annotations, sharding
+  // information, multi-region syncing information and may have non-schema
+  // owners (useful for taking ownership of resources belonging to lower level
+  // services by higher ones).
+  goten.types.Meta metadata = 2;
+
+  // Plural name of resource in CamelForm, for example "Devices"
+  string plural_name = 3;
+
+  // Fully qualified name, for example devices.edgelq.com/Device.
+  // It can also be derived from name too.
+  string fqn = 4;
+
+  // List of service versions where this resource is known.
+  // This list will be sorted if created by meta service provided by Goten.
+  // The newest version is first, the oldest last.
+  repeated string versions = 5;
+
+  // Versioned information holds values that may be valid for specific versions
+  // only. Sorted exactly like versions list.
+  repeated VersionedInfo versioned_infos = 6;
+
+  // Internal allowed services generation field from Service resource.
+  // Used for metadata synchronization.
+  int64 allowed_services_generation = 7;
+
+  // VersionedInfo contains specification part that is versioned.
+  message VersionedInfo {
+    // Resource version this information applies to.
+    string version = 1;
+
+    // Whether resource is regional.
+    bool is_regional = 2;
+  }
+}

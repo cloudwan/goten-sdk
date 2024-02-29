@@ -5,8 +5,6 @@ package goten.query_result;
 import "google/protobuf/any.proto";
 
 option go_package = "github.com/cloudwan/goten-sdk/runtime/resource/query_result";
-option java_multiple_files = true;
-option java_package = "com.ntt.goten.runtime.query_result";
 
 // Internal object representing query result snapshot OR change.
 // In case of snapshot, it contains list of resources.

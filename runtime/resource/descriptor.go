@@ -39,6 +39,10 @@ type Descriptor interface {
 
 	GetResourceTypeName() *TypeName
 	GetNameDescriptor() *NameDescriptor
+	CanBeParentless() bool
+	GetParentResDescriptors() []Descriptor
+
+	SupportsMetadata() bool
 
 	// ParseFieldPath returns a field path matching given string. If does not exist, error
 	// is returned and returned interface is None.

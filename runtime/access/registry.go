@@ -3,13 +3,13 @@ package access
 import (
 	"time"
 
-	timestamppb "github.com/golang/protobuf/ptypes/timestamp"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/cloudwan/goten-sdk/runtime/api/view"
-	"github.com/cloudwan/goten-sdk/runtime/api/watch_type"
 	"github.com/cloudwan/goten-sdk/runtime/object"
 	"github.com/cloudwan/goten-sdk/runtime/resource"
+	"github.com/cloudwan/goten-sdk/types/view"
+	"github.com/cloudwan/goten-sdk/types/watch_type"
 )
 
 var (
@@ -43,6 +43,10 @@ func (r *Registry) RegisterApiAccessConstructor(descriptor resource.Descriptor, 
 	r.getOrMakeEntry(descriptor).apiAccessConstructor = constructor
 }
 
+func (r *Registry) RegisterQueryWatcherEventConstructor(descriptor resource.Descriptor, constructor QueryWatcherEventConstructor) {
+	r.getOrMakeEntry(descriptor).queryWatcherEventConstructor = constructor
+}
+
 func (r *Registry) getOrMakeEntry(descriptor resource.Descriptor) *ApiAccessBuilder {
 	entry := r.entries[descriptor]
 	if entry == nil {
@@ -71,16 +75,16 @@ func init() {
 }
 
 type WatcherConfigParams struct {
-	CfgBase    *WatcherConfigBase
-	FieldMask  object.FieldMask
-	OrderBy    resource.OrderBy
-	WatchType  watch_type.WatchType
-	View       view.View
-	ChunkSize  int
+	CfgBase   *WatcherConfigBase
+	FieldMask object.FieldMask
+	OrderBy   resource.OrderBy
+	WatchType watch_type.WatchType
+	View      view.View
+	ChunkSize int
 }
 
 type QueryWatcherConfigParams struct {
-	Parent           resource.Reference
+	Parent           resource.Name
 	Filter           resource.Filter
 	Cursor           resource.Cursor
 	FieldMask        object.FieldMask
@@ -98,26 +102,29 @@ type QueryWatcherConstructor func(id int, grpcConn grpc.ClientConnInterface, par
 
 type WatcherConstructor func(grpcConn grpc.ClientConnInterface, params *WatcherConfigParams, filters ...WatcherFilterParams) Watcher
 
-type WatcherFilterConstructor func(filter resource.Filter, parentRef resource.Reference) WatcherFilterParams
+type WatcherFilterConstructor func(filter resource.Filter, parentName resource.Name) WatcherFilterParams
 
 type ApiAccessConstructor func(grpcConn grpc.ClientConnInterface) resource.Access
+
+type QueryWatcherEventConstructor func(evtId int, changes resource.ResourceChangeList, isReset, isLostSync, isCurrent bool, snapshotSize int64) QueryWatcherEvent
 
 // ApiAccessBuilder is a helper object allowing constructing various API-based and resource-oriented access objects
 // without explicit resource type.
 type ApiAccessBuilder struct {
-	descriptor               resource.Descriptor
-	watcherConstructor       WatcherConstructor
-	queryWatcherConstructor  QueryWatcherConstructor
-	watcherFilterConstructor WatcherFilterConstructor
-	apiAccessConstructor     ApiAccessConstructor
+	descriptor                   resource.Descriptor
+	watcherConstructor           WatcherConstructor
+	queryWatcherConstructor      QueryWatcherConstructor
+	watcherFilterConstructor     WatcherFilterConstructor
+	apiAccessConstructor         ApiAccessConstructor
+	queryWatcherEventConstructor QueryWatcherEventConstructor
 }
 
 func (re *ApiAccessBuilder) GetDescriptor() resource.Descriptor {
 	return re.descriptor
 }
 
-func (re *ApiAccessBuilder) MakeWatcherFilterParams(filter resource.Filter, parentRef resource.Reference) WatcherFilterParams {
-	return re.watcherFilterConstructor(filter, parentRef)
+func (re *ApiAccessBuilder) MakeWatcherFilterParams(filter resource.Filter, parentName resource.Name) WatcherFilterParams {
+	return re.watcherFilterConstructor(filter, parentName)
 }
 
 func (re *ApiAccessBuilder) MakeWatcher(grpcConn grpc.ClientConnInterface, params *WatcherConfigParams, filters ...WatcherFilterParams) Watcher {
@@ -130,4 +137,8 @@ func (re *ApiAccessBuilder) MakeQueryWatcher(id int, grpcConn grpc.ClientConnInt
 
 func (re *ApiAccessBuilder) MakeApiAccess(grpcConn grpc.ClientConnInterface) resource.Access {
 	return re.apiAccessConstructor(grpcConn)
+}
+
+func (re *ApiAccessBuilder) MakeQueryWatcherEvent(evtId int, changes resource.ResourceChangeList, isReset, isLostSync, isCurrent bool, snapshotSize int64) QueryWatcherEvent {
+	return re.queryWatcherEventConstructor(evtId, changes, isReset, isLostSync, isCurrent, snapshotSize)
 }

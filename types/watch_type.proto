@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package goten.types;
+
+option go_package = "github.com/cloudwan/goten-sdk/types/watch_type";
+option java_multiple_files = true;
+option java_package = "com.ntt.goten.types";
+
+// WatchType defines how client wants to subscribe for real-time updates when
+// making Watch<Collection> request.
+enum WatchType {
+  // In a Stateful type, by default first watch response contains whole snapshot
+  // of a given query according to the provided filter, field mask, order by
+  // fields. Paging is supported (page token and size can be used), but resuming
+  // not (resume token cannot be used). Reason is, that server drops all state
+  // for given watch session after disconnection and cannot match resuming token
+  // with some known state. Subsequent responses will contain incremental
+  // changes to the initially given snapshot. Server will provide additional
+  // information like index positions (and changes of those). It is possible to
+  // split snapshot and incremental changes into chunks (and therefore, many
+  // watch responses) by using maximum chunk size field in a request. In that
+  // case, client is expected to check the appropriate flag in each response
+  // messages to find a marker when "complete" message finishes. Clients should
+  // specify at least chunk size or page size. If none of them are present,
+  // server may enforce own limit on number of resources (page size) and return
+  // snapshot with next page token, if that limit was exceeded. If page size is
+  // accepted by the server (not too big), then response may be chunked only on
+  // user wish, but its not necessary. This type is made for users desiring
+  // real-time updates of a defined pages for use in for example UI dashboards,
+  // which is typical case when users are capped by a page size.
+  STATEFUL = 0;
+
+  // In a stateless type, initial snapshot of a query is sent within N watch
+  // responses (N = (NumRes / ChunkSize)), where: NumRes is a number of
+  // resources passing optional filter specified in a request (and parent if
+  // applicable), and ChunkSize is a maximum number of resource changes allowed
+  // to be included in a single Watch<Collection>Response. This chunk size
+  // should be specified in request object. Ordering and paging is not
+  // supported: request must not specify page token, order by fields or page
+  // size. Response object will never contain next/prev page tokens and index
+  // positions inside resource change objects must be ignored by a client. Field
+  // mask is allowed to be used. As client is supposed to contain state of the
+  // session, it is allowed to use resumption tokens and it may be provided with
+  // response. Server cannot tell the difference between added or modified
+  // resource - instead of using "Add" or "Modified" change types, server uses
+  // stateless "Set" type. The only common part is "Removed" type. If client
+  // does not specify chunk size, server may enforce its own default value. This
+  // type is made for users that do not care about ordering or paging but need
+  // general view of a set of resources in the unordered fashion, for example
+  // controllers. The benefit of this type, is that number of resources is never
+  // capped.
+  STATELESS = 1;
+}
