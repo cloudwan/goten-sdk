@@ -202,7 +202,6 @@ func (a *apiDeploymentAccess) SaveDeployment(ctx context.Context, res *deploymen
 			}
 		}
 	}
-
 	var resp *deployment.Deployment
 	var err error
 	if saveOpts.OnlyUpdate() || previousRes != nil {

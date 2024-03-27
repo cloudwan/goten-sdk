@@ -196,7 +196,6 @@ func (a *apiRegionAccess) SaveRegion(ctx context.Context, res *region.Region, op
 			}
 		}
 	}
-
 	var resp *region.Region
 	var err error
 	if saveOpts.OnlyUpdate() || previousRes != nil {

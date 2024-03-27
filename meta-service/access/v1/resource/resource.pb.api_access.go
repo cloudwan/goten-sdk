@@ -202,7 +202,6 @@ func (a *apiResourceAccess) SaveResource(ctx context.Context, res *resource.Reso
 			}
 		}
 	}
-
 	var resp *resource.Resource
 	var err error
 	if saveOpts.OnlyUpdate() || previousRes != nil {

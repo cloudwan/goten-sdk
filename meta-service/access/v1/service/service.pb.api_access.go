@@ -196,7 +196,6 @@ func (a *apiServiceAccess) SaveService(ctx context.Context, res *service.Service
 			}
 		}
 	}
-
 	var resp *service.Service
 	var err error
 	if saveOpts.OnlyUpdate() || previousRes != nil {
