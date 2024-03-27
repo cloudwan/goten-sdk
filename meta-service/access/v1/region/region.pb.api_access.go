@@ -14,6 +14,7 @@ import (
 
 	gotenaccess "github.com/cloudwan/goten-sdk/runtime/access"
 	gotenresource "github.com/cloudwan/goten-sdk/runtime/resource"
+	gotenfilter "github.com/cloudwan/goten-sdk/runtime/resource/filter"
 	"github.com/cloudwan/goten-sdk/types/watch_type"
 
 	region_client "github.com/cloudwan/goten-sdk/meta-service/client/v1/region"
@@ -31,6 +32,7 @@ var (
 	_ = new(gotenaccess.Watcher)
 	_ = watch_type.WatchType_STATEFUL
 	_ = new(gotenresource.ListQuery)
+	_ = gotenfilter.Eq
 )
 
 type apiRegionAccess struct {
@@ -195,6 +197,8 @@ func (a *apiRegionAccess) SaveRegion(ctx context.Context, res *region.Region, op
 		}
 	}
 
+	var resp *region.Region
+	var err error
 	if saveOpts.OnlyUpdate() || previousRes != nil {
 		updateRequest := &region_client.UpdateRegionRequest{
 			Region: res,
@@ -208,21 +212,22 @@ func (a *apiRegionAccess) SaveRegion(ctx context.Context, res *region.Region, op
 				FieldMask:        mask.(*region.Region_FieldMask),
 			}
 		}
-		_, err := a.client.UpdateRegion(ctx, updateRequest)
+		resp, err = a.client.UpdateRegion(ctx, updateRequest)
 		if err != nil {
 			return err
 		}
-		return nil
 	} else {
 		createRequest := &region_client.CreateRegionRequest{
 			Region: res,
 		}
-		_, err := a.client.CreateRegion(ctx, createRequest)
+		resp, err = a.client.CreateRegion(ctx, createRequest)
 		if err != nil {
 			return err
 		}
-		return nil
 	}
+	// Ensure object is updated - but in most shallow way possible
+	res.MakeDiffFieldMask(resp).Set(res, resp)
+	return nil
 }
 
 func (a *apiRegionAccess) DeleteRegion(ctx context.Context, ref *region.Reference, opts ...gotenresource.DeleteOption) error {

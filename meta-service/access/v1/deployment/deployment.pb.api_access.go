@@ -14,6 +14,7 @@ import (
 
 	gotenaccess "github.com/cloudwan/goten-sdk/runtime/access"
 	gotenresource "github.com/cloudwan/goten-sdk/runtime/resource"
+	gotenfilter "github.com/cloudwan/goten-sdk/runtime/resource/filter"
 	"github.com/cloudwan/goten-sdk/types/watch_type"
 
 	deployment_client "github.com/cloudwan/goten-sdk/meta-service/client/v1/deployment"
@@ -31,6 +32,7 @@ var (
 	_ = new(gotenaccess.Watcher)
 	_ = watch_type.WatchType_STATEFUL
 	_ = new(gotenresource.ListQuery)
+	_ = gotenfilter.Eq
 )
 
 type apiDeploymentAccess struct {
@@ -104,6 +106,9 @@ func (a *apiDeploymentAccess) QueryDeployments(ctx context.Context, query *deplo
 		request.OrderBy = query.Pager.OrderBy
 		request.PageToken = query.Pager.Cursor
 	}
+	if query.Filter != nil && query.Filter.GetCondition() != nil {
+		request.Filter, request.Parent = getParentAndFilter(query.Filter)
+	}
 	resp, err := a.client.ListDeployments(ctx, request)
 	if err != nil {
 		return nil, err
@@ -154,6 +159,9 @@ func (a *apiDeploymentAccess) WatchDeployments(ctx context.Context, query *deplo
 		request.PageSize = int32(query.Pager.Limit)
 		request.PageToken = query.Pager.Cursor
 	}
+	if query.Filter != nil && query.Filter.GetCondition() != nil {
+		request.Filter, request.Parent = getParentAndFilter(query.Filter)
+	}
 	changesStream, initErr := a.client.WatchDeployments(ctx, request)
 	if initErr != nil {
 		return initErr
@@ -195,6 +203,8 @@ func (a *apiDeploymentAccess) SaveDeployment(ctx context.Context, res *deploymen
 		}
 	}
 
+	var resp *deployment.Deployment
+	var err error
 	if saveOpts.OnlyUpdate() || previousRes != nil {
 		updateRequest := &deployment_client.UpdateDeploymentRequest{
 			Deployment: res,
@@ -208,21 +218,22 @@ func (a *apiDeploymentAccess) SaveDeployment(ctx context.Context, res *deploymen
 				FieldMask:        mask.(*deployment.Deployment_FieldMask),
 			}
 		}
-		_, err := a.client.UpdateDeployment(ctx, updateRequest)
+		resp, err = a.client.UpdateDeployment(ctx, updateRequest)
 		if err != nil {
 			return err
 		}
-		return nil
 	} else {
 		createRequest := &deployment_client.CreateDeploymentRequest{
 			Deployment: res,
 		}
-		_, err := a.client.CreateDeployment(ctx, createRequest)
+		resp, err = a.client.CreateDeployment(ctx, createRequest)
 		if err != nil {
 			return err
 		}
-		return nil
 	}
+	// Ensure object is updated - but in most shallow way possible
+	res.MakeDiffFieldMask(resp).Set(res, resp)
+	return nil
 }
 
 func (a *apiDeploymentAccess) DeleteDeployment(ctx context.Context, ref *deployment.Reference, opts ...gotenresource.DeleteOption) error {
@@ -234,6 +245,49 @@ func (a *apiDeploymentAccess) DeleteDeployment(ctx context.Context, ref *deploym
 	}
 	_, err := a.client.DeleteDeployment(ctx, request)
 	return err
+}
+func getParentAndFilter(fullFilter *deployment.Filter) (*deployment.Filter, *deployment.ParentName) {
+	var withParentExtraction func(cnd deployment.FilterCondition) deployment.FilterCondition
+	var resultParent *deployment.ParentName
+	var resultFilter *deployment.Filter
+	withParentExtraction = func(cnd deployment.FilterCondition) deployment.FilterCondition {
+		switch tCnd := cnd.(type) {
+		case *deployment.FilterConditionComposite:
+			if tCnd.GetOperator() == gotenfilter.AND {
+				withoutParentCnds := make([]deployment.FilterCondition, 0)
+				for _, subCnd := range tCnd.Conditions {
+					if subCndNoParent := withParentExtraction(subCnd); subCndNoParent != nil {
+						withoutParentCnds = append(withoutParentCnds, subCndNoParent)
+					}
+				}
+				if len(withoutParentCnds) == 0 {
+					return nil
+				}
+				return deployment.AndFilterConditions(withoutParentCnds...)
+			} else {
+				return tCnd
+			}
+		case *deployment.FilterConditionCompare:
+			if tCnd.GetOperator() == gotenfilter.Eq && tCnd.GetRawFieldPath().String() == "name" {
+				nameValue := tCnd.GetRawValue().(*deployment.Name)
+				if nameValue != nil && nameValue.ParentName.IsSpecified() {
+					resultParent = &nameValue.ParentName
+					if nameValue.IsFullyQualified() {
+						return tCnd
+					}
+					return nil
+				}
+			}
+			return tCnd
+		default:
+			return tCnd
+		}
+	}
+	cndWithoutParent := withParentExtraction(fullFilter.GetCondition())
+	if cndWithoutParent != nil {
+		resultFilter = &deployment.Filter{FilterCondition: cndWithoutParent}
+	}
+	return resultFilter, resultParent
 }
 
 func init() {

@@ -14,6 +14,7 @@ import (
 
 	gotenaccess "github.com/cloudwan/goten-sdk/runtime/access"
 	gotenresource "github.com/cloudwan/goten-sdk/runtime/resource"
+	gotenfilter "github.com/cloudwan/goten-sdk/runtime/resource/filter"
 	"github.com/cloudwan/goten-sdk/types/watch_type"
 
 	service_client "github.com/cloudwan/goten-sdk/meta-service/client/v1/service"
@@ -31,6 +32,7 @@ var (
 	_ = new(gotenaccess.Watcher)
 	_ = watch_type.WatchType_STATEFUL
 	_ = new(gotenresource.ListQuery)
+	_ = gotenfilter.Eq
 )
 
 type apiServiceAccess struct {
@@ -195,6 +197,8 @@ func (a *apiServiceAccess) SaveService(ctx context.Context, res *service.Service
 		}
 	}
 
+	var resp *service.Service
+	var err error
 	if saveOpts.OnlyUpdate() || previousRes != nil {
 		updateRequest := &service_client.UpdateServiceRequest{
 			Service: res,
@@ -208,21 +212,22 @@ func (a *apiServiceAccess) SaveService(ctx context.Context, res *service.Service
 				FieldMask:        mask.(*service.Service_FieldMask),
 			}
 		}
-		_, err := a.client.UpdateService(ctx, updateRequest)
+		resp, err = a.client.UpdateService(ctx, updateRequest)
 		if err != nil {
 			return err
 		}
-		return nil
 	} else {
 		createRequest := &service_client.CreateServiceRequest{
 			Service: res,
 		}
-		_, err := a.client.CreateService(ctx, createRequest)
+		resp, err = a.client.CreateService(ctx, createRequest)
 		if err != nil {
 			return err
 		}
-		return nil
 	}
+	// Ensure object is updated - but in most shallow way possible
+	res.MakeDiffFieldMask(resp).Set(res, resp)
+	return nil
 }
 
 func (a *apiServiceAccess) DeleteService(ctx context.Context, ref *service.Reference, opts ...gotenresource.DeleteOption) error {

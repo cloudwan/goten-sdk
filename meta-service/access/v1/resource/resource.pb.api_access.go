@@ -14,6 +14,7 @@ import (
 
 	gotenaccess "github.com/cloudwan/goten-sdk/runtime/access"
 	gotenresource "github.com/cloudwan/goten-sdk/runtime/resource"
+	gotenfilter "github.com/cloudwan/goten-sdk/runtime/resource/filter"
 	"github.com/cloudwan/goten-sdk/types/watch_type"
 
 	resource_client "github.com/cloudwan/goten-sdk/meta-service/client/v1/resource"
@@ -31,6 +32,7 @@ var (
 	_ = new(gotenaccess.Watcher)
 	_ = watch_type.WatchType_STATEFUL
 	_ = new(gotenresource.ListQuery)
+	_ = gotenfilter.Eq
 )
 
 type apiResourceAccess struct {
@@ -104,6 +106,9 @@ func (a *apiResourceAccess) QueryResources(ctx context.Context, query *resource.
 		request.OrderBy = query.Pager.OrderBy
 		request.PageToken = query.Pager.Cursor
 	}
+	if query.Filter != nil && query.Filter.GetCondition() != nil {
+		request.Filter, request.Parent = getParentAndFilter(query.Filter)
+	}
 	resp, err := a.client.ListResources(ctx, request)
 	if err != nil {
 		return nil, err
@@ -154,6 +159,9 @@ func (a *apiResourceAccess) WatchResources(ctx context.Context, query *resource.
 		request.PageSize = int32(query.Pager.Limit)
 		request.PageToken = query.Pager.Cursor
 	}
+	if query.Filter != nil && query.Filter.GetCondition() != nil {
+		request.Filter, request.Parent = getParentAndFilter(query.Filter)
+	}
 	changesStream, initErr := a.client.WatchResources(ctx, request)
 	if initErr != nil {
 		return initErr
@@ -195,6 +203,8 @@ func (a *apiResourceAccess) SaveResource(ctx context.Context, res *resource.Reso
 		}
 	}
 
+	var resp *resource.Resource
+	var err error
 	if saveOpts.OnlyUpdate() || previousRes != nil {
 		updateRequest := &resource_client.UpdateResourceRequest{
 			Resource: res,
@@ -208,21 +218,22 @@ func (a *apiResourceAccess) SaveResource(ctx context.Context, res *resource.Reso
 				FieldMask:        mask.(*resource.Resource_FieldMask),
 			}
 		}
-		_, err := a.client.UpdateResource(ctx, updateRequest)
+		resp, err = a.client.UpdateResource(ctx, updateRequest)
 		if err != nil {
 			return err
 		}
-		return nil
 	} else {
 		createRequest := &resource_client.CreateResourceRequest{
 			Resource: res,
 		}
-		_, err := a.client.CreateResource(ctx, createRequest)
+		resp, err = a.client.CreateResource(ctx, createRequest)
 		if err != nil {
 			return err
 		}
-		return nil
 	}
+	// Ensure object is updated - but in most shallow way possible
+	res.MakeDiffFieldMask(resp).Set(res, resp)
+	return nil
 }
 
 func (a *apiResourceAccess) DeleteResource(ctx context.Context, ref *resource.Reference, opts ...gotenresource.DeleteOption) error {
@@ -234,6 +245,49 @@ func (a *apiResourceAccess) DeleteResource(ctx context.Context, ref *resource.Re
 	}
 	_, err := a.client.DeleteResource(ctx, request)
 	return err
+}
+func getParentAndFilter(fullFilter *resource.Filter) (*resource.Filter, *resource.ParentName) {
+	var withParentExtraction func(cnd resource.FilterCondition) resource.FilterCondition
+	var resultParent *resource.ParentName
+	var resultFilter *resource.Filter
+	withParentExtraction = func(cnd resource.FilterCondition) resource.FilterCondition {
+		switch tCnd := cnd.(type) {
+		case *resource.FilterConditionComposite:
+			if tCnd.GetOperator() == gotenfilter.AND {
+				withoutParentCnds := make([]resource.FilterCondition, 0)
+				for _, subCnd := range tCnd.Conditions {
+					if subCndNoParent := withParentExtraction(subCnd); subCndNoParent != nil {
+						withoutParentCnds = append(withoutParentCnds, subCndNoParent)
+					}
+				}
+				if len(withoutParentCnds) == 0 {
+					return nil
+				}
+				return resource.AndFilterConditions(withoutParentCnds...)
+			} else {
+				return tCnd
+			}
+		case *resource.FilterConditionCompare:
+			if tCnd.GetOperator() == gotenfilter.Eq && tCnd.GetRawFieldPath().String() == "name" {
+				nameValue := tCnd.GetRawValue().(*resource.Name)
+				if nameValue != nil && nameValue.ParentName.IsSpecified() {
+					resultParent = &nameValue.ParentName
+					if nameValue.IsFullyQualified() {
+						return tCnd
+					}
+					return nil
+				}
+			}
+			return tCnd
+		default:
+			return tCnd
+		}
+	}
+	cndWithoutParent := withParentExtraction(fullFilter.GetCondition())
+	if cndWithoutParent != nil {
+		resultFilter = &resource.Filter{FilterCondition: cndWithoutParent}
+	}
+	return resultFilter, resultParent
 }
 
 func init() {
