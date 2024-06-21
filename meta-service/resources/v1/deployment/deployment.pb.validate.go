@@ -23,6 +23,7 @@ import (
 	region "github.com/cloudwan/goten-sdk/meta-service/resources/v1/region"
 	service "github.com/cloudwan/goten-sdk/meta-service/resources/v1/service"
 	meta "github.com/cloudwan/goten-sdk/types/meta"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 )
 
 var (
@@ -36,10 +37,13 @@ var (
 	_ = utf8.RuneCountInString
 	_ = url.Parse
 	_ = gotenvalidate.NewValidationError
+
+	validation_regex_Deployment_db_data_version_49f735b4dbb98b565e79d44caeb0f8e7 = regexp.MustCompile("(^$|^v[0-9.]{1,64}$)")
 )
 
 // make sure we're using proto imports
 var (
+	_ = &structpb.Struct{}
 	_ = &region.Region{}
 	_ = &service.Service{}
 	_ = &meta.Meta{}
@@ -109,6 +113,16 @@ func (obj *Deployment) GotenValidate() error {
 			return gotenvalidate.NewValidationError("Deployment", "upgradeState", obj.UpgradeState, "nested object validation failed", err)
 		}
 	}
+	if !validation_regex_Deployment_db_data_version_49f735b4dbb98b565e79d44caeb0f8e7.Match([]byte(obj.DbDataVersion)) {
+		return gotenvalidate.NewValidationError("Deployment", "dbDataVersion", obj.DbDataVersion, "field must match the regex (^$|^v[0-9.]{1,64}$)", nil)
+	}
+	for idx, elem := range obj.DataUpdateStatuses {
+		if subobj, ok := interface{}(elem).(gotenvalidate.Validator); ok {
+			if err := subobj.GotenValidate(); err != nil {
+				return gotenvalidate.NewValidationError("Deployment", "dataUpdateStatuses", obj.DataUpdateStatuses[idx], "nested object validation failed", err)
+			}
+		}
+	}
 	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
 		return cvobj.GotenCustomValidate()
 	}
@@ -171,6 +185,22 @@ func (obj *Deployment_Location) GotenValidate() error {
 func (obj *Deployment_UpgradeState) GotenValidate() error {
 	if obj == nil {
 		return nil
+	}
+	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
+		return cvobj.GotenCustomValidate()
+	}
+	return nil
+}
+func (obj *Deployment_DbUpdateTaskStatus) GotenValidate() error {
+	if obj == nil {
+		return nil
+	}
+	for idx, elem := range obj.ProgressBar {
+		if subobj, ok := interface{}(elem).(gotenvalidate.Validator); ok {
+			if err := subobj.GotenValidate(); err != nil {
+				return gotenvalidate.NewValidationError("DbUpdateTaskStatus", "progressBar", obj.ProgressBar[idx], "nested object validation failed", err)
+			}
+		}
 	}
 	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
 		return cvobj.GotenCustomValidate()

@@ -23,6 +23,7 @@ import (
 	region "github.com/cloudwan/goten-sdk/meta-service/resources/v1/region"
 	service "github.com/cloudwan/goten-sdk/meta-service/resources/v1/service"
 	meta "github.com/cloudwan/goten-sdk/types/meta"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 )
 
 // ensure the imports are used
@@ -42,6 +43,7 @@ var (
 
 // make sure we're using proto imports
 var (
+	_ = &structpb.Struct{}
 	_ = &region.Region{}
 	_ = &service.Service{}
 	_ = &meta.Meta{}
@@ -66,7 +68,8 @@ func FullDeployment_FieldMask() *Deployment_FieldMask {
 	res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorCurrentVersion})
 	res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorAutomaticVersionSwitch})
 	res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorUpgradeState})
-	res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorAllowedServicesGeneration})
+	res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorDbDataVersion})
+	res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorDataUpdateStatuses})
 	return res
 }
 
@@ -110,7 +113,7 @@ func (fieldMask *Deployment_FieldMask) IsFull() bool {
 	if fieldMask == nil {
 		return false
 	}
-	presentSelectors := make([]bool, 14)
+	presentSelectors := make([]bool, 15)
 	for _, path := range fieldMask.Paths {
 		if asFinal, ok := path.(*Deployment_FieldTerminalPath); ok {
 			presentSelectors[int(asFinal.selector)] = true
@@ -140,16 +143,18 @@ func (fieldMask *Deployment_FieldMask) Reset() {
 
 func (fieldMask *Deployment_FieldMask) Subtract(other *Deployment_FieldMask) *Deployment_FieldMask {
 	result := &Deployment_FieldMask{}
-	removedSelectors := make([]bool, 14)
+	removedSelectors := make([]bool, 15)
 	otherSubMasks := map[Deployment_FieldPathSelector]gotenobject.FieldMask{
-		Deployment_FieldPathSelectorMetadata:     &meta.Meta_FieldMask{},
-		Deployment_FieldPathSelectorLocation:     &Deployment_Location_FieldMask{},
-		Deployment_FieldPathSelectorUpgradeState: &Deployment_UpgradeState_FieldMask{},
+		Deployment_FieldPathSelectorMetadata:           &meta.Meta_FieldMask{},
+		Deployment_FieldPathSelectorLocation:           &Deployment_Location_FieldMask{},
+		Deployment_FieldPathSelectorUpgradeState:       &Deployment_UpgradeState_FieldMask{},
+		Deployment_FieldPathSelectorDataUpdateStatuses: &Deployment_DbUpdateTaskStatus_FieldMask{},
 	}
 	mySubMasks := map[Deployment_FieldPathSelector]gotenobject.FieldMask{
-		Deployment_FieldPathSelectorMetadata:     &meta.Meta_FieldMask{},
-		Deployment_FieldPathSelectorLocation:     &Deployment_Location_FieldMask{},
-		Deployment_FieldPathSelectorUpgradeState: &Deployment_UpgradeState_FieldMask{},
+		Deployment_FieldPathSelectorMetadata:           &meta.Meta_FieldMask{},
+		Deployment_FieldPathSelectorLocation:           &Deployment_Location_FieldMask{},
+		Deployment_FieldPathSelectorUpgradeState:       &Deployment_UpgradeState_FieldMask{},
+		Deployment_FieldPathSelectorDataUpdateStatuses: &Deployment_DbUpdateTaskStatus_FieldMask{},
 	}
 
 	for _, path := range other.GetPaths() {
@@ -171,6 +176,8 @@ func (fieldMask *Deployment_FieldMask) Subtract(other *Deployment_FieldMask) *De
 						mySubMasks[Deployment_FieldPathSelectorLocation] = FullDeployment_Location_FieldMask()
 					case Deployment_FieldPathSelectorUpgradeState:
 						mySubMasks[Deployment_FieldPathSelectorUpgradeState] = FullDeployment_UpgradeState_FieldMask()
+					case Deployment_FieldPathSelectorDataUpdateStatuses:
+						mySubMasks[Deployment_FieldPathSelectorDataUpdateStatuses] = FullDeployment_DbUpdateTaskStatus_FieldMask()
 					}
 				} else if tp, ok := path.(*Deployment_FieldSubPath); ok {
 					mySubMasks[tp.selector].AppendRawPath(tp.subPath)
@@ -204,7 +211,7 @@ func (fieldMask *Deployment_FieldMask) FilterInputFields() *Deployment_FieldMask
 	for _, path := range fieldMask.Paths {
 		switch path.Selector() {
 		case Deployment_FieldPathSelectorUpgradeState:
-		case Deployment_FieldPathSelectorAllowedServicesGeneration:
+		case Deployment_FieldPathSelectorDataUpdateStatuses:
 		case Deployment_FieldPathSelectorMetadata:
 			if _, ok := path.(*Deployment_FieldTerminalPath); ok {
 				for _, subpath := range meta.FullMeta_FieldMask().FilterInputFields().Paths {
@@ -349,6 +356,8 @@ func (fieldMask *Deployment_FieldMask) Project(source *Deployment) *Deployment {
 	wholeLocationAccepted := false
 	upgradeStateMask := &Deployment_UpgradeState_FieldMask{}
 	wholeUpgradeStateAccepted := false
+	dataUpdateStatusesMask := &Deployment_DbUpdateTaskStatus_FieldMask{}
+	wholeDataUpdateStatusesAccepted := false
 
 	for _, p := range fieldMask.Paths {
 		switch tp := p.(type) {
@@ -383,8 +392,11 @@ func (fieldMask *Deployment_FieldMask) Project(source *Deployment) *Deployment {
 			case Deployment_FieldPathSelectorUpgradeState:
 				result.UpgradeState = source.UpgradeState
 				wholeUpgradeStateAccepted = true
-			case Deployment_FieldPathSelectorAllowedServicesGeneration:
-				result.AllowedServicesGeneration = source.AllowedServicesGeneration
+			case Deployment_FieldPathSelectorDbDataVersion:
+				result.DbDataVersion = source.DbDataVersion
+			case Deployment_FieldPathSelectorDataUpdateStatuses:
+				result.DataUpdateStatuses = source.DataUpdateStatuses
+				wholeDataUpdateStatusesAccepted = true
 			}
 		case *Deployment_FieldSubPath:
 			switch tp.selector {
@@ -394,6 +406,8 @@ func (fieldMask *Deployment_FieldMask) Project(source *Deployment) *Deployment {
 				locationMask.AppendPath(tp.subPath.(DeploymentLocation_FieldPath))
 			case Deployment_FieldPathSelectorUpgradeState:
 				upgradeStateMask.AppendPath(tp.subPath.(DeploymentUpgradeState_FieldPath))
+			case Deployment_FieldPathSelectorDataUpdateStatuses:
+				dataUpdateStatusesMask.AppendPath(tp.subPath.(DeploymentDbUpdateTaskStatus_FieldPath))
 			}
 		}
 	}
@@ -405,6 +419,11 @@ func (fieldMask *Deployment_FieldMask) Project(source *Deployment) *Deployment {
 	}
 	if wholeUpgradeStateAccepted == false && len(upgradeStateMask.Paths) > 0 {
 		result.UpgradeState = upgradeStateMask.Project(source.GetUpgradeState())
+	}
+	if wholeDataUpdateStatusesAccepted == false && len(dataUpdateStatusesMask.Paths) > 0 {
+		for _, sourceItem := range source.GetDataUpdateStatuses() {
+			result.DataUpdateStatuses = append(result.DataUpdateStatuses, dataUpdateStatusesMask.Project(sourceItem))
+		}
 	}
 	return result
 }
@@ -695,6 +714,7 @@ func FullDeployment_UpgradeState_FieldMask() *Deployment_UpgradeState_FieldMask 
 	res.Paths = append(res.Paths, &DeploymentUpgradeState_FieldTerminalPath{selector: DeploymentUpgradeState_FieldPathSelectorReadyShards})
 	res.Paths = append(res.Paths, &DeploymentUpgradeState_FieldTerminalPath{selector: DeploymentUpgradeState_FieldPathSelectorPendingShards})
 	res.Paths = append(res.Paths, &DeploymentUpgradeState_FieldTerminalPath{selector: DeploymentUpgradeState_FieldPathSelectorStage})
+	res.Paths = append(res.Paths, &DeploymentUpgradeState_FieldTerminalPath{selector: DeploymentUpgradeState_FieldPathSelectorDbDataTargetVersion})
 	return res
 }
 
@@ -738,7 +758,7 @@ func (fieldMask *Deployment_UpgradeState_FieldMask) IsFull() bool {
 	if fieldMask == nil {
 		return false
 	}
-	presentSelectors := make([]bool, 4)
+	presentSelectors := make([]bool, 5)
 	for _, path := range fieldMask.Paths {
 		if asFinal, ok := path.(*DeploymentUpgradeState_FieldTerminalPath); ok {
 			presentSelectors[int(asFinal.selector)] = true
@@ -768,7 +788,7 @@ func (fieldMask *Deployment_UpgradeState_FieldMask) Reset() {
 
 func (fieldMask *Deployment_UpgradeState_FieldMask) Subtract(other *Deployment_UpgradeState_FieldMask) *Deployment_UpgradeState_FieldMask {
 	result := &Deployment_UpgradeState_FieldMask{}
-	removedSelectors := make([]bool, 4)
+	removedSelectors := make([]bool, 5)
 
 	for _, path := range other.GetPaths() {
 		switch tp := path.(type) {
@@ -930,6 +950,8 @@ func (fieldMask *Deployment_UpgradeState_FieldMask) Project(source *Deployment_U
 				result.PendingShards = source.PendingShards
 			case DeploymentUpgradeState_FieldPathSelectorStage:
 				result.Stage = source.Stage
+			case DeploymentUpgradeState_FieldPathSelectorDbDataTargetVersion:
+				result.DbDataTargetVersion = source.DbDataTargetVersion
 			}
 		}
 	}
@@ -941,6 +963,271 @@ func (fieldMask *Deployment_UpgradeState_FieldMask) ProjectRaw(source gotenobjec
 }
 
 func (fieldMask *Deployment_UpgradeState_FieldMask) PathsCount() int {
+	if fieldMask == nil {
+		return 0
+	}
+	return len(fieldMask.Paths)
+}
+
+type Deployment_DbUpdateTaskStatus_FieldMask struct {
+	Paths []DeploymentDbUpdateTaskStatus_FieldPath
+}
+
+func FullDeployment_DbUpdateTaskStatus_FieldMask() *Deployment_DbUpdateTaskStatus_FieldMask {
+	res := &Deployment_DbUpdateTaskStatus_FieldMask{}
+	res.Paths = append(res.Paths, &DeploymentDbUpdateTaskStatus_FieldTerminalPath{selector: DeploymentDbUpdateTaskStatus_FieldPathSelectorTaskTag})
+	res.Paths = append(res.Paths, &DeploymentDbUpdateTaskStatus_FieldTerminalPath{selector: DeploymentDbUpdateTaskStatus_FieldPathSelectorShardsCount})
+	res.Paths = append(res.Paths, &DeploymentDbUpdateTaskStatus_FieldTerminalPath{selector: DeploymentDbUpdateTaskStatus_FieldPathSelectorReadyShards})
+	res.Paths = append(res.Paths, &DeploymentDbUpdateTaskStatus_FieldTerminalPath{selector: DeploymentDbUpdateTaskStatus_FieldPathSelectorTargetVersion})
+	res.Paths = append(res.Paths, &DeploymentDbUpdateTaskStatus_FieldTerminalPath{selector: DeploymentDbUpdateTaskStatus_FieldPathSelectorProgressBar})
+	return res
+}
+
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) String() string {
+	if fieldMask == nil {
+		return "<nil>"
+	}
+	pathsStr := make([]string, 0, len(fieldMask.Paths))
+	for _, path := range fieldMask.Paths {
+		pathsStr = append(pathsStr, path.String())
+	}
+	return strings.Join(pathsStr, ", ")
+}
+
+// firestore encoding/decoding integration
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) EncodeFirestore() (*firestorepb.Value, error) {
+	if fieldMask == nil {
+		return &firestorepb.Value{ValueType: &firestorepb.Value_NullValue{}}, nil
+	}
+	arrayValues := make([]*firestorepb.Value, 0, len(fieldMask.Paths))
+	for _, path := range fieldMask.GetPaths() {
+		arrayValues = append(arrayValues, &firestorepb.Value{ValueType: &firestorepb.Value_StringValue{StringValue: path.String()}})
+	}
+	return &firestorepb.Value{
+		ValueType: &firestorepb.Value_ArrayValue{ArrayValue: &firestorepb.ArrayValue{Values: arrayValues}},
+	}, nil
+}
+
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) DecodeFirestore(fpbv *firestorepb.Value) error {
+	for _, value := range fpbv.GetArrayValue().GetValues() {
+		parsedPath, err := ParseDeploymentDbUpdateTaskStatus_FieldPath(value.GetStringValue())
+		if err != nil {
+			return err
+		}
+		fieldMask.Paths = append(fieldMask.Paths, parsedPath)
+	}
+	return nil
+}
+
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) IsFull() bool {
+	if fieldMask == nil {
+		return false
+	}
+	presentSelectors := make([]bool, 5)
+	for _, path := range fieldMask.Paths {
+		if asFinal, ok := path.(*DeploymentDbUpdateTaskStatus_FieldTerminalPath); ok {
+			presentSelectors[int(asFinal.selector)] = true
+		}
+	}
+	for _, flag := range presentSelectors {
+		if !flag {
+			return false
+		}
+	}
+	return true
+}
+
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) ProtoReflect() preflect.Message {
+	return gotenobject.MakeFieldMaskReflection(fieldMask, func(raw string) (gotenobject.FieldPath, error) {
+		return ParseDeploymentDbUpdateTaskStatus_FieldPath(raw)
+	})
+}
+
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) ProtoMessage() {}
+
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) Reset() {
+	if fieldMask != nil {
+		fieldMask.Paths = nil
+	}
+}
+
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) Subtract(other *Deployment_DbUpdateTaskStatus_FieldMask) *Deployment_DbUpdateTaskStatus_FieldMask {
+	result := &Deployment_DbUpdateTaskStatus_FieldMask{}
+	removedSelectors := make([]bool, 5)
+
+	for _, path := range other.GetPaths() {
+		switch tp := path.(type) {
+		case *DeploymentDbUpdateTaskStatus_FieldTerminalPath:
+			removedSelectors[int(tp.selector)] = true
+		}
+	}
+	for _, path := range fieldMask.GetPaths() {
+		if !removedSelectors[int(path.Selector())] {
+			result.Paths = append(result.Paths, path)
+		}
+	}
+
+	if len(result.Paths) == 0 {
+		return nil
+	}
+	return result
+}
+
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) SubtractRaw(other gotenobject.FieldMask) gotenobject.FieldMask {
+	return fieldMask.Subtract(other.(*Deployment_DbUpdateTaskStatus_FieldMask))
+}
+
+// FilterInputFields generates copy of field paths with output_only field paths removed
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) FilterInputFields() *Deployment_DbUpdateTaskStatus_FieldMask {
+	result := &Deployment_DbUpdateTaskStatus_FieldMask{}
+	result.Paths = append(result.Paths, fieldMask.Paths...)
+	return result
+}
+
+// ToFieldMask is used for proto conversions
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) ToProtoFieldMask() *googlefieldmaskpb.FieldMask {
+	protoFieldMask := &googlefieldmaskpb.FieldMask{}
+	for _, path := range fieldMask.Paths {
+		protoFieldMask.Paths = append(protoFieldMask.Paths, path.String())
+	}
+	return protoFieldMask
+}
+
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) FromProtoFieldMask(protoFieldMask *googlefieldmaskpb.FieldMask) error {
+	if fieldMask == nil {
+		return status.Error(codes.Internal, "target field mask is nil")
+	}
+	fieldMask.Paths = make([]DeploymentDbUpdateTaskStatus_FieldPath, 0, len(protoFieldMask.Paths))
+	for _, strPath := range protoFieldMask.Paths {
+		path, err := ParseDeploymentDbUpdateTaskStatus_FieldPath(strPath)
+		if err != nil {
+			return err
+		}
+		fieldMask.Paths = append(fieldMask.Paths, path)
+	}
+	return nil
+}
+
+// implement methods required by customType
+func (fieldMask Deployment_DbUpdateTaskStatus_FieldMask) Marshal() ([]byte, error) {
+	protoFieldMask := fieldMask.ToProtoFieldMask()
+	return proto.Marshal(protoFieldMask)
+}
+
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) Unmarshal(data []byte) error {
+	protoFieldMask := &googlefieldmaskpb.FieldMask{}
+	if err := proto.Unmarshal(data, protoFieldMask); err != nil {
+		return err
+	}
+	if err := fieldMask.FromProtoFieldMask(protoFieldMask); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) Size() int {
+	return proto.Size(fieldMask.ToProtoFieldMask())
+}
+
+func (fieldMask Deployment_DbUpdateTaskStatus_FieldMask) MarshalJSON() ([]byte, error) {
+	return json.Marshal(fieldMask.ToProtoFieldMask())
+}
+
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) UnmarshalJSON(data []byte) error {
+	protoFieldMask := &googlefieldmaskpb.FieldMask{}
+	if err := json.Unmarshal(data, protoFieldMask); err != nil {
+		return err
+	}
+	if err := fieldMask.FromProtoFieldMask(protoFieldMask); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) AppendPath(path DeploymentDbUpdateTaskStatus_FieldPath) {
+	fieldMask.Paths = append(fieldMask.Paths, path)
+}
+
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) AppendRawPath(path gotenobject.FieldPath) {
+	fieldMask.Paths = append(fieldMask.Paths, path.(DeploymentDbUpdateTaskStatus_FieldPath))
+}
+
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) GetPaths() []DeploymentDbUpdateTaskStatus_FieldPath {
+	if fieldMask == nil {
+		return nil
+	}
+	return fieldMask.Paths
+}
+
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) GetRawPaths() []gotenobject.FieldPath {
+	if fieldMask == nil {
+		return nil
+	}
+	rawPaths := make([]gotenobject.FieldPath, 0, len(fieldMask.Paths))
+	for _, path := range fieldMask.Paths {
+		rawPaths = append(rawPaths, path)
+	}
+	return rawPaths
+}
+
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) SetFromCliFlag(raw string) error {
+	path, err := ParseDeploymentDbUpdateTaskStatus_FieldPath(raw)
+	if err != nil {
+		return err
+	}
+	fieldMask.Paths = append(fieldMask.Paths, path)
+	return nil
+}
+
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) Set(target, source *Deployment_DbUpdateTaskStatus) {
+	for _, path := range fieldMask.Paths {
+		val, _ := path.GetSingle(source)
+		// if val is nil, then field does not exist in source, skip
+		// otherwise, process (can still reflect.ValueOf(val).IsNil!)
+		if val != nil {
+			path.WithIValue(val).SetTo(&target)
+		}
+	}
+}
+
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) SetRaw(target, source gotenobject.GotenObjectExt) {
+	fieldMask.Set(target.(*Deployment_DbUpdateTaskStatus), source.(*Deployment_DbUpdateTaskStatus))
+}
+
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) Project(source *Deployment_DbUpdateTaskStatus) *Deployment_DbUpdateTaskStatus {
+	if source == nil {
+		return nil
+	}
+	if fieldMask == nil {
+		return source
+	}
+	result := &Deployment_DbUpdateTaskStatus{}
+
+	for _, p := range fieldMask.Paths {
+		switch tp := p.(type) {
+		case *DeploymentDbUpdateTaskStatus_FieldTerminalPath:
+			switch tp.selector {
+			case DeploymentDbUpdateTaskStatus_FieldPathSelectorTaskTag:
+				result.TaskTag = source.TaskTag
+			case DeploymentDbUpdateTaskStatus_FieldPathSelectorShardsCount:
+				result.ShardsCount = source.ShardsCount
+			case DeploymentDbUpdateTaskStatus_FieldPathSelectorReadyShards:
+				result.ReadyShards = source.ReadyShards
+			case DeploymentDbUpdateTaskStatus_FieldPathSelectorTargetVersion:
+				result.TargetVersion = source.TargetVersion
+			case DeploymentDbUpdateTaskStatus_FieldPathSelectorProgressBar:
+				result.ProgressBar = source.ProgressBar
+			}
+		}
+	}
+	return result
+}
+
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) ProjectRaw(source gotenobject.GotenObjectExt) gotenobject.GotenObjectExt {
+	return fieldMask.Project(source.(*Deployment_DbUpdateTaskStatus))
+}
+
+func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) PathsCount() int {
 	if fieldMask == nil {
 		return 0
 	}

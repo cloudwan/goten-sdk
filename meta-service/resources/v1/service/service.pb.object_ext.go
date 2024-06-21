@@ -139,16 +139,6 @@ func (o *Service) MakeDiffFieldMask(other *Service) *Service_FieldMask {
 	if o.GetAutomaticVersionSwitch() != other.GetAutomaticVersionSwitch() {
 		res.Paths = append(res.Paths, &Service_FieldTerminalPath{selector: Service_FieldPathSelectorAutomaticVersionSwitch})
 	}
-	{
-		subMask := o.GetServicesCtrl().MakeDiffFieldMask(other.GetServicesCtrl())
-		if subMask.IsFull() {
-			res.Paths = append(res.Paths, &Service_FieldTerminalPath{selector: Service_FieldPathSelectorServicesCtrl})
-		} else {
-			for _, subpath := range subMask.Paths {
-				res.Paths = append(res.Paths, &Service_FieldSubPath{selector: Service_FieldPathSelectorServicesCtrl, subPath: subpath})
-			}
-		}
-	}
 	return res
 }
 
@@ -211,7 +201,6 @@ func (o *Service) Clone() *Service {
 	}
 	result.EnvRegistryGeneration = o.EnvRegistryGeneration
 	result.AutomaticVersionSwitch = o.AutomaticVersionSwitch
-	result.ServicesCtrl = o.ServicesCtrl.Clone()
 	return result
 }
 
@@ -333,12 +322,6 @@ func (o *Service) Merge(source *Service) {
 
 	o.EnvRegistryGeneration = source.GetEnvRegistryGeneration()
 	o.AutomaticVersionSwitch = source.GetAutomaticVersionSwitch()
-	if source.GetServicesCtrl() != nil {
-		if o.ServicesCtrl == nil {
-			o.ServicesCtrl = new(Service_AllowedServicesCtrlFlag)
-		}
-		o.ServicesCtrl.Merge(source.GetServicesCtrl())
-	}
 }
 
 func (o *Service) MergeRaw(source gotenobject.GotenObjectExt) {
@@ -423,59 +406,4 @@ func (o *Service_ImportedVersions) Merge(source *Service_ImportedVersions) {
 
 func (o *Service_ImportedVersions) MergeRaw(source gotenobject.GotenObjectExt) {
 	o.Merge(source.(*Service_ImportedVersions))
-}
-
-func (o *Service_AllowedServicesCtrlFlag) GotenObjectExt() {}
-
-func (o *Service_AllowedServicesCtrlFlag) MakeFullFieldMask() *Service_AllowedServicesCtrlFlag_FieldMask {
-	return FullService_AllowedServicesCtrlFlag_FieldMask()
-}
-
-func (o *Service_AllowedServicesCtrlFlag) MakeRawFullFieldMask() gotenobject.FieldMask {
-	return FullService_AllowedServicesCtrlFlag_FieldMask()
-}
-
-func (o *Service_AllowedServicesCtrlFlag) MakeDiffFieldMask(other *Service_AllowedServicesCtrlFlag) *Service_AllowedServicesCtrlFlag_FieldMask {
-	if o == nil && other == nil {
-		return &Service_AllowedServicesCtrlFlag_FieldMask{}
-	}
-	if o == nil || other == nil {
-		return FullService_AllowedServicesCtrlFlag_FieldMask()
-	}
-
-	res := &Service_AllowedServicesCtrlFlag_FieldMask{}
-	if o.GetIsDirty() != other.GetIsDirty() {
-		res.Paths = append(res.Paths, &ServiceAllowedServicesCtrlFlag_FieldTerminalPath{selector: ServiceAllowedServicesCtrlFlag_FieldPathSelectorIsDirty})
-	}
-	if o.GetGeneration() != other.GetGeneration() {
-		res.Paths = append(res.Paths, &ServiceAllowedServicesCtrlFlag_FieldTerminalPath{selector: ServiceAllowedServicesCtrlFlag_FieldPathSelectorGeneration})
-	}
-	return res
-}
-
-func (o *Service_AllowedServicesCtrlFlag) MakeRawDiffFieldMask(other gotenobject.GotenObjectExt) gotenobject.FieldMask {
-	return o.MakeDiffFieldMask(other.(*Service_AllowedServicesCtrlFlag))
-}
-
-func (o *Service_AllowedServicesCtrlFlag) Clone() *Service_AllowedServicesCtrlFlag {
-	if o == nil {
-		return nil
-	}
-	result := &Service_AllowedServicesCtrlFlag{}
-	result.IsDirty = o.IsDirty
-	result.Generation = o.Generation
-	return result
-}
-
-func (o *Service_AllowedServicesCtrlFlag) CloneRaw() gotenobject.GotenObjectExt {
-	return o.Clone()
-}
-
-func (o *Service_AllowedServicesCtrlFlag) Merge(source *Service_AllowedServicesCtrlFlag) {
-	o.IsDirty = source.GetIsDirty()
-	o.Generation = source.GetGeneration()
-}
-
-func (o *Service_AllowedServicesCtrlFlag) MergeRaw(source gotenobject.GotenObjectExt) {
-	o.Merge(source.(*Service_AllowedServicesCtrlFlag))
 }

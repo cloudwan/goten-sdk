@@ -400,4 +400,21 @@ service DeploymentService {
              "*}:notifyShardsUpgradeReadiness"
     };
   }
+
+  // GetOrRegisterDataUpdateTask
+  rpc GetOrRegisterDataUpdateTask(GetOrRegisterDataUpdateTaskRequest)
+      returns (GetOrRegisterDataUpdateTaskResponse) {
+    option (google.api.http) = {
+      post : "/meta/v1/{name=services/*/deployments/"
+             "*}:getOrRegisterDataUpdateTask"
+    };
+  }
+
+  // UpdateDataTaskUpdate
+  rpc UpdateDataTaskUpdate(UpdateDataTaskUpdateRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/meta/v1/{name=services/*/deployments/*}:updateDataTaskUpdate"
+    };
+  }
 }

@@ -226,10 +226,6 @@ func (b *filterCndBuilder) VersionedInfos() *filterCndBuilderVersionedInfos {
 	return &filterCndBuilderVersionedInfos{builder: b.builder}
 }
 
-func (b *filterCndBuilder) AllowedServicesGeneration() *filterCndBuilderAllowedServicesGeneration {
-	return &filterCndBuilderAllowedServicesGeneration{builder: b.builder}
-}
-
 type filterCndBuilderName struct {
 	builder *FilterBuilder
 }
@@ -2741,64 +2737,5 @@ func (b *filterCndBuilderVersionedInfosIsRegional) compare(op gotenfilter.Compar
 	return b.builder.addCond(&FilterConditionCompare{
 		Operator:                op,
 		Resource_FieldPathValue: NewResourceFieldPathBuilder().VersionedInfos().IsRegional().WithValue(value),
-	})
-}
-
-type filterCndBuilderAllowedServicesGeneration struct {
-	builder *FilterBuilder
-}
-
-func (b *filterCndBuilderAllowedServicesGeneration) Eq(value int64) *FilterBuilder {
-	return b.compare(gotenfilter.Eq, value)
-}
-
-func (b *filterCndBuilderAllowedServicesGeneration) Neq(value int64) *FilterBuilder {
-	return b.compare(gotenfilter.Neq, value)
-}
-
-func (b *filterCndBuilderAllowedServicesGeneration) Gt(value int64) *FilterBuilder {
-	return b.compare(gotenfilter.Gt, value)
-}
-
-func (b *filterCndBuilderAllowedServicesGeneration) Gte(value int64) *FilterBuilder {
-	return b.compare(gotenfilter.Gte, value)
-}
-
-func (b *filterCndBuilderAllowedServicesGeneration) Lt(value int64) *FilterBuilder {
-	return b.compare(gotenfilter.Lt, value)
-}
-
-func (b *filterCndBuilderAllowedServicesGeneration) Lte(value int64) *FilterBuilder {
-	return b.compare(gotenfilter.Lte, value)
-}
-
-func (b *filterCndBuilderAllowedServicesGeneration) In(values []int64) *FilterBuilder {
-	return b.builder.addCond(&FilterConditionIn{
-		Resource_FieldPathArrayOfValues: NewResourceFieldPathBuilder().AllowedServicesGeneration().WithArrayOfValues(values),
-	})
-}
-
-func (b *filterCndBuilderAllowedServicesGeneration) NotIn(values []int64) *FilterBuilder {
-	return b.builder.addCond(&FilterConditionNotIn{
-		Resource_FieldPathArrayOfValues: NewResourceFieldPathBuilder().AllowedServicesGeneration().WithArrayOfValues(values),
-	})
-}
-
-func (b *filterCndBuilderAllowedServicesGeneration) IsNull() *FilterBuilder {
-	return b.builder.addCond(&FilterConditionIsNull{
-		FieldPath: NewResourceFieldPathBuilder().AllowedServicesGeneration().FieldPath(),
-	})
-}
-
-func (b *filterCndBuilderAllowedServicesGeneration) IsNan() *FilterBuilder {
-	return b.builder.addCond(&FilterConditionIsNaN{
-		FieldPath: NewResourceFieldPathBuilder().AllowedServicesGeneration().FieldPath(),
-	})
-}
-
-func (b *filterCndBuilderAllowedServicesGeneration) compare(op gotenfilter.CompareOperator, value int64) *FilterBuilder {
-	return b.builder.addCond(&FilterConditionCompare{
-		Operator:                op,
-		Resource_FieldPathValue: NewResourceFieldPathBuilder().AllowedServicesGeneration().WithValue(value),
 	})
 }

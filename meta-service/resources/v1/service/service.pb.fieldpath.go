@@ -81,7 +81,6 @@ const (
 	Service_FieldPathSelectorImportedVersions       Service_FieldPathSelector = 8
 	Service_FieldPathSelectorEnvRegistryGeneration  Service_FieldPathSelector = 9
 	Service_FieldPathSelectorAutomaticVersionSwitch Service_FieldPathSelector = 10
-	Service_FieldPathSelectorServicesCtrl           Service_FieldPathSelector = 11
 )
 
 func (s Service_FieldPathSelector) String() string {
@@ -108,8 +107,6 @@ func (s Service_FieldPathSelector) String() string {
 		return "env_registry_generation"
 	case Service_FieldPathSelectorAutomaticVersionSwitch:
 		return "automatic_version_switch"
-	case Service_FieldPathSelectorServicesCtrl:
-		return "services_ctrl"
 	default:
 		panic(fmt.Sprintf("Invalid selector for Service: %d", s))
 	}
@@ -143,8 +140,6 @@ func BuildService_FieldPath(fp gotenobject.RawFieldPath) (Service_FieldPath, err
 			return &Service_FieldTerminalPath{selector: Service_FieldPathSelectorEnvRegistryGeneration}, nil
 		case "automatic_version_switch", "automaticVersionSwitch", "automatic-version-switch":
 			return &Service_FieldTerminalPath{selector: Service_FieldPathSelectorAutomaticVersionSwitch}, nil
-		case "services_ctrl", "servicesCtrl", "services-ctrl":
-			return &Service_FieldTerminalPath{selector: Service_FieldPathSelectorServicesCtrl}, nil
 		}
 	} else {
 		switch fp[0] {
@@ -165,12 +160,6 @@ func BuildService_FieldPath(fp gotenobject.RawFieldPath) (Service_FieldPath, err
 				return nil, err
 			} else {
 				return &Service_FieldSubPath{selector: Service_FieldPathSelectorImportedVersions, subPath: subpath}, nil
-			}
-		case "services_ctrl", "servicesCtrl", "services-ctrl":
-			if subpath, err := BuildServiceAllowedServicesCtrlFlag_FieldPath(fp[1:]); err != nil {
-				return nil, err
-			} else {
-				return &Service_FieldSubPath{selector: Service_FieldPathSelectorServicesCtrl, subPath: subpath}, nil
 			}
 		}
 	}
@@ -253,10 +242,6 @@ func (fp *Service_FieldTerminalPath) Get(source *Service) (values []interface{})
 			values = append(values, source.EnvRegistryGeneration)
 		case Service_FieldPathSelectorAutomaticVersionSwitch:
 			values = append(values, source.AutomaticVersionSwitch)
-		case Service_FieldPathSelectorServicesCtrl:
-			if source.ServicesCtrl != nil {
-				values = append(values, source.ServicesCtrl)
-			}
 		default:
 			panic(fmt.Sprintf("Invalid selector for Service: %d", fp.selector))
 		}
@@ -300,9 +285,6 @@ func (fp *Service_FieldTerminalPath) GetSingle(source *Service) (interface{}, bo
 		return source.GetEnvRegistryGeneration(), source != nil
 	case Service_FieldPathSelectorAutomaticVersionSwitch:
 		return source.GetAutomaticVersionSwitch(), source != nil
-	case Service_FieldPathSelectorServicesCtrl:
-		res := source.GetServicesCtrl()
-		return res, res != nil
 	default:
 		panic(fmt.Sprintf("Invalid selector for Service: %d", fp.selector))
 	}
@@ -337,8 +319,6 @@ func (fp *Service_FieldTerminalPath) GetDefault() interface{} {
 		return int32(0)
 	case Service_FieldPathSelectorAutomaticVersionSwitch:
 		return false
-	case Service_FieldPathSelectorServicesCtrl:
-		return (*Service_AllowedServicesCtrlFlag)(nil)
 	default:
 		panic(fmt.Sprintf("Invalid selector for Service: %d", fp.selector))
 	}
@@ -369,8 +349,6 @@ func (fp *Service_FieldTerminalPath) ClearValue(item *Service) {
 			item.EnvRegistryGeneration = int32(0)
 		case Service_FieldPathSelectorAutomaticVersionSwitch:
 			item.AutomaticVersionSwitch = false
-		case Service_FieldPathSelectorServicesCtrl:
-			item.ServicesCtrl = nil
 		default:
 			panic(fmt.Sprintf("Invalid selector for Service: %d", fp.selector))
 		}
@@ -421,8 +399,6 @@ func (fp *Service_FieldTerminalPath) WithIValue(value interface{}) Service_Field
 		return &Service_FieldTerminalPathValue{Service_FieldTerminalPath: *fp, value: value.(int32)}
 	case Service_FieldPathSelectorAutomaticVersionSwitch:
 		return &Service_FieldTerminalPathValue{Service_FieldTerminalPath: *fp, value: value.(bool)}
-	case Service_FieldPathSelectorServicesCtrl:
-		return &Service_FieldTerminalPathValue{Service_FieldTerminalPath: *fp, value: value.(*Service_AllowedServicesCtrlFlag)}
 	default:
 		panic(fmt.Sprintf("Invalid selector for Service: %d", fp.selector))
 	}
@@ -457,8 +433,6 @@ func (fp *Service_FieldTerminalPath) WithIArrayOfValues(values interface{}) Serv
 		return &Service_FieldTerminalPathArrayOfValues{Service_FieldTerminalPath: *fp, values: values.([]int32)}
 	case Service_FieldPathSelectorAutomaticVersionSwitch:
 		return &Service_FieldTerminalPathArrayOfValues{Service_FieldTerminalPath: *fp, values: values.([]bool)}
-	case Service_FieldPathSelectorServicesCtrl:
-		return &Service_FieldTerminalPathArrayOfValues{Service_FieldTerminalPath: *fp, values: values.([]*Service_AllowedServicesCtrlFlag)}
 	default:
 		panic(fmt.Sprintf("Invalid selector for Service: %d", fp.selector))
 	}
@@ -510,10 +484,6 @@ func (fps *Service_FieldSubPath) AsImportedVersionsSubPath() (ServiceImportedVer
 	res, ok := fps.subPath.(ServiceImportedVersions_FieldPath)
 	return res, ok
 }
-func (fps *Service_FieldSubPath) AsServicesCtrlSubPath() (ServiceAllowedServicesCtrlFlag_FieldPath, bool) {
-	res, ok := fps.subPath.(ServiceAllowedServicesCtrlFlag_FieldPath)
-	return res, ok
-}
 
 // String returns path representation in proto convention
 func (fps *Service_FieldSubPath) String() string {
@@ -536,8 +506,6 @@ func (fps *Service_FieldSubPath) Get(source *Service) (values []interface{}) {
 		for _, item := range source.GetImportedVersions() {
 			values = append(values, fps.subPath.GetRaw(item)...)
 		}
-	case Service_FieldPathSelectorServicesCtrl:
-		values = append(values, fps.subPath.GetRaw(source.GetServicesCtrl())...)
 	default:
 		panic(fmt.Sprintf("Invalid selector for Service: %d", fps.selector))
 	}
@@ -566,11 +534,6 @@ func (fps *Service_FieldSubPath) GetSingle(source *Service) (interface{}, bool) 
 			return nil, false
 		}
 		return fps.subPath.GetSingleRaw(source.GetImportedVersions()[0])
-	case Service_FieldPathSelectorServicesCtrl:
-		if source.GetServicesCtrl() == nil {
-			return nil, false
-		}
-		return fps.subPath.GetSingleRaw(source.GetServicesCtrl())
 	default:
 		panic(fmt.Sprintf("Invalid selector for Service: %d", fps.selector))
 	}
@@ -596,8 +559,6 @@ func (fps *Service_FieldSubPath) ClearValue(item *Service) {
 			for _, subItem := range item.ImportedVersions {
 				fps.subPath.ClearValueRaw(subItem)
 			}
-		case Service_FieldPathSelectorServicesCtrl:
-			fps.subPath.ClearValueRaw(item.ServicesCtrl)
 		default:
 			panic(fmt.Sprintf("Invalid selector for Service: %d", fps.selector))
 		}
@@ -726,10 +687,6 @@ func (fpv *Service_FieldTerminalPathValue) AsAutomaticVersionSwitchValue() (bool
 	res, ok := fpv.value.(bool)
 	return res, ok
 }
-func (fpv *Service_FieldTerminalPathValue) AsServicesCtrlValue() (*Service_AllowedServicesCtrlFlag, bool) {
-	res, ok := fpv.value.(*Service_AllowedServicesCtrlFlag)
-	return res, ok
-}
 
 // SetTo stores value for selected field for object Service
 func (fpv *Service_FieldTerminalPathValue) SetTo(target **Service) {
@@ -759,8 +716,6 @@ func (fpv *Service_FieldTerminalPathValue) SetTo(target **Service) {
 		(*target).EnvRegistryGeneration = fpv.value.(int32)
 	case Service_FieldPathSelectorAutomaticVersionSwitch:
 		(*target).AutomaticVersionSwitch = fpv.value.(bool)
-	case Service_FieldPathSelectorServicesCtrl:
-		(*target).ServicesCtrl = fpv.value.(*Service_AllowedServicesCtrlFlag)
 	default:
 		panic(fmt.Sprintf("Invalid selector for Service: %d", fpv.selector))
 	}
@@ -845,8 +800,6 @@ func (fpv *Service_FieldTerminalPathValue) CompareWith(source *Service) (int, bo
 		} else {
 			return 1, true
 		}
-	case Service_FieldPathSelectorServicesCtrl:
-		return 0, false
 	default:
 		panic(fmt.Sprintf("Invalid selector for Service: %d", fpv.selector))
 	}
@@ -875,10 +828,6 @@ func (fpvs *Service_FieldSubPathValue) AsImportedVersionsPathValue() (ServiceImp
 	res, ok := fpvs.subPathValue.(ServiceImportedVersions_FieldPathValue)
 	return res, ok
 }
-func (fpvs *Service_FieldSubPathValue) AsServicesCtrlPathValue() (ServiceAllowedServicesCtrlFlag_FieldPathValue, bool) {
-	res, ok := fpvs.subPathValue.(ServiceAllowedServicesCtrlFlag_FieldPathValue)
-	return res, ok
-}
 
 func (fpvs *Service_FieldSubPathValue) SetTo(target **Service) {
 	if *target == nil {
@@ -891,8 +840,6 @@ func (fpvs *Service_FieldSubPathValue) SetTo(target **Service) {
 		fpvs.subPathValue.(multi_region_policy.MultiRegionPolicy_FieldPathValue).SetTo(&(*target).MultiRegionPolicy)
 	case Service_FieldPathSelectorImportedVersions:
 		panic("FieldPath setter is unsupported for array subpaths")
-	case Service_FieldPathSelectorServicesCtrl:
-		fpvs.subPathValue.(ServiceAllowedServicesCtrlFlag_FieldPathValue).SetTo(&(*target).ServicesCtrl)
 	default:
 		panic(fmt.Sprintf("Invalid selector for Service: %d", fpvs.Selector()))
 	}
@@ -915,8 +862,6 @@ func (fpvs *Service_FieldSubPathValue) CompareWith(source *Service) (int, bool) 
 		return fpvs.subPathValue.(multi_region_policy.MultiRegionPolicy_FieldPathValue).CompareWith(source.GetMultiRegionPolicy())
 	case Service_FieldPathSelectorImportedVersions:
 		return 0, false // repeated field
-	case Service_FieldPathSelectorServicesCtrl:
-		return fpvs.subPathValue.(ServiceAllowedServicesCtrlFlag_FieldPathValue).CompareWith(source.GetServicesCtrl())
 	default:
 		panic(fmt.Sprintf("Invalid selector for Service: %d", fpvs.Selector()))
 	}
@@ -1027,10 +972,6 @@ func (fpaivs *Service_FieldSubPathArrayItemValue) AsImportedVersionsPathItemValu
 	res, ok := fpaivs.subPathItemValue.(ServiceImportedVersions_FieldPathArrayItemValue)
 	return res, ok
 }
-func (fpaivs *Service_FieldSubPathArrayItemValue) AsServicesCtrlPathItemValue() (ServiceAllowedServicesCtrlFlag_FieldPathArrayItemValue, bool) {
-	res, ok := fpaivs.subPathItemValue.(ServiceAllowedServicesCtrlFlag_FieldPathArrayItemValue)
-	return res, ok
-}
 
 // Contains returns a boolean indicating if value that is being held is present in given 'Service'
 func (fpaivs *Service_FieldSubPathArrayItemValue) ContainsValue(source *Service) bool {
@@ -1041,8 +982,6 @@ func (fpaivs *Service_FieldSubPathArrayItemValue) ContainsValue(source *Service)
 		return fpaivs.subPathItemValue.(multi_region_policy.MultiRegionPolicy_FieldPathArrayItemValue).ContainsValue(source.GetMultiRegionPolicy())
 	case Service_FieldPathSelectorImportedVersions:
 		return false // repeated/map field
-	case Service_FieldPathSelectorServicesCtrl:
-		return fpaivs.subPathItemValue.(ServiceAllowedServicesCtrlFlag_FieldPathArrayItemValue).ContainsValue(source.GetServicesCtrl())
 	default:
 		panic(fmt.Sprintf("Invalid selector for Service: %d", fpaivs.Selector()))
 	}
@@ -1127,10 +1066,6 @@ func (fpaov *Service_FieldTerminalPathArrayOfValues) GetRawValues() (values []in
 		for _, v := range fpaov.values.([]bool) {
 			values = append(values, v)
 		}
-	case Service_FieldPathSelectorServicesCtrl:
-		for _, v := range fpaov.values.([]*Service_AllowedServicesCtrlFlag) {
-			values = append(values, v)
-		}
 	}
 	return
 }
@@ -1178,10 +1113,6 @@ func (fpaov *Service_FieldTerminalPathArrayOfValues) AsAutomaticVersionSwitchArr
 	res, ok := fpaov.values.([]bool)
 	return res, ok
 }
-func (fpaov *Service_FieldTerminalPathArrayOfValues) AsServicesCtrlArrayOfValues() ([]*Service_AllowedServicesCtrlFlag, bool) {
-	res, ok := fpaov.values.([]*Service_AllowedServicesCtrlFlag)
-	return res, ok
-}
 
 type Service_FieldSubPathArrayOfValues struct {
 	Service_FieldPath
@@ -1203,10 +1134,6 @@ func (fpsaov *Service_FieldSubPathArrayOfValues) AsMultiRegionPolicyPathArrayOfV
 }
 func (fpsaov *Service_FieldSubPathArrayOfValues) AsImportedVersionsPathArrayOfValues() (ServiceImportedVersions_FieldPathArrayOfValues, bool) {
 	res, ok := fpsaov.subPathArrayOfValues.(ServiceImportedVersions_FieldPathArrayOfValues)
-	return res, ok
-}
-func (fpsaov *Service_FieldSubPathArrayOfValues) AsServicesCtrlPathArrayOfValues() (ServiceAllowedServicesCtrlFlag_FieldPathArrayOfValues, bool) {
-	res, ok := fpsaov.subPathArrayOfValues.(ServiceAllowedServicesCtrlFlag_FieldPathArrayOfValues)
 	return res, ok
 }
 
@@ -1682,426 +1609,5 @@ func (fpaov *ServiceImportedVersions_FieldTerminalPathArrayOfValues) AsTargetSer
 }
 func (fpaov *ServiceImportedVersions_FieldTerminalPathArrayOfValues) AsCurrentServiceVersionArrayOfValues() ([]string, bool) {
 	res, ok := fpaov.values.([]string)
-	return res, ok
-}
-
-// FieldPath provides implementation to handle
-// https://github.com/protocolbuffers/protobuf/blob/master/src/google/protobuf/field_mask.proto
-type ServiceAllowedServicesCtrlFlag_FieldPath interface {
-	gotenobject.FieldPath
-	Selector() ServiceAllowedServicesCtrlFlag_FieldPathSelector
-	Get(source *Service_AllowedServicesCtrlFlag) []interface{}
-	GetSingle(source *Service_AllowedServicesCtrlFlag) (interface{}, bool)
-	ClearValue(item *Service_AllowedServicesCtrlFlag)
-
-	// Those methods build corresponding ServiceAllowedServicesCtrlFlag_FieldPathValue
-	// (or array of values) and holds passed value. Panics if injected type is incorrect.
-	WithIValue(value interface{}) ServiceAllowedServicesCtrlFlag_FieldPathValue
-	WithIArrayOfValues(values interface{}) ServiceAllowedServicesCtrlFlag_FieldPathArrayOfValues
-	WithIArrayItemValue(value interface{}) ServiceAllowedServicesCtrlFlag_FieldPathArrayItemValue
-}
-
-type ServiceAllowedServicesCtrlFlag_FieldPathSelector int32
-
-const (
-	ServiceAllowedServicesCtrlFlag_FieldPathSelectorIsDirty    ServiceAllowedServicesCtrlFlag_FieldPathSelector = 0
-	ServiceAllowedServicesCtrlFlag_FieldPathSelectorGeneration ServiceAllowedServicesCtrlFlag_FieldPathSelector = 1
-)
-
-func (s ServiceAllowedServicesCtrlFlag_FieldPathSelector) String() string {
-	switch s {
-	case ServiceAllowedServicesCtrlFlag_FieldPathSelectorIsDirty:
-		return "is_dirty"
-	case ServiceAllowedServicesCtrlFlag_FieldPathSelectorGeneration:
-		return "generation"
-	default:
-		panic(fmt.Sprintf("Invalid selector for Service_AllowedServicesCtrlFlag: %d", s))
-	}
-}
-
-func BuildServiceAllowedServicesCtrlFlag_FieldPath(fp gotenobject.RawFieldPath) (ServiceAllowedServicesCtrlFlag_FieldPath, error) {
-	if len(fp) == 0 {
-		return nil, status.Error(codes.InvalidArgument, "empty field path for object Service_AllowedServicesCtrlFlag")
-	}
-	if len(fp) == 1 {
-		switch fp[0] {
-		case "is_dirty", "isDirty", "is-dirty":
-			return &ServiceAllowedServicesCtrlFlag_FieldTerminalPath{selector: ServiceAllowedServicesCtrlFlag_FieldPathSelectorIsDirty}, nil
-		case "generation":
-			return &ServiceAllowedServicesCtrlFlag_FieldTerminalPath{selector: ServiceAllowedServicesCtrlFlag_FieldPathSelectorGeneration}, nil
-		}
-	}
-	return nil, status.Errorf(codes.InvalidArgument, "unknown field path '%s' for object Service_AllowedServicesCtrlFlag", fp)
-}
-
-func ParseServiceAllowedServicesCtrlFlag_FieldPath(rawField string) (ServiceAllowedServicesCtrlFlag_FieldPath, error) {
-	fp, err := gotenobject.ParseRawFieldPath(rawField)
-	if err != nil {
-		return nil, err
-	}
-	return BuildServiceAllowedServicesCtrlFlag_FieldPath(fp)
-}
-
-func MustParseServiceAllowedServicesCtrlFlag_FieldPath(rawField string) ServiceAllowedServicesCtrlFlag_FieldPath {
-	fp, err := ParseServiceAllowedServicesCtrlFlag_FieldPath(rawField)
-	if err != nil {
-		panic(err)
-	}
-	return fp
-}
-
-type ServiceAllowedServicesCtrlFlag_FieldTerminalPath struct {
-	selector ServiceAllowedServicesCtrlFlag_FieldPathSelector
-}
-
-var _ ServiceAllowedServicesCtrlFlag_FieldPath = (*ServiceAllowedServicesCtrlFlag_FieldTerminalPath)(nil)
-
-func (fp *ServiceAllowedServicesCtrlFlag_FieldTerminalPath) Selector() ServiceAllowedServicesCtrlFlag_FieldPathSelector {
-	return fp.selector
-}
-
-// String returns path representation in proto convention
-func (fp *ServiceAllowedServicesCtrlFlag_FieldTerminalPath) String() string {
-	return fp.selector.String()
-}
-
-// JSONString returns path representation is JSON convention
-func (fp *ServiceAllowedServicesCtrlFlag_FieldTerminalPath) JSONString() string {
-	return strcase.ToLowerCamel(fp.String())
-}
-
-// Get returns all values pointed by specific field from source Service_AllowedServicesCtrlFlag
-func (fp *ServiceAllowedServicesCtrlFlag_FieldTerminalPath) Get(source *Service_AllowedServicesCtrlFlag) (values []interface{}) {
-	if source != nil {
-		switch fp.selector {
-		case ServiceAllowedServicesCtrlFlag_FieldPathSelectorIsDirty:
-			values = append(values, source.IsDirty)
-		case ServiceAllowedServicesCtrlFlag_FieldPathSelectorGeneration:
-			values = append(values, source.Generation)
-		default:
-			panic(fmt.Sprintf("Invalid selector for Service_AllowedServicesCtrlFlag: %d", fp.selector))
-		}
-	}
-	return
-}
-
-func (fp *ServiceAllowedServicesCtrlFlag_FieldTerminalPath) GetRaw(source proto.Message) []interface{} {
-	return fp.Get(source.(*Service_AllowedServicesCtrlFlag))
-}
-
-// GetSingle returns value pointed by specific field of from source Service_AllowedServicesCtrlFlag
-func (fp *ServiceAllowedServicesCtrlFlag_FieldTerminalPath) GetSingle(source *Service_AllowedServicesCtrlFlag) (interface{}, bool) {
-	switch fp.selector {
-	case ServiceAllowedServicesCtrlFlag_FieldPathSelectorIsDirty:
-		return source.GetIsDirty(), source != nil
-	case ServiceAllowedServicesCtrlFlag_FieldPathSelectorGeneration:
-		return source.GetGeneration(), source != nil
-	default:
-		panic(fmt.Sprintf("Invalid selector for Service_AllowedServicesCtrlFlag: %d", fp.selector))
-	}
-}
-
-func (fp *ServiceAllowedServicesCtrlFlag_FieldTerminalPath) GetSingleRaw(source proto.Message) (interface{}, bool) {
-	return fp.GetSingle(source.(*Service_AllowedServicesCtrlFlag))
-}
-
-// GetDefault returns a default value of the field type
-func (fp *ServiceAllowedServicesCtrlFlag_FieldTerminalPath) GetDefault() interface{} {
-	switch fp.selector {
-	case ServiceAllowedServicesCtrlFlag_FieldPathSelectorIsDirty:
-		return false
-	case ServiceAllowedServicesCtrlFlag_FieldPathSelectorGeneration:
-		return int64(0)
-	default:
-		panic(fmt.Sprintf("Invalid selector for Service_AllowedServicesCtrlFlag: %d", fp.selector))
-	}
-}
-
-func (fp *ServiceAllowedServicesCtrlFlag_FieldTerminalPath) ClearValue(item *Service_AllowedServicesCtrlFlag) {
-	if item != nil {
-		switch fp.selector {
-		case ServiceAllowedServicesCtrlFlag_FieldPathSelectorIsDirty:
-			item.IsDirty = false
-		case ServiceAllowedServicesCtrlFlag_FieldPathSelectorGeneration:
-			item.Generation = int64(0)
-		default:
-			panic(fmt.Sprintf("Invalid selector for Service_AllowedServicesCtrlFlag: %d", fp.selector))
-		}
-	}
-}
-
-func (fp *ServiceAllowedServicesCtrlFlag_FieldTerminalPath) ClearValueRaw(item proto.Message) {
-	fp.ClearValue(item.(*Service_AllowedServicesCtrlFlag))
-}
-
-// IsLeaf - whether field path is holds simple value
-func (fp *ServiceAllowedServicesCtrlFlag_FieldTerminalPath) IsLeaf() bool {
-	return fp.selector == ServiceAllowedServicesCtrlFlag_FieldPathSelectorIsDirty ||
-		fp.selector == ServiceAllowedServicesCtrlFlag_FieldPathSelectorGeneration
-}
-
-func (fp *ServiceAllowedServicesCtrlFlag_FieldTerminalPath) SplitIntoTerminalIPaths() []gotenobject.FieldPath {
-	return []gotenobject.FieldPath{fp}
-}
-
-func (fp *ServiceAllowedServicesCtrlFlag_FieldTerminalPath) WithIValue(value interface{}) ServiceAllowedServicesCtrlFlag_FieldPathValue {
-	switch fp.selector {
-	case ServiceAllowedServicesCtrlFlag_FieldPathSelectorIsDirty:
-		return &ServiceAllowedServicesCtrlFlag_FieldTerminalPathValue{ServiceAllowedServicesCtrlFlag_FieldTerminalPath: *fp, value: value.(bool)}
-	case ServiceAllowedServicesCtrlFlag_FieldPathSelectorGeneration:
-		return &ServiceAllowedServicesCtrlFlag_FieldTerminalPathValue{ServiceAllowedServicesCtrlFlag_FieldTerminalPath: *fp, value: value.(int64)}
-	default:
-		panic(fmt.Sprintf("Invalid selector for Service_AllowedServicesCtrlFlag: %d", fp.selector))
-	}
-}
-
-func (fp *ServiceAllowedServicesCtrlFlag_FieldTerminalPath) WithRawIValue(value interface{}) gotenobject.FieldPathValue {
-	return fp.WithIValue(value)
-}
-
-func (fp *ServiceAllowedServicesCtrlFlag_FieldTerminalPath) WithIArrayOfValues(values interface{}) ServiceAllowedServicesCtrlFlag_FieldPathArrayOfValues {
-	fpaov := &ServiceAllowedServicesCtrlFlag_FieldTerminalPathArrayOfValues{ServiceAllowedServicesCtrlFlag_FieldTerminalPath: *fp}
-	switch fp.selector {
-	case ServiceAllowedServicesCtrlFlag_FieldPathSelectorIsDirty:
-		return &ServiceAllowedServicesCtrlFlag_FieldTerminalPathArrayOfValues{ServiceAllowedServicesCtrlFlag_FieldTerminalPath: *fp, values: values.([]bool)}
-	case ServiceAllowedServicesCtrlFlag_FieldPathSelectorGeneration:
-		return &ServiceAllowedServicesCtrlFlag_FieldTerminalPathArrayOfValues{ServiceAllowedServicesCtrlFlag_FieldTerminalPath: *fp, values: values.([]int64)}
-	default:
-		panic(fmt.Sprintf("Invalid selector for Service_AllowedServicesCtrlFlag: %d", fp.selector))
-	}
-	return fpaov
-}
-
-func (fp *ServiceAllowedServicesCtrlFlag_FieldTerminalPath) WithRawIArrayOfValues(values interface{}) gotenobject.FieldPathArrayOfValues {
-	return fp.WithIArrayOfValues(values)
-}
-
-func (fp *ServiceAllowedServicesCtrlFlag_FieldTerminalPath) WithIArrayItemValue(value interface{}) ServiceAllowedServicesCtrlFlag_FieldPathArrayItemValue {
-	switch fp.selector {
-	default:
-		panic(fmt.Sprintf("Invalid selector for Service_AllowedServicesCtrlFlag: %d", fp.selector))
-	}
-}
-
-func (fp *ServiceAllowedServicesCtrlFlag_FieldTerminalPath) WithRawIArrayItemValue(value interface{}) gotenobject.FieldPathArrayItemValue {
-	return fp.WithIArrayItemValue(value)
-}
-
-// ServiceAllowedServicesCtrlFlag_FieldPathValue allows storing values for AllowedServicesCtrlFlag fields according to their type
-type ServiceAllowedServicesCtrlFlag_FieldPathValue interface {
-	ServiceAllowedServicesCtrlFlag_FieldPath
-	gotenobject.FieldPathValue
-	SetTo(target **Service_AllowedServicesCtrlFlag)
-	CompareWith(*Service_AllowedServicesCtrlFlag) (cmp int, comparable bool)
-}
-
-func ParseServiceAllowedServicesCtrlFlag_FieldPathValue(pathStr, valueStr string) (ServiceAllowedServicesCtrlFlag_FieldPathValue, error) {
-	fp, err := ParseServiceAllowedServicesCtrlFlag_FieldPath(pathStr)
-	if err != nil {
-		return nil, err
-	}
-	fpv, err := gotenobject.ParseFieldPathValue(fp, valueStr)
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "error parsing AllowedServicesCtrlFlag field path value from %s: %v", valueStr, err)
-	}
-	return fpv.(ServiceAllowedServicesCtrlFlag_FieldPathValue), nil
-}
-
-func MustParseServiceAllowedServicesCtrlFlag_FieldPathValue(pathStr, valueStr string) ServiceAllowedServicesCtrlFlag_FieldPathValue {
-	fpv, err := ParseServiceAllowedServicesCtrlFlag_FieldPathValue(pathStr, valueStr)
-	if err != nil {
-		panic(err)
-	}
-	return fpv
-}
-
-type ServiceAllowedServicesCtrlFlag_FieldTerminalPathValue struct {
-	ServiceAllowedServicesCtrlFlag_FieldTerminalPath
-	value interface{}
-}
-
-var _ ServiceAllowedServicesCtrlFlag_FieldPathValue = (*ServiceAllowedServicesCtrlFlag_FieldTerminalPathValue)(nil)
-
-// GetRawValue returns raw value stored under selected path for 'AllowedServicesCtrlFlag' as interface{}
-func (fpv *ServiceAllowedServicesCtrlFlag_FieldTerminalPathValue) GetRawValue() interface{} {
-	return fpv.value
-}
-func (fpv *ServiceAllowedServicesCtrlFlag_FieldTerminalPathValue) AsIsDirtyValue() (bool, bool) {
-	res, ok := fpv.value.(bool)
-	return res, ok
-}
-func (fpv *ServiceAllowedServicesCtrlFlag_FieldTerminalPathValue) AsGenerationValue() (int64, bool) {
-	res, ok := fpv.value.(int64)
-	return res, ok
-}
-
-// SetTo stores value for selected field for object AllowedServicesCtrlFlag
-func (fpv *ServiceAllowedServicesCtrlFlag_FieldTerminalPathValue) SetTo(target **Service_AllowedServicesCtrlFlag) {
-	if *target == nil {
-		*target = new(Service_AllowedServicesCtrlFlag)
-	}
-	switch fpv.selector {
-	case ServiceAllowedServicesCtrlFlag_FieldPathSelectorIsDirty:
-		(*target).IsDirty = fpv.value.(bool)
-	case ServiceAllowedServicesCtrlFlag_FieldPathSelectorGeneration:
-		(*target).Generation = fpv.value.(int64)
-	default:
-		panic(fmt.Sprintf("Invalid selector for Service_AllowedServicesCtrlFlag: %d", fpv.selector))
-	}
-}
-
-func (fpv *ServiceAllowedServicesCtrlFlag_FieldTerminalPathValue) SetToRaw(target proto.Message) {
-	typedObject := target.(*Service_AllowedServicesCtrlFlag)
-	fpv.SetTo(&typedObject)
-}
-
-// CompareWith compares value in the 'ServiceAllowedServicesCtrlFlag_FieldTerminalPathValue' with the value under path in 'Service_AllowedServicesCtrlFlag'.
-func (fpv *ServiceAllowedServicesCtrlFlag_FieldTerminalPathValue) CompareWith(source *Service_AllowedServicesCtrlFlag) (int, bool) {
-	switch fpv.selector {
-	case ServiceAllowedServicesCtrlFlag_FieldPathSelectorIsDirty:
-		leftValue := fpv.value.(bool)
-		rightValue := source.GetIsDirty()
-		if (leftValue) == (rightValue) {
-			return 0, true
-		} else if !(leftValue) && (rightValue) {
-			return -1, true
-		} else {
-			return 1, true
-		}
-	case ServiceAllowedServicesCtrlFlag_FieldPathSelectorGeneration:
-		leftValue := fpv.value.(int64)
-		rightValue := source.GetGeneration()
-		if (leftValue) == (rightValue) {
-			return 0, true
-		} else if (leftValue) < (rightValue) {
-			return -1, true
-		} else {
-			return 1, true
-		}
-	default:
-		panic(fmt.Sprintf("Invalid selector for Service_AllowedServicesCtrlFlag: %d", fpv.selector))
-	}
-}
-
-func (fpv *ServiceAllowedServicesCtrlFlag_FieldTerminalPathValue) CompareWithRaw(source proto.Message) (int, bool) {
-	return fpv.CompareWith(source.(*Service_AllowedServicesCtrlFlag))
-}
-
-// ServiceAllowedServicesCtrlFlag_FieldPathArrayItemValue allows storing single item in Path-specific values for AllowedServicesCtrlFlag according to their type
-// Present only for array (repeated) types.
-type ServiceAllowedServicesCtrlFlag_FieldPathArrayItemValue interface {
-	gotenobject.FieldPathArrayItemValue
-	ServiceAllowedServicesCtrlFlag_FieldPath
-	ContainsValue(*Service_AllowedServicesCtrlFlag) bool
-}
-
-// ParseServiceAllowedServicesCtrlFlag_FieldPathArrayItemValue parses string and JSON-encoded value to its Value
-func ParseServiceAllowedServicesCtrlFlag_FieldPathArrayItemValue(pathStr, valueStr string) (ServiceAllowedServicesCtrlFlag_FieldPathArrayItemValue, error) {
-	fp, err := ParseServiceAllowedServicesCtrlFlag_FieldPath(pathStr)
-	if err != nil {
-		return nil, err
-	}
-	fpaiv, err := gotenobject.ParseFieldPathArrayItemValue(fp, valueStr)
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "error parsing AllowedServicesCtrlFlag field path array item value from %s: %v", valueStr, err)
-	}
-	return fpaiv.(ServiceAllowedServicesCtrlFlag_FieldPathArrayItemValue), nil
-}
-
-func MustParseServiceAllowedServicesCtrlFlag_FieldPathArrayItemValue(pathStr, valueStr string) ServiceAllowedServicesCtrlFlag_FieldPathArrayItemValue {
-	fpaiv, err := ParseServiceAllowedServicesCtrlFlag_FieldPathArrayItemValue(pathStr, valueStr)
-	if err != nil {
-		panic(err)
-	}
-	return fpaiv
-}
-
-type ServiceAllowedServicesCtrlFlag_FieldTerminalPathArrayItemValue struct {
-	ServiceAllowedServicesCtrlFlag_FieldTerminalPath
-	value interface{}
-}
-
-var _ ServiceAllowedServicesCtrlFlag_FieldPathArrayItemValue = (*ServiceAllowedServicesCtrlFlag_FieldTerminalPathArrayItemValue)(nil)
-
-// GetRawValue returns stored element value for array in object Service_AllowedServicesCtrlFlag as interface{}
-func (fpaiv *ServiceAllowedServicesCtrlFlag_FieldTerminalPathArrayItemValue) GetRawItemValue() interface{} {
-	return fpaiv.value
-}
-
-func (fpaiv *ServiceAllowedServicesCtrlFlag_FieldTerminalPathArrayItemValue) GetSingle(source *Service_AllowedServicesCtrlFlag) (interface{}, bool) {
-	return nil, false
-}
-
-func (fpaiv *ServiceAllowedServicesCtrlFlag_FieldTerminalPathArrayItemValue) GetSingleRaw(source proto.Message) (interface{}, bool) {
-	return fpaiv.GetSingle(source.(*Service_AllowedServicesCtrlFlag))
-}
-
-// Contains returns a boolean indicating if value that is being held is present in given 'AllowedServicesCtrlFlag'
-func (fpaiv *ServiceAllowedServicesCtrlFlag_FieldTerminalPathArrayItemValue) ContainsValue(source *Service_AllowedServicesCtrlFlag) bool {
-	slice := fpaiv.ServiceAllowedServicesCtrlFlag_FieldTerminalPath.Get(source)
-	for _, v := range slice {
-		if asProtoMsg, ok := fpaiv.value.(proto.Message); ok {
-			if proto.Equal(asProtoMsg, v.(proto.Message)) {
-				return true
-			}
-		} else if reflect.DeepEqual(v, fpaiv.value) {
-			return true
-		}
-	}
-	return false
-}
-
-// ServiceAllowedServicesCtrlFlag_FieldPathArrayOfValues allows storing slice of values for AllowedServicesCtrlFlag fields according to their type
-type ServiceAllowedServicesCtrlFlag_FieldPathArrayOfValues interface {
-	gotenobject.FieldPathArrayOfValues
-	ServiceAllowedServicesCtrlFlag_FieldPath
-}
-
-func ParseServiceAllowedServicesCtrlFlag_FieldPathArrayOfValues(pathStr, valuesStr string) (ServiceAllowedServicesCtrlFlag_FieldPathArrayOfValues, error) {
-	fp, err := ParseServiceAllowedServicesCtrlFlag_FieldPath(pathStr)
-	if err != nil {
-		return nil, err
-	}
-	fpaov, err := gotenobject.ParseFieldPathArrayOfValues(fp, valuesStr)
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "error parsing AllowedServicesCtrlFlag field path array of values from %s: %v", valuesStr, err)
-	}
-	return fpaov.(ServiceAllowedServicesCtrlFlag_FieldPathArrayOfValues), nil
-}
-
-func MustParseServiceAllowedServicesCtrlFlag_FieldPathArrayOfValues(pathStr, valuesStr string) ServiceAllowedServicesCtrlFlag_FieldPathArrayOfValues {
-	fpaov, err := ParseServiceAllowedServicesCtrlFlag_FieldPathArrayOfValues(pathStr, valuesStr)
-	if err != nil {
-		panic(err)
-	}
-	return fpaov
-}
-
-type ServiceAllowedServicesCtrlFlag_FieldTerminalPathArrayOfValues struct {
-	ServiceAllowedServicesCtrlFlag_FieldTerminalPath
-	values interface{}
-}
-
-var _ ServiceAllowedServicesCtrlFlag_FieldPathArrayOfValues = (*ServiceAllowedServicesCtrlFlag_FieldTerminalPathArrayOfValues)(nil)
-
-func (fpaov *ServiceAllowedServicesCtrlFlag_FieldTerminalPathArrayOfValues) GetRawValues() (values []interface{}) {
-	switch fpaov.selector {
-	case ServiceAllowedServicesCtrlFlag_FieldPathSelectorIsDirty:
-		for _, v := range fpaov.values.([]bool) {
-			values = append(values, v)
-		}
-	case ServiceAllowedServicesCtrlFlag_FieldPathSelectorGeneration:
-		for _, v := range fpaov.values.([]int64) {
-			values = append(values, v)
-		}
-	}
-	return
-}
-func (fpaov *ServiceAllowedServicesCtrlFlag_FieldTerminalPathArrayOfValues) AsIsDirtyArrayOfValues() ([]bool, bool) {
-	res, ok := fpaov.values.([]bool)
-	return res, ok
-}
-func (fpaov *ServiceAllowedServicesCtrlFlag_FieldTerminalPathArrayOfValues) AsGenerationArrayOfValues() ([]int64, bool) {
-	res, ok := fpaov.values.([]int64)
 	return res, ok
 }

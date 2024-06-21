@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package goten.meta.v1;
 
+import "google/protobuf/struct.proto";
 import "goten-sdk/meta-service/proto/v1/deployment.proto";
 import "goten-sdk/meta-service/proto/v1/deployment_change.proto";
 
@@ -18,6 +19,8 @@ message BeginUpgradeRequest {
   string target_version = 2;
 
   int64 total_shards_count = 3;
+
+  string db_data_version = 4;
 }
 
 // Request message for method
@@ -31,4 +34,48 @@ message NotifyShardsUpgradeReadinessRequest {
   int64 shards_to = 3;
 
   bool ready = 4;
+}
+
+// Request message for method
+// [GetOrRegisterDataUpdateTask][goten.meta.v1.GetOrRegisterDataUpdateTask]
+message GetOrRegisterDataUpdateTaskRequest {
+  //  name of goten.meta.v1.Deployment
+  string name = 1;
+
+  // Data task tag
+  string tag = 2;
+
+  // Number of shards
+  int64 shards_count = 3;
+
+  // Db data target version
+  string db_data_target_version = 4;
+}
+
+// Response message for method
+// [GetOrRegisterDataUpdateTask][goten.meta.v1.GetOrRegisterDataUpdateTask]
+message GetOrRegisterDataUpdateTaskResponse {
+  Deployment.DbUpdateTaskStatus status = 1;
+}
+
+// Request message for method
+// [UpdateDataTaskUpdate][goten.meta.v1.UpdateDataTaskUpdate]
+message UpdateDataTaskUpdateRequest {
+  //  name of goten.meta.v1.Deployment
+  string name = 1;
+
+  // Data task tag
+  string tag = 2;
+
+  // Number of shards
+  int64 shard = 3;
+
+  // Whether it is completed
+  bool done = 4;
+
+  // Information about progress
+  google.protobuf.Struct progress_status = 5;
+
+  // Db data target version
+  string db_data_target_version = 6;
 }

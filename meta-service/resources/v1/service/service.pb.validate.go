@@ -106,11 +106,6 @@ func (obj *Service) GotenValidate() error {
 			}
 		}
 	}
-	if subobj, ok := interface{}(obj.ServicesCtrl).(gotenvalidate.Validator); ok {
-		if err := subobj.GotenValidate(); err != nil {
-			return gotenvalidate.NewValidationError("Service", "servicesCtrl", obj.ServicesCtrl, "nested object validation failed", err)
-		}
-	}
 	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
 		return cvobj.GotenCustomValidate()
 	}
@@ -131,15 +126,6 @@ func (obj *Service_ImportedVersions) GotenValidate() error {
 	}
 	if obj.CurrentServiceVersion == "" {
 		return gotenvalidate.NewValidationError("ImportedVersions", "currentServiceVersion", obj.CurrentServiceVersion, "field is required", nil)
-	}
-	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
-		return cvobj.GotenCustomValidate()
-	}
-	return nil
-}
-func (obj *Service_AllowedServicesCtrlFlag) GotenValidate() error {
-	if obj == nil {
-		return nil
 	}
 	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
 		return cvobj.GotenCustomValidate()

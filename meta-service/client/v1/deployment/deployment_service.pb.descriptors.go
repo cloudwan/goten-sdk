@@ -43,6 +43,8 @@ var (
 	deleteDeploymentDescriptor             *DeleteDeploymentDescriptor
 	beginUpgradeDescriptor                 *BeginUpgradeDescriptor
 	notifyShardsUpgradeReadinessDescriptor *NotifyShardsUpgradeReadinessDescriptor
+	getOrRegisterDataUpdateTaskDescriptor  *GetOrRegisterDataUpdateTaskDescriptor
+	updateDataTaskUpdateDescriptor         *UpdateDataTaskUpdateDescriptor
 )
 
 type GetDeploymentDescriptor struct{}
@@ -2287,6 +2289,436 @@ func GetNotifyShardsUpgradeReadinessDescriptor() *NotifyShardsUpgradeReadinessDe
 	return notifyShardsUpgradeReadinessDescriptor
 }
 
+type GetOrRegisterDataUpdateTaskDescriptor struct{}
+
+type GetOrRegisterDataUpdateTaskDescriptorClientMsgHandle struct{}
+
+type GetOrRegisterDataUpdateTaskDescriptorServerMsgHandle struct{}
+
+func (d *GetOrRegisterDataUpdateTaskDescriptor) NewEmptyClientMsg() proto.Message {
+	return &GetOrRegisterDataUpdateTaskRequest{}
+}
+
+func (d *GetOrRegisterDataUpdateTaskDescriptor) NewEmptyServerMsg() proto.Message {
+	return &GetOrRegisterDataUpdateTaskResponse{}
+}
+
+func (d *GetOrRegisterDataUpdateTaskDescriptor) IsUnary() bool {
+	return true
+}
+
+func (d *GetOrRegisterDataUpdateTaskDescriptor) IsClientStream() bool {
+	return false
+}
+
+func (d *GetOrRegisterDataUpdateTaskDescriptor) IsServerStream() bool {
+	return false
+}
+
+func (d *GetOrRegisterDataUpdateTaskDescriptor) IsCollection() bool {
+	return false
+}
+
+func (d *GetOrRegisterDataUpdateTaskDescriptor) IsPlural() bool {
+	return false
+}
+
+func (d *GetOrRegisterDataUpdateTaskDescriptor) HasResource() bool {
+	return true
+}
+
+func (d *GetOrRegisterDataUpdateTaskDescriptor) RequestHasResourceBody() bool {
+	return false
+}
+
+func (d *GetOrRegisterDataUpdateTaskDescriptor) GetVerb() string {
+	return "getOrRegisterDataUpdateTask"
+}
+
+func (d *GetOrRegisterDataUpdateTaskDescriptor) GetMethodName() string {
+	return "GetOrRegisterDataUpdateTask"
+}
+
+func (d *GetOrRegisterDataUpdateTaskDescriptor) GetFullMethodName() string {
+	return "/goten.meta.v1.DeploymentService/GetOrRegisterDataUpdateTask"
+}
+
+func (d *GetOrRegisterDataUpdateTaskDescriptor) GetProtoPkgName() string {
+	return "goten.meta.v1"
+}
+
+func (d *GetOrRegisterDataUpdateTaskDescriptor) GetApiName() string {
+	return "DeploymentService"
+}
+
+func (d *GetOrRegisterDataUpdateTaskDescriptor) GetServiceDomain() string {
+	return "meta.goten.com"
+}
+
+func (d *GetOrRegisterDataUpdateTaskDescriptor) GetServiceVersion() string {
+	return "v1"
+}
+
+func (d *GetOrRegisterDataUpdateTaskDescriptor) GetApiDescriptor() gotenclient.ApiDescriptor {
+	return deploymentServiceDescriptor
+}
+
+func (d *GetOrRegisterDataUpdateTaskDescriptor) GetResourceDescriptor() gotenresource.Descriptor {
+	return deployment.GetDescriptor()
+}
+
+func (d *GetOrRegisterDataUpdateTaskDescriptor) GetClientMsgReflectHandle() gotenclient.MethodMsgHandle {
+	return &GetOrRegisterDataUpdateTaskDescriptorClientMsgHandle{}
+}
+
+func (d *GetOrRegisterDataUpdateTaskDescriptor) GetServerMsgReflectHandle() gotenclient.MethodMsgHandle {
+	return &GetOrRegisterDataUpdateTaskDescriptorServerMsgHandle{}
+}
+
+func (h *GetOrRegisterDataUpdateTaskDescriptorClientMsgHandle) ExtractResourceName(msg proto.Message) gotenresource.Name {
+	typedMsg := msg.(*GetOrRegisterDataUpdateTaskRequest)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceName(*GetOrRegisterDataUpdateTaskRequest) *deployment.Name
+	})
+	if ok {
+		return override.OverrideExtractResourceName(typedMsg)
+	}
+	{
+		if name := typedMsg.GetName(); name != nil {
+			return name
+		}
+	}
+	return (*deployment.Name)(nil)
+}
+
+func (h *GetOrRegisterDataUpdateTaskDescriptorClientMsgHandle) ExtractResourceNames(msg proto.Message) gotenresource.NameList {
+	typedMsg := msg.(*GetOrRegisterDataUpdateTaskRequest)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceNames(*GetOrRegisterDataUpdateTaskRequest) []*deployment.Name
+	})
+	if ok {
+		return deployment.DeploymentNameList(override.OverrideExtractResourceNames(typedMsg))
+	}
+	return nil
+}
+
+func (h *GetOrRegisterDataUpdateTaskDescriptorClientMsgHandle) ExtractCollectionName(msg proto.Message) gotenresource.Name {
+	typedMsg := msg.(*GetOrRegisterDataUpdateTaskRequest)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractCollectionName(*GetOrRegisterDataUpdateTaskRequest) *deployment.ParentName
+	})
+	if ok {
+		return override.OverrideExtractCollectionName(typedMsg)
+	}
+	return nil
+}
+
+func (h *GetOrRegisterDataUpdateTaskDescriptorClientMsgHandle) ExtractResourceBody(msg proto.Message) gotenresource.Resource {
+	typedMsg := msg.(*GetOrRegisterDataUpdateTaskRequest)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceBody(*GetOrRegisterDataUpdateTaskRequest) *deployment.Deployment
+	})
+	if ok {
+		return override.OverrideExtractResourceBody(typedMsg)
+	}
+	return nil
+}
+
+func (h *GetOrRegisterDataUpdateTaskDescriptorClientMsgHandle) ExtractResourceBodies(msg proto.Message) gotenresource.ResourceList {
+	typedMsg := msg.(*GetOrRegisterDataUpdateTaskRequest)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceBodies(*GetOrRegisterDataUpdateTaskRequest) []*deployment.Deployment
+	})
+	if ok {
+		return deployment.DeploymentList(override.OverrideExtractResourceBodies(typedMsg))
+	}
+	return nil
+}
+
+func (h *GetOrRegisterDataUpdateTaskDescriptorServerMsgHandle) ExtractResourceName(msg proto.Message) gotenresource.Name {
+	typedMsg := msg.(*GetOrRegisterDataUpdateTaskResponse)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceName(*GetOrRegisterDataUpdateTaskResponse) *deployment.Name
+	})
+	if ok {
+		return override.OverrideExtractResourceName(typedMsg)
+	}
+	return nil
+}
+
+func (h *GetOrRegisterDataUpdateTaskDescriptorServerMsgHandle) ExtractResourceNames(msg proto.Message) gotenresource.NameList {
+	typedMsg := msg.(*GetOrRegisterDataUpdateTaskResponse)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceNames(*GetOrRegisterDataUpdateTaskResponse) []*deployment.Name
+	})
+	if ok {
+		return deployment.DeploymentNameList(override.OverrideExtractResourceNames(typedMsg))
+	}
+	return nil
+}
+
+func (h *GetOrRegisterDataUpdateTaskDescriptorServerMsgHandle) ExtractCollectionName(msg proto.Message) gotenresource.Name {
+	typedMsg := msg.(*GetOrRegisterDataUpdateTaskResponse)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractCollectionName(*GetOrRegisterDataUpdateTaskResponse) *deployment.ParentName
+	})
+	if ok {
+		return override.OverrideExtractCollectionName(typedMsg)
+	}
+	return nil
+}
+
+func (h *GetOrRegisterDataUpdateTaskDescriptorServerMsgHandle) ExtractResourceBody(msg proto.Message) gotenresource.Resource {
+	typedMsg := msg.(*GetOrRegisterDataUpdateTaskResponse)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceBody(*GetOrRegisterDataUpdateTaskResponse) *deployment.Deployment
+	})
+	if ok {
+		return override.OverrideExtractResourceBody(typedMsg)
+	}
+	return nil
+}
+
+func (h *GetOrRegisterDataUpdateTaskDescriptorServerMsgHandle) ExtractResourceBodies(msg proto.Message) gotenresource.ResourceList {
+	typedMsg := msg.(*GetOrRegisterDataUpdateTaskResponse)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceBodies(*GetOrRegisterDataUpdateTaskResponse) []*deployment.Deployment
+	})
+	if ok {
+		return deployment.DeploymentList(override.OverrideExtractResourceBodies(typedMsg))
+	}
+	return nil
+}
+
+func GetGetOrRegisterDataUpdateTaskDescriptor() *GetOrRegisterDataUpdateTaskDescriptor {
+	return getOrRegisterDataUpdateTaskDescriptor
+}
+
+type UpdateDataTaskUpdateDescriptor struct{}
+
+type UpdateDataTaskUpdateDescriptorClientMsgHandle struct{}
+
+type UpdateDataTaskUpdateDescriptorServerMsgHandle struct{}
+
+func (d *UpdateDataTaskUpdateDescriptor) NewEmptyClientMsg() proto.Message {
+	return &UpdateDataTaskUpdateRequest{}
+}
+
+func (d *UpdateDataTaskUpdateDescriptor) NewEmptyServerMsg() proto.Message {
+	return &emptypb.Empty{}
+}
+
+func (d *UpdateDataTaskUpdateDescriptor) IsUnary() bool {
+	return true
+}
+
+func (d *UpdateDataTaskUpdateDescriptor) IsClientStream() bool {
+	return false
+}
+
+func (d *UpdateDataTaskUpdateDescriptor) IsServerStream() bool {
+	return false
+}
+
+func (d *UpdateDataTaskUpdateDescriptor) IsCollection() bool {
+	return false
+}
+
+func (d *UpdateDataTaskUpdateDescriptor) IsPlural() bool {
+	return false
+}
+
+func (d *UpdateDataTaskUpdateDescriptor) HasResource() bool {
+	return true
+}
+
+func (d *UpdateDataTaskUpdateDescriptor) RequestHasResourceBody() bool {
+	return false
+}
+
+func (d *UpdateDataTaskUpdateDescriptor) GetVerb() string {
+	return "updateDataTaskUpdate"
+}
+
+func (d *UpdateDataTaskUpdateDescriptor) GetMethodName() string {
+	return "UpdateDataTaskUpdate"
+}
+
+func (d *UpdateDataTaskUpdateDescriptor) GetFullMethodName() string {
+	return "/goten.meta.v1.DeploymentService/UpdateDataTaskUpdate"
+}
+
+func (d *UpdateDataTaskUpdateDescriptor) GetProtoPkgName() string {
+	return "goten.meta.v1"
+}
+
+func (d *UpdateDataTaskUpdateDescriptor) GetApiName() string {
+	return "DeploymentService"
+}
+
+func (d *UpdateDataTaskUpdateDescriptor) GetServiceDomain() string {
+	return "meta.goten.com"
+}
+
+func (d *UpdateDataTaskUpdateDescriptor) GetServiceVersion() string {
+	return "v1"
+}
+
+func (d *UpdateDataTaskUpdateDescriptor) GetApiDescriptor() gotenclient.ApiDescriptor {
+	return deploymentServiceDescriptor
+}
+
+func (d *UpdateDataTaskUpdateDescriptor) GetResourceDescriptor() gotenresource.Descriptor {
+	return deployment.GetDescriptor()
+}
+
+func (d *UpdateDataTaskUpdateDescriptor) GetClientMsgReflectHandle() gotenclient.MethodMsgHandle {
+	return &UpdateDataTaskUpdateDescriptorClientMsgHandle{}
+}
+
+func (d *UpdateDataTaskUpdateDescriptor) GetServerMsgReflectHandle() gotenclient.MethodMsgHandle {
+	return &UpdateDataTaskUpdateDescriptorServerMsgHandle{}
+}
+
+func (h *UpdateDataTaskUpdateDescriptorClientMsgHandle) ExtractResourceName(msg proto.Message) gotenresource.Name {
+	typedMsg := msg.(*UpdateDataTaskUpdateRequest)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceName(*UpdateDataTaskUpdateRequest) *deployment.Name
+	})
+	if ok {
+		return override.OverrideExtractResourceName(typedMsg)
+	}
+	{
+		if name := typedMsg.GetName(); name != nil {
+			return name
+		}
+	}
+	return (*deployment.Name)(nil)
+}
+
+func (h *UpdateDataTaskUpdateDescriptorClientMsgHandle) ExtractResourceNames(msg proto.Message) gotenresource.NameList {
+	typedMsg := msg.(*UpdateDataTaskUpdateRequest)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceNames(*UpdateDataTaskUpdateRequest) []*deployment.Name
+	})
+	if ok {
+		return deployment.DeploymentNameList(override.OverrideExtractResourceNames(typedMsg))
+	}
+	return nil
+}
+
+func (h *UpdateDataTaskUpdateDescriptorClientMsgHandle) ExtractCollectionName(msg proto.Message) gotenresource.Name {
+	typedMsg := msg.(*UpdateDataTaskUpdateRequest)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractCollectionName(*UpdateDataTaskUpdateRequest) *deployment.ParentName
+	})
+	if ok {
+		return override.OverrideExtractCollectionName(typedMsg)
+	}
+	return nil
+}
+
+func (h *UpdateDataTaskUpdateDescriptorClientMsgHandle) ExtractResourceBody(msg proto.Message) gotenresource.Resource {
+	typedMsg := msg.(*UpdateDataTaskUpdateRequest)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceBody(*UpdateDataTaskUpdateRequest) *deployment.Deployment
+	})
+	if ok {
+		return override.OverrideExtractResourceBody(typedMsg)
+	}
+	return nil
+}
+
+func (h *UpdateDataTaskUpdateDescriptorClientMsgHandle) ExtractResourceBodies(msg proto.Message) gotenresource.ResourceList {
+	typedMsg := msg.(*UpdateDataTaskUpdateRequest)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceBodies(*UpdateDataTaskUpdateRequest) []*deployment.Deployment
+	})
+	if ok {
+		return deployment.DeploymentList(override.OverrideExtractResourceBodies(typedMsg))
+	}
+	return nil
+}
+
+func (h *UpdateDataTaskUpdateDescriptorServerMsgHandle) ExtractResourceName(msg proto.Message) gotenresource.Name {
+	typedMsg := msg.(*emptypb.Empty)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceName(*emptypb.Empty) *deployment.Name
+	})
+	if ok {
+		return override.OverrideExtractResourceName(typedMsg)
+	}
+	return nil
+}
+
+func (h *UpdateDataTaskUpdateDescriptorServerMsgHandle) ExtractResourceNames(msg proto.Message) gotenresource.NameList {
+	typedMsg := msg.(*emptypb.Empty)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceNames(*emptypb.Empty) []*deployment.Name
+	})
+	if ok {
+		return deployment.DeploymentNameList(override.OverrideExtractResourceNames(typedMsg))
+	}
+	return nil
+}
+
+func (h *UpdateDataTaskUpdateDescriptorServerMsgHandle) ExtractCollectionName(msg proto.Message) gotenresource.Name {
+	typedMsg := msg.(*emptypb.Empty)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractCollectionName(*emptypb.Empty) *deployment.ParentName
+	})
+	if ok {
+		return override.OverrideExtractCollectionName(typedMsg)
+	}
+	return nil
+}
+
+func (h *UpdateDataTaskUpdateDescriptorServerMsgHandle) ExtractResourceBody(msg proto.Message) gotenresource.Resource {
+	typedMsg := msg.(*emptypb.Empty)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceBody(*emptypb.Empty) *deployment.Deployment
+	})
+	if ok {
+		return override.OverrideExtractResourceBody(typedMsg)
+	}
+	return nil
+}
+
+func (h *UpdateDataTaskUpdateDescriptorServerMsgHandle) ExtractResourceBodies(msg proto.Message) gotenresource.ResourceList {
+	typedMsg := msg.(*emptypb.Empty)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceBodies(*emptypb.Empty) []*deployment.Deployment
+	})
+	if ok {
+		return deployment.DeploymentList(override.OverrideExtractResourceBodies(typedMsg))
+	}
+	return nil
+}
+
+func GetUpdateDataTaskUpdateDescriptor() *UpdateDataTaskUpdateDescriptor {
+	return updateDataTaskUpdateDescriptor
+}
+
 type DeploymentServiceDescriptor struct{}
 
 func (d *DeploymentServiceDescriptor) AllMethodDescriptors() []gotenclient.MethodDescriptor {
@@ -2301,6 +2733,8 @@ func (d *DeploymentServiceDescriptor) AllMethodDescriptors() []gotenclient.Metho
 		deleteDeploymentDescriptor,
 		beginUpgradeDescriptor,
 		notifyShardsUpgradeReadinessDescriptor,
+		getOrRegisterDataUpdateTaskDescriptor,
+		updateDataTaskUpdateDescriptor,
 	}
 }
 
@@ -2340,6 +2774,8 @@ func initDescriptors() {
 	deleteDeploymentDescriptor = &DeleteDeploymentDescriptor{}
 	beginUpgradeDescriptor = &BeginUpgradeDescriptor{}
 	notifyShardsUpgradeReadinessDescriptor = &NotifyShardsUpgradeReadinessDescriptor{}
+	getOrRegisterDataUpdateTaskDescriptor = &GetOrRegisterDataUpdateTaskDescriptor{}
+	updateDataTaskUpdateDescriptor = &UpdateDataTaskUpdateDescriptor{}
 	gotenclient.GetRegistry().RegisterApiDescriptor(deploymentServiceDescriptor)
 	gotenclient.GetRegistry().RegisterMethodDescriptor(getDeploymentDescriptor)
 	gotenclient.GetRegistry().RegisterMethodDescriptor(batchGetDeploymentsDescriptor)
@@ -2351,6 +2787,8 @@ func initDescriptors() {
 	gotenclient.GetRegistry().RegisterMethodDescriptor(deleteDeploymentDescriptor)
 	gotenclient.GetRegistry().RegisterMethodDescriptor(beginUpgradeDescriptor)
 	gotenclient.GetRegistry().RegisterMethodDescriptor(notifyShardsUpgradeReadinessDescriptor)
+	gotenclient.GetRegistry().RegisterMethodDescriptor(getOrRegisterDataUpdateTaskDescriptor)
+	gotenclient.GetRegistry().RegisterMethodDescriptor(updateDataTaskUpdateDescriptor)
 }
 
 func init() {

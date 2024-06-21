@@ -3,6 +3,7 @@ syntax = "proto3";
 package goten.meta.v1;
 
 import "google/api/resource.proto";
+import "google/protobuf/struct.proto";
 import "goten-sdk/types/meta.proto";
 
 option go_package = "github.com/cloudwan/goten-sdk/meta-service/resources/v1/deployment;deployment";
@@ -81,9 +82,18 @@ message Deployment {
   // Current state of the upgrade task.
   UpgradeState upgrade_state = 13;
 
-  // Internal allowed services generation field from Service resource.
-  // Used for metadata synchronization.
-  int64 allowed_services_generation = 14;
+  // Current version of data in the database, it must follow convention
+  // v<Number>.<Number>... (may be more numbers). When deployment is created
+  // first time, value is set to the current value. If non-empty lower
+  // value is detected, db-controller may run update task locally. This is
+  // not to confuse with "current_version" field, which describes API version.
+  // This field is for controlling smaller in-place data automatic updates.
+  // If not populated, then "current"/"newest" should be assumed. It means
+  // that no update tasks were ever needed as well.
+  string db_data_version = 15;
+
+  // Tagged update statuses.
+  repeated DbUpdateTaskStatus data_update_statuses = 16;
 
   // Location describes deployment location of this deployment. It may be used
   // for multi-region routing to help determine closest deployment.
@@ -114,6 +124,9 @@ message Deployment {
 
     Stage stage = 4;
 
+    // Value to switch once update is completed for db_data_version value.
+    string db_data_target_version = 5;
+
     enum Stage {
       READY = 0;
 
@@ -122,4 +135,24 @@ message Deployment {
       SWITCHING = 2;
     }
   }
+
+  message DbUpdateTaskStatus {
+    // Identifying tag
+    string task_tag = 1;
+
+    // Shards count
+    int64 shards_count = 2;
+
+    // List of completed shards
+    repeated int64 ready_shards = 3;
+
+    // Target data version
+    string target_version = 4;
+
+    // Optional generic data submitted by task handler, in case of
+    // resharding/controller reboot.
+    repeated google.protobuf.Struct progress_bar = 5;
+  }
+
+  reserved 14;
 }

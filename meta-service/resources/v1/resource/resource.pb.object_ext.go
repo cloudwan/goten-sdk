@@ -99,9 +99,6 @@ func (o *Resource) MakeDiffFieldMask(other *Resource) *Resource_FieldMask {
 	} else {
 		res.Paths = append(res.Paths, &Resource_FieldTerminalPath{selector: Resource_FieldPathSelectorVersionedInfos})
 	}
-	if o.GetAllowedServicesGeneration() != other.GetAllowedServicesGeneration() {
-		res.Paths = append(res.Paths, &Resource_FieldTerminalPath{selector: Resource_FieldPathSelectorAllowedServicesGeneration})
-	}
 	return res
 }
 
@@ -135,7 +132,6 @@ func (o *Resource) Clone() *Resource {
 	for i, sourceValue := range o.VersionedInfos {
 		result.VersionedInfos[i] = sourceValue.Clone()
 	}
-	result.AllowedServicesGeneration = o.AllowedServicesGeneration
 	return result
 }
 
@@ -197,7 +193,6 @@ func (o *Resource) Merge(source *Resource) {
 		}
 	}
 
-	o.AllowedServicesGeneration = source.GetAllowedServicesGeneration()
 }
 
 func (o *Resource) MergeRaw(source gotenobject.GotenObjectExt) {

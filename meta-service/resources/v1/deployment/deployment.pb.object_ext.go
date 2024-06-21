@@ -19,6 +19,7 @@ import (
 	region "github.com/cloudwan/goten-sdk/meta-service/resources/v1/region"
 	service "github.com/cloudwan/goten-sdk/meta-service/resources/v1/service"
 	meta "github.com/cloudwan/goten-sdk/types/meta"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 )
 
 // ensure the imports are used
@@ -34,6 +35,7 @@ var (
 
 // make sure we're using proto imports
 var (
+	_ = &structpb.Struct{}
 	_ = &region.Region{}
 	_ = &service.Service{}
 	_ = &meta.Meta{}
@@ -118,8 +120,20 @@ func (o *Deployment) MakeDiffFieldMask(other *Deployment) *Deployment_FieldMask 
 			}
 		}
 	}
-	if o.GetAllowedServicesGeneration() != other.GetAllowedServicesGeneration() {
-		res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorAllowedServicesGeneration})
+	if o.GetDbDataVersion() != other.GetDbDataVersion() {
+		res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorDbDataVersion})
+	}
+
+	if len(o.GetDataUpdateStatuses()) == len(other.GetDataUpdateStatuses()) {
+		for i, lValue := range o.GetDataUpdateStatuses() {
+			rValue := other.GetDataUpdateStatuses()[i]
+			if len(lValue.MakeDiffFieldMask(rValue).Paths) > 0 {
+				res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorDataUpdateStatuses})
+				break
+			}
+		}
+	} else {
+		res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorDataUpdateStatuses})
 	}
 	return res
 }
@@ -164,7 +178,11 @@ func (o *Deployment) Clone() *Deployment {
 	result.CurrentVersion = o.CurrentVersion
 	result.AutomaticVersionSwitch = o.AutomaticVersionSwitch
 	result.UpgradeState = o.UpgradeState.Clone()
-	result.AllowedServicesGeneration = o.AllowedServicesGeneration
+	result.DbDataVersion = o.DbDataVersion
+	result.DataUpdateStatuses = make([]*Deployment_DbUpdateTaskStatus, len(o.DataUpdateStatuses))
+	for i, sourceValue := range o.DataUpdateStatuses {
+		result.DataUpdateStatuses[i] = sourceValue.Clone()
+	}
 	return result
 }
 
@@ -223,7 +241,25 @@ func (o *Deployment) Merge(source *Deployment) {
 		}
 		o.UpgradeState.Merge(source.GetUpgradeState())
 	}
-	o.AllowedServicesGeneration = source.GetAllowedServicesGeneration()
+	o.DbDataVersion = source.GetDbDataVersion()
+	for _, sourceValue := range source.GetDataUpdateStatuses() {
+		exists := false
+		for _, currentValue := range o.DataUpdateStatuses {
+			if proto.Equal(sourceValue, currentValue) {
+				exists = true
+				break
+			}
+		}
+		if !exists {
+			var newDstElement *Deployment_DbUpdateTaskStatus
+			if sourceValue != nil {
+				newDstElement = new(Deployment_DbUpdateTaskStatus)
+				newDstElement.Merge(sourceValue)
+			}
+			o.DataUpdateStatuses = append(o.DataUpdateStatuses, newDstElement)
+		}
+	}
+
 }
 
 func (o *Deployment) MergeRaw(source gotenobject.GotenObjectExt) {
@@ -349,6 +385,9 @@ func (o *Deployment_UpgradeState) MakeDiffFieldMask(other *Deployment_UpgradeSta
 	if o.GetStage() != other.GetStage() {
 		res.Paths = append(res.Paths, &DeploymentUpgradeState_FieldTerminalPath{selector: DeploymentUpgradeState_FieldPathSelectorStage})
 	}
+	if o.GetDbDataTargetVersion() != other.GetDbDataTargetVersion() {
+		res.Paths = append(res.Paths, &DeploymentUpgradeState_FieldTerminalPath{selector: DeploymentUpgradeState_FieldPathSelectorDbDataTargetVersion})
+	}
 	return res
 }
 
@@ -371,6 +410,7 @@ func (o *Deployment_UpgradeState) Clone() *Deployment_UpgradeState {
 		result.PendingShards[i] = sourceValue
 	}
 	result.Stage = o.Stage
+	result.DbDataTargetVersion = o.DbDataTargetVersion
 	return result
 }
 
@@ -411,8 +451,134 @@ func (o *Deployment_UpgradeState) Merge(source *Deployment_UpgradeState) {
 	}
 
 	o.Stage = source.GetStage()
+	o.DbDataTargetVersion = source.GetDbDataTargetVersion()
 }
 
 func (o *Deployment_UpgradeState) MergeRaw(source gotenobject.GotenObjectExt) {
 	o.Merge(source.(*Deployment_UpgradeState))
+}
+
+func (o *Deployment_DbUpdateTaskStatus) GotenObjectExt() {}
+
+func (o *Deployment_DbUpdateTaskStatus) MakeFullFieldMask() *Deployment_DbUpdateTaskStatus_FieldMask {
+	return FullDeployment_DbUpdateTaskStatus_FieldMask()
+}
+
+func (o *Deployment_DbUpdateTaskStatus) MakeRawFullFieldMask() gotenobject.FieldMask {
+	return FullDeployment_DbUpdateTaskStatus_FieldMask()
+}
+
+func (o *Deployment_DbUpdateTaskStatus) MakeDiffFieldMask(other *Deployment_DbUpdateTaskStatus) *Deployment_DbUpdateTaskStatus_FieldMask {
+	if o == nil && other == nil {
+		return &Deployment_DbUpdateTaskStatus_FieldMask{}
+	}
+	if o == nil || other == nil {
+		return FullDeployment_DbUpdateTaskStatus_FieldMask()
+	}
+
+	res := &Deployment_DbUpdateTaskStatus_FieldMask{}
+	if o.GetTaskTag() != other.GetTaskTag() {
+		res.Paths = append(res.Paths, &DeploymentDbUpdateTaskStatus_FieldTerminalPath{selector: DeploymentDbUpdateTaskStatus_FieldPathSelectorTaskTag})
+	}
+	if o.GetShardsCount() != other.GetShardsCount() {
+		res.Paths = append(res.Paths, &DeploymentDbUpdateTaskStatus_FieldTerminalPath{selector: DeploymentDbUpdateTaskStatus_FieldPathSelectorShardsCount})
+	}
+
+	if len(o.GetReadyShards()) == len(other.GetReadyShards()) {
+		for i, lValue := range o.GetReadyShards() {
+			rValue := other.GetReadyShards()[i]
+			if lValue != rValue {
+				res.Paths = append(res.Paths, &DeploymentDbUpdateTaskStatus_FieldTerminalPath{selector: DeploymentDbUpdateTaskStatus_FieldPathSelectorReadyShards})
+				break
+			}
+		}
+	} else {
+		res.Paths = append(res.Paths, &DeploymentDbUpdateTaskStatus_FieldTerminalPath{selector: DeploymentDbUpdateTaskStatus_FieldPathSelectorReadyShards})
+	}
+	if o.GetTargetVersion() != other.GetTargetVersion() {
+		res.Paths = append(res.Paths, &DeploymentDbUpdateTaskStatus_FieldTerminalPath{selector: DeploymentDbUpdateTaskStatus_FieldPathSelectorTargetVersion})
+	}
+
+	if len(o.GetProgressBar()) == len(other.GetProgressBar()) {
+		for i, lValue := range o.GetProgressBar() {
+			rValue := other.GetProgressBar()[i]
+			if !proto.Equal(lValue, rValue) {
+				res.Paths = append(res.Paths, &DeploymentDbUpdateTaskStatus_FieldTerminalPath{selector: DeploymentDbUpdateTaskStatus_FieldPathSelectorProgressBar})
+				break
+			}
+		}
+	} else {
+		res.Paths = append(res.Paths, &DeploymentDbUpdateTaskStatus_FieldTerminalPath{selector: DeploymentDbUpdateTaskStatus_FieldPathSelectorProgressBar})
+	}
+	return res
+}
+
+func (o *Deployment_DbUpdateTaskStatus) MakeRawDiffFieldMask(other gotenobject.GotenObjectExt) gotenobject.FieldMask {
+	return o.MakeDiffFieldMask(other.(*Deployment_DbUpdateTaskStatus))
+}
+
+func (o *Deployment_DbUpdateTaskStatus) Clone() *Deployment_DbUpdateTaskStatus {
+	if o == nil {
+		return nil
+	}
+	result := &Deployment_DbUpdateTaskStatus{}
+	result.TaskTag = o.TaskTag
+	result.ShardsCount = o.ShardsCount
+	result.ReadyShards = make([]int64, len(o.ReadyShards))
+	for i, sourceValue := range o.ReadyShards {
+		result.ReadyShards[i] = sourceValue
+	}
+	result.TargetVersion = o.TargetVersion
+	result.ProgressBar = make([]*structpb.Struct, len(o.ProgressBar))
+	for i, sourceValue := range o.ProgressBar {
+		result.ProgressBar[i] = proto.Clone(sourceValue).(*structpb.Struct)
+	}
+	return result
+}
+
+func (o *Deployment_DbUpdateTaskStatus) CloneRaw() gotenobject.GotenObjectExt {
+	return o.Clone()
+}
+
+func (o *Deployment_DbUpdateTaskStatus) Merge(source *Deployment_DbUpdateTaskStatus) {
+	o.TaskTag = source.GetTaskTag()
+	o.ShardsCount = source.GetShardsCount()
+	for _, sourceValue := range source.GetReadyShards() {
+		exists := false
+		for _, currentValue := range o.ReadyShards {
+			if currentValue == sourceValue {
+				exists = true
+				break
+			}
+		}
+		if !exists {
+			var newDstElement int64
+			newDstElement = sourceValue
+			o.ReadyShards = append(o.ReadyShards, newDstElement)
+		}
+	}
+
+	o.TargetVersion = source.GetTargetVersion()
+	for _, sourceValue := range source.GetProgressBar() {
+		exists := false
+		for _, currentValue := range o.ProgressBar {
+			if proto.Equal(sourceValue, currentValue) {
+				exists = true
+				break
+			}
+		}
+		if !exists {
+			var newDstElement *structpb.Struct
+			if sourceValue != nil {
+				newDstElement = new(structpb.Struct)
+				proto.Merge(newDstElement, sourceValue)
+			}
+			o.ProgressBar = append(o.ProgressBar, newDstElement)
+		}
+	}
+
+}
+
+func (o *Deployment_DbUpdateTaskStatus) MergeRaw(source gotenobject.GotenObjectExt) {
+	o.Merge(source.(*Deployment_DbUpdateTaskStatus))
 }

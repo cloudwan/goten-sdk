@@ -56,9 +56,6 @@ func (ServiceFieldPathBuilder) EnvRegistryGeneration() ServicePathSelectorEnvReg
 func (ServiceFieldPathBuilder) AutomaticVersionSwitch() ServicePathSelectorAutomaticVersionSwitch {
 	return ServicePathSelectorAutomaticVersionSwitch{}
 }
-func (ServiceFieldPathBuilder) ServicesCtrl() ServicePathSelectorServicesCtrl {
-	return ServicePathSelectorServicesCtrl{}
-}
 
 type ServicePathSelectorName struct{}
 
@@ -1105,78 +1102,6 @@ func (s ServicePathSelectorAutomaticVersionSwitch) WithArrayOfValues(values []bo
 	return s.FieldPath().WithIArrayOfValues(values).(*Service_FieldTerminalPathArrayOfValues)
 }
 
-type ServicePathSelectorServicesCtrl struct{}
-
-func (ServicePathSelectorServicesCtrl) FieldPath() *Service_FieldTerminalPath {
-	return &Service_FieldTerminalPath{selector: Service_FieldPathSelectorServicesCtrl}
-}
-
-func (s ServicePathSelectorServicesCtrl) WithValue(value *Service_AllowedServicesCtrlFlag) *Service_FieldTerminalPathValue {
-	return s.FieldPath().WithIValue(value).(*Service_FieldTerminalPathValue)
-}
-
-func (s ServicePathSelectorServicesCtrl) WithArrayOfValues(values []*Service_AllowedServicesCtrlFlag) *Service_FieldTerminalPathArrayOfValues {
-	return s.FieldPath().WithIArrayOfValues(values).(*Service_FieldTerminalPathArrayOfValues)
-}
-
-func (ServicePathSelectorServicesCtrl) WithSubPath(subPath ServiceAllowedServicesCtrlFlag_FieldPath) *Service_FieldSubPath {
-	return &Service_FieldSubPath{selector: Service_FieldPathSelectorServicesCtrl, subPath: subPath}
-}
-
-func (s ServicePathSelectorServicesCtrl) WithSubValue(subPathValue ServiceAllowedServicesCtrlFlag_FieldPathValue) *Service_FieldSubPathValue {
-	return &Service_FieldSubPathValue{Service_FieldPath: s.WithSubPath(subPathValue), subPathValue: subPathValue}
-}
-
-func (s ServicePathSelectorServicesCtrl) WithSubArrayOfValues(subPathArrayOfValues ServiceAllowedServicesCtrlFlag_FieldPathArrayOfValues) *Service_FieldSubPathArrayOfValues {
-	return &Service_FieldSubPathArrayOfValues{Service_FieldPath: s.WithSubPath(subPathArrayOfValues), subPathArrayOfValues: subPathArrayOfValues}
-}
-
-func (s ServicePathSelectorServicesCtrl) WithSubArrayItemValue(subPathArrayItemValue ServiceAllowedServicesCtrlFlag_FieldPathArrayItemValue) *Service_FieldSubPathArrayItemValue {
-	return &Service_FieldSubPathArrayItemValue{Service_FieldPath: s.WithSubPath(subPathArrayItemValue), subPathItemValue: subPathArrayItemValue}
-}
-
-func (ServicePathSelectorServicesCtrl) IsDirty() ServicePathSelectorServicesCtrlIsDirty {
-	return ServicePathSelectorServicesCtrlIsDirty{}
-}
-
-func (ServicePathSelectorServicesCtrl) Generation() ServicePathSelectorServicesCtrlGeneration {
-	return ServicePathSelectorServicesCtrlGeneration{}
-}
-
-type ServicePathSelectorServicesCtrlIsDirty struct{}
-
-func (ServicePathSelectorServicesCtrlIsDirty) FieldPath() *Service_FieldSubPath {
-	return &Service_FieldSubPath{
-		selector: Service_FieldPathSelectorServicesCtrl,
-		subPath:  NewServiceAllowedServicesCtrlFlagFieldPathBuilder().IsDirty().FieldPath(),
-	}
-}
-
-func (s ServicePathSelectorServicesCtrlIsDirty) WithValue(value bool) *Service_FieldSubPathValue {
-	return s.FieldPath().WithIValue(value).(*Service_FieldSubPathValue)
-}
-
-func (s ServicePathSelectorServicesCtrlIsDirty) WithArrayOfValues(values []bool) *Service_FieldSubPathArrayOfValues {
-	return s.FieldPath().WithIArrayOfValues(values).(*Service_FieldSubPathArrayOfValues)
-}
-
-type ServicePathSelectorServicesCtrlGeneration struct{}
-
-func (ServicePathSelectorServicesCtrlGeneration) FieldPath() *Service_FieldSubPath {
-	return &Service_FieldSubPath{
-		selector: Service_FieldPathSelectorServicesCtrl,
-		subPath:  NewServiceAllowedServicesCtrlFlagFieldPathBuilder().Generation().FieldPath(),
-	}
-}
-
-func (s ServicePathSelectorServicesCtrlGeneration) WithValue(value int64) *Service_FieldSubPathValue {
-	return s.FieldPath().WithIValue(value).(*Service_FieldSubPathValue)
-}
-
-func (s ServicePathSelectorServicesCtrlGeneration) WithArrayOfValues(values []int64) *Service_FieldSubPathArrayOfValues {
-	return s.FieldPath().WithIArrayOfValues(values).(*Service_FieldSubPathArrayOfValues)
-}
-
 type ServiceImportedVersionsFieldPathBuilder struct{}
 
 func NewServiceImportedVersionsFieldPathBuilder() ServiceImportedVersionsFieldPathBuilder {
@@ -1232,44 +1157,4 @@ func (s Service_ImportedVersionsPathSelectorCurrentServiceVersion) WithValue(val
 
 func (s Service_ImportedVersionsPathSelectorCurrentServiceVersion) WithArrayOfValues(values []string) *ServiceImportedVersions_FieldTerminalPathArrayOfValues {
 	return s.FieldPath().WithIArrayOfValues(values).(*ServiceImportedVersions_FieldTerminalPathArrayOfValues)
-}
-
-type ServiceAllowedServicesCtrlFlagFieldPathBuilder struct{}
-
-func NewServiceAllowedServicesCtrlFlagFieldPathBuilder() ServiceAllowedServicesCtrlFlagFieldPathBuilder {
-	return ServiceAllowedServicesCtrlFlagFieldPathBuilder{}
-}
-func (ServiceAllowedServicesCtrlFlagFieldPathBuilder) IsDirty() Service_AllowedServicesCtrlFlagPathSelectorIsDirty {
-	return Service_AllowedServicesCtrlFlagPathSelectorIsDirty{}
-}
-func (ServiceAllowedServicesCtrlFlagFieldPathBuilder) Generation() Service_AllowedServicesCtrlFlagPathSelectorGeneration {
-	return Service_AllowedServicesCtrlFlagPathSelectorGeneration{}
-}
-
-type Service_AllowedServicesCtrlFlagPathSelectorIsDirty struct{}
-
-func (Service_AllowedServicesCtrlFlagPathSelectorIsDirty) FieldPath() *ServiceAllowedServicesCtrlFlag_FieldTerminalPath {
-	return &ServiceAllowedServicesCtrlFlag_FieldTerminalPath{selector: ServiceAllowedServicesCtrlFlag_FieldPathSelectorIsDirty}
-}
-
-func (s Service_AllowedServicesCtrlFlagPathSelectorIsDirty) WithValue(value bool) *ServiceAllowedServicesCtrlFlag_FieldTerminalPathValue {
-	return s.FieldPath().WithIValue(value).(*ServiceAllowedServicesCtrlFlag_FieldTerminalPathValue)
-}
-
-func (s Service_AllowedServicesCtrlFlagPathSelectorIsDirty) WithArrayOfValues(values []bool) *ServiceAllowedServicesCtrlFlag_FieldTerminalPathArrayOfValues {
-	return s.FieldPath().WithIArrayOfValues(values).(*ServiceAllowedServicesCtrlFlag_FieldTerminalPathArrayOfValues)
-}
-
-type Service_AllowedServicesCtrlFlagPathSelectorGeneration struct{}
-
-func (Service_AllowedServicesCtrlFlagPathSelectorGeneration) FieldPath() *ServiceAllowedServicesCtrlFlag_FieldTerminalPath {
-	return &ServiceAllowedServicesCtrlFlag_FieldTerminalPath{selector: ServiceAllowedServicesCtrlFlag_FieldPathSelectorGeneration}
-}
-
-func (s Service_AllowedServicesCtrlFlagPathSelectorGeneration) WithValue(value int64) *ServiceAllowedServicesCtrlFlag_FieldTerminalPathValue {
-	return s.FieldPath().WithIValue(value).(*ServiceAllowedServicesCtrlFlag_FieldTerminalPathValue)
-}
-
-func (s Service_AllowedServicesCtrlFlagPathSelectorGeneration) WithArrayOfValues(values []int64) *ServiceAllowedServicesCtrlFlag_FieldTerminalPathArrayOfValues {
-	return s.FieldPath().WithIArrayOfValues(values).(*ServiceAllowedServicesCtrlFlag_FieldTerminalPathArrayOfValues)
 }

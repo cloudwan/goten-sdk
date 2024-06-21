@@ -10,11 +10,13 @@ import (
 	service "github.com/cloudwan/goten-sdk/meta-service/resources/v1/service"
 	meta "github.com/cloudwan/goten-sdk/types/meta"
 	multi_region_policy "github.com/cloudwan/goten-sdk/types/multi_region_policy"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // make sure we're using proto imports
 var (
+	_ = &structpb.Struct{}
 	_ = &timestamppb.Timestamp{}
 	_ = &region.Region{}
 	_ = &service.Service{}
@@ -66,8 +68,11 @@ func (DeploymentFieldPathBuilder) AutomaticVersionSwitch() DeploymentPathSelecto
 func (DeploymentFieldPathBuilder) UpgradeState() DeploymentPathSelectorUpgradeState {
 	return DeploymentPathSelectorUpgradeState{}
 }
-func (DeploymentFieldPathBuilder) AllowedServicesGeneration() DeploymentPathSelectorAllowedServicesGeneration {
-	return DeploymentPathSelectorAllowedServicesGeneration{}
+func (DeploymentFieldPathBuilder) DbDataVersion() DeploymentPathSelectorDbDataVersion {
+	return DeploymentPathSelectorDbDataVersion{}
+}
+func (DeploymentFieldPathBuilder) DataUpdateStatuses() DeploymentPathSelectorDataUpdateStatuses {
+	return DeploymentPathSelectorDataUpdateStatuses{}
 }
 
 type DeploymentPathSelectorName struct{}
@@ -1052,6 +1057,10 @@ func (DeploymentPathSelectorUpgradeState) Stage() DeploymentPathSelectorUpgradeS
 	return DeploymentPathSelectorUpgradeStateStage{}
 }
 
+func (DeploymentPathSelectorUpgradeState) DbDataTargetVersion() DeploymentPathSelectorUpgradeStateDbDataTargetVersion {
+	return DeploymentPathSelectorUpgradeStateDbDataTargetVersion{}
+}
+
 type DeploymentPathSelectorUpgradeStateTargetVersion struct{}
 
 func (DeploymentPathSelectorUpgradeStateTargetVersion) FieldPath() *Deployment_FieldSubPath {
@@ -1128,18 +1137,181 @@ func (s DeploymentPathSelectorUpgradeStateStage) WithArrayOfValues(values []Depl
 	return s.FieldPath().WithIArrayOfValues(values).(*Deployment_FieldSubPathArrayOfValues)
 }
 
-type DeploymentPathSelectorAllowedServicesGeneration struct{}
+type DeploymentPathSelectorUpgradeStateDbDataTargetVersion struct{}
 
-func (DeploymentPathSelectorAllowedServicesGeneration) FieldPath() *Deployment_FieldTerminalPath {
-	return &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorAllowedServicesGeneration}
+func (DeploymentPathSelectorUpgradeStateDbDataTargetVersion) FieldPath() *Deployment_FieldSubPath {
+	return &Deployment_FieldSubPath{
+		selector: Deployment_FieldPathSelectorUpgradeState,
+		subPath:  NewDeploymentUpgradeStateFieldPathBuilder().DbDataTargetVersion().FieldPath(),
+	}
 }
 
-func (s DeploymentPathSelectorAllowedServicesGeneration) WithValue(value int64) *Deployment_FieldTerminalPathValue {
+func (s DeploymentPathSelectorUpgradeStateDbDataTargetVersion) WithValue(value string) *Deployment_FieldSubPathValue {
+	return s.FieldPath().WithIValue(value).(*Deployment_FieldSubPathValue)
+}
+
+func (s DeploymentPathSelectorUpgradeStateDbDataTargetVersion) WithArrayOfValues(values []string) *Deployment_FieldSubPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*Deployment_FieldSubPathArrayOfValues)
+}
+
+type DeploymentPathSelectorDbDataVersion struct{}
+
+func (DeploymentPathSelectorDbDataVersion) FieldPath() *Deployment_FieldTerminalPath {
+	return &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorDbDataVersion}
+}
+
+func (s DeploymentPathSelectorDbDataVersion) WithValue(value string) *Deployment_FieldTerminalPathValue {
 	return s.FieldPath().WithIValue(value).(*Deployment_FieldTerminalPathValue)
 }
 
-func (s DeploymentPathSelectorAllowedServicesGeneration) WithArrayOfValues(values []int64) *Deployment_FieldTerminalPathArrayOfValues {
+func (s DeploymentPathSelectorDbDataVersion) WithArrayOfValues(values []string) *Deployment_FieldTerminalPathArrayOfValues {
 	return s.FieldPath().WithIArrayOfValues(values).(*Deployment_FieldTerminalPathArrayOfValues)
+}
+
+type DeploymentPathSelectorDataUpdateStatuses struct{}
+
+func (DeploymentPathSelectorDataUpdateStatuses) FieldPath() *Deployment_FieldTerminalPath {
+	return &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorDataUpdateStatuses}
+}
+
+func (s DeploymentPathSelectorDataUpdateStatuses) WithValue(value []*Deployment_DbUpdateTaskStatus) *Deployment_FieldTerminalPathValue {
+	return s.FieldPath().WithIValue(value).(*Deployment_FieldTerminalPathValue)
+}
+
+func (s DeploymentPathSelectorDataUpdateStatuses) WithArrayOfValues(values [][]*Deployment_DbUpdateTaskStatus) *Deployment_FieldTerminalPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*Deployment_FieldTerminalPathArrayOfValues)
+}
+
+func (s DeploymentPathSelectorDataUpdateStatuses) WithItemValue(value *Deployment_DbUpdateTaskStatus) *Deployment_FieldTerminalPathArrayItemValue {
+	return s.FieldPath().WithIArrayItemValue(value).(*Deployment_FieldTerminalPathArrayItemValue)
+}
+func (DeploymentPathSelectorDataUpdateStatuses) WithSubPath(subPath DeploymentDbUpdateTaskStatus_FieldPath) *Deployment_FieldSubPath {
+	return &Deployment_FieldSubPath{selector: Deployment_FieldPathSelectorDataUpdateStatuses, subPath: subPath}
+}
+
+func (s DeploymentPathSelectorDataUpdateStatuses) WithSubValue(subPathValue DeploymentDbUpdateTaskStatus_FieldPathValue) *Deployment_FieldSubPathValue {
+	return &Deployment_FieldSubPathValue{Deployment_FieldPath: s.WithSubPath(subPathValue), subPathValue: subPathValue}
+}
+
+func (s DeploymentPathSelectorDataUpdateStatuses) WithSubArrayOfValues(subPathArrayOfValues DeploymentDbUpdateTaskStatus_FieldPathArrayOfValues) *Deployment_FieldSubPathArrayOfValues {
+	return &Deployment_FieldSubPathArrayOfValues{Deployment_FieldPath: s.WithSubPath(subPathArrayOfValues), subPathArrayOfValues: subPathArrayOfValues}
+}
+
+func (s DeploymentPathSelectorDataUpdateStatuses) WithSubArrayItemValue(subPathArrayItemValue DeploymentDbUpdateTaskStatus_FieldPathArrayItemValue) *Deployment_FieldSubPathArrayItemValue {
+	return &Deployment_FieldSubPathArrayItemValue{Deployment_FieldPath: s.WithSubPath(subPathArrayItemValue), subPathItemValue: subPathArrayItemValue}
+}
+
+func (DeploymentPathSelectorDataUpdateStatuses) TaskTag() DeploymentPathSelectorDataUpdateStatusesTaskTag {
+	return DeploymentPathSelectorDataUpdateStatusesTaskTag{}
+}
+
+func (DeploymentPathSelectorDataUpdateStatuses) ShardsCount() DeploymentPathSelectorDataUpdateStatusesShardsCount {
+	return DeploymentPathSelectorDataUpdateStatusesShardsCount{}
+}
+
+func (DeploymentPathSelectorDataUpdateStatuses) ReadyShards() DeploymentPathSelectorDataUpdateStatusesReadyShards {
+	return DeploymentPathSelectorDataUpdateStatusesReadyShards{}
+}
+
+func (DeploymentPathSelectorDataUpdateStatuses) TargetVersion() DeploymentPathSelectorDataUpdateStatusesTargetVersion {
+	return DeploymentPathSelectorDataUpdateStatusesTargetVersion{}
+}
+
+func (DeploymentPathSelectorDataUpdateStatuses) ProgressBar() DeploymentPathSelectorDataUpdateStatusesProgressBar {
+	return DeploymentPathSelectorDataUpdateStatusesProgressBar{}
+}
+
+type DeploymentPathSelectorDataUpdateStatusesTaskTag struct{}
+
+func (DeploymentPathSelectorDataUpdateStatusesTaskTag) FieldPath() *Deployment_FieldSubPath {
+	return &Deployment_FieldSubPath{
+		selector: Deployment_FieldPathSelectorDataUpdateStatuses,
+		subPath:  NewDeploymentDbUpdateTaskStatusFieldPathBuilder().TaskTag().FieldPath(),
+	}
+}
+
+func (s DeploymentPathSelectorDataUpdateStatusesTaskTag) WithValue(value string) *Deployment_FieldSubPathValue {
+	return s.FieldPath().WithIValue(value).(*Deployment_FieldSubPathValue)
+}
+
+func (s DeploymentPathSelectorDataUpdateStatusesTaskTag) WithArrayOfValues(values []string) *Deployment_FieldSubPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*Deployment_FieldSubPathArrayOfValues)
+}
+
+type DeploymentPathSelectorDataUpdateStatusesShardsCount struct{}
+
+func (DeploymentPathSelectorDataUpdateStatusesShardsCount) FieldPath() *Deployment_FieldSubPath {
+	return &Deployment_FieldSubPath{
+		selector: Deployment_FieldPathSelectorDataUpdateStatuses,
+		subPath:  NewDeploymentDbUpdateTaskStatusFieldPathBuilder().ShardsCount().FieldPath(),
+	}
+}
+
+func (s DeploymentPathSelectorDataUpdateStatusesShardsCount) WithValue(value int64) *Deployment_FieldSubPathValue {
+	return s.FieldPath().WithIValue(value).(*Deployment_FieldSubPathValue)
+}
+
+func (s DeploymentPathSelectorDataUpdateStatusesShardsCount) WithArrayOfValues(values []int64) *Deployment_FieldSubPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*Deployment_FieldSubPathArrayOfValues)
+}
+
+type DeploymentPathSelectorDataUpdateStatusesReadyShards struct{}
+
+func (DeploymentPathSelectorDataUpdateStatusesReadyShards) FieldPath() *Deployment_FieldSubPath {
+	return &Deployment_FieldSubPath{
+		selector: Deployment_FieldPathSelectorDataUpdateStatuses,
+		subPath:  NewDeploymentDbUpdateTaskStatusFieldPathBuilder().ReadyShards().FieldPath(),
+	}
+}
+
+func (s DeploymentPathSelectorDataUpdateStatusesReadyShards) WithValue(value []int64) *Deployment_FieldSubPathValue {
+	return s.FieldPath().WithIValue(value).(*Deployment_FieldSubPathValue)
+}
+
+func (s DeploymentPathSelectorDataUpdateStatusesReadyShards) WithArrayOfValues(values [][]int64) *Deployment_FieldSubPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*Deployment_FieldSubPathArrayOfValues)
+}
+
+func (s DeploymentPathSelectorDataUpdateStatusesReadyShards) WithItemValue(value int64) *Deployment_FieldSubPathArrayItemValue {
+	return s.FieldPath().WithIArrayItemValue(value).(*Deployment_FieldSubPathArrayItemValue)
+}
+
+type DeploymentPathSelectorDataUpdateStatusesTargetVersion struct{}
+
+func (DeploymentPathSelectorDataUpdateStatusesTargetVersion) FieldPath() *Deployment_FieldSubPath {
+	return &Deployment_FieldSubPath{
+		selector: Deployment_FieldPathSelectorDataUpdateStatuses,
+		subPath:  NewDeploymentDbUpdateTaskStatusFieldPathBuilder().TargetVersion().FieldPath(),
+	}
+}
+
+func (s DeploymentPathSelectorDataUpdateStatusesTargetVersion) WithValue(value string) *Deployment_FieldSubPathValue {
+	return s.FieldPath().WithIValue(value).(*Deployment_FieldSubPathValue)
+}
+
+func (s DeploymentPathSelectorDataUpdateStatusesTargetVersion) WithArrayOfValues(values []string) *Deployment_FieldSubPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*Deployment_FieldSubPathArrayOfValues)
+}
+
+type DeploymentPathSelectorDataUpdateStatusesProgressBar struct{}
+
+func (DeploymentPathSelectorDataUpdateStatusesProgressBar) FieldPath() *Deployment_FieldSubPath {
+	return &Deployment_FieldSubPath{
+		selector: Deployment_FieldPathSelectorDataUpdateStatuses,
+		subPath:  NewDeploymentDbUpdateTaskStatusFieldPathBuilder().ProgressBar().FieldPath(),
+	}
+}
+
+func (s DeploymentPathSelectorDataUpdateStatusesProgressBar) WithValue(value []*structpb.Struct) *Deployment_FieldSubPathValue {
+	return s.FieldPath().WithIValue(value).(*Deployment_FieldSubPathValue)
+}
+
+func (s DeploymentPathSelectorDataUpdateStatusesProgressBar) WithArrayOfValues(values [][]*structpb.Struct) *Deployment_FieldSubPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*Deployment_FieldSubPathArrayOfValues)
+}
+
+func (s DeploymentPathSelectorDataUpdateStatusesProgressBar) WithItemValue(value *structpb.Struct) *Deployment_FieldSubPathArrayItemValue {
+	return s.FieldPath().WithIArrayItemValue(value).(*Deployment_FieldSubPathArrayItemValue)
 }
 
 type DeploymentLocationFieldPathBuilder struct{}
@@ -1250,6 +1422,9 @@ func (DeploymentUpgradeStateFieldPathBuilder) PendingShards() Deployment_Upgrade
 func (DeploymentUpgradeStateFieldPathBuilder) Stage() Deployment_UpgradeStatePathSelectorStage {
 	return Deployment_UpgradeStatePathSelectorStage{}
 }
+func (DeploymentUpgradeStateFieldPathBuilder) DbDataTargetVersion() Deployment_UpgradeStatePathSelectorDbDataTargetVersion {
+	return Deployment_UpgradeStatePathSelectorDbDataTargetVersion{}
+}
 
 type Deployment_UpgradeStatePathSelectorTargetVersion struct{}
 
@@ -1313,4 +1488,117 @@ func (s Deployment_UpgradeStatePathSelectorStage) WithValue(value Deployment_Upg
 
 func (s Deployment_UpgradeStatePathSelectorStage) WithArrayOfValues(values []Deployment_UpgradeState_Stage) *DeploymentUpgradeState_FieldTerminalPathArrayOfValues {
 	return s.FieldPath().WithIArrayOfValues(values).(*DeploymentUpgradeState_FieldTerminalPathArrayOfValues)
+}
+
+type Deployment_UpgradeStatePathSelectorDbDataTargetVersion struct{}
+
+func (Deployment_UpgradeStatePathSelectorDbDataTargetVersion) FieldPath() *DeploymentUpgradeState_FieldTerminalPath {
+	return &DeploymentUpgradeState_FieldTerminalPath{selector: DeploymentUpgradeState_FieldPathSelectorDbDataTargetVersion}
+}
+
+func (s Deployment_UpgradeStatePathSelectorDbDataTargetVersion) WithValue(value string) *DeploymentUpgradeState_FieldTerminalPathValue {
+	return s.FieldPath().WithIValue(value).(*DeploymentUpgradeState_FieldTerminalPathValue)
+}
+
+func (s Deployment_UpgradeStatePathSelectorDbDataTargetVersion) WithArrayOfValues(values []string) *DeploymentUpgradeState_FieldTerminalPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*DeploymentUpgradeState_FieldTerminalPathArrayOfValues)
+}
+
+type DeploymentDbUpdateTaskStatusFieldPathBuilder struct{}
+
+func NewDeploymentDbUpdateTaskStatusFieldPathBuilder() DeploymentDbUpdateTaskStatusFieldPathBuilder {
+	return DeploymentDbUpdateTaskStatusFieldPathBuilder{}
+}
+func (DeploymentDbUpdateTaskStatusFieldPathBuilder) TaskTag() Deployment_DbUpdateTaskStatusPathSelectorTaskTag {
+	return Deployment_DbUpdateTaskStatusPathSelectorTaskTag{}
+}
+func (DeploymentDbUpdateTaskStatusFieldPathBuilder) ShardsCount() Deployment_DbUpdateTaskStatusPathSelectorShardsCount {
+	return Deployment_DbUpdateTaskStatusPathSelectorShardsCount{}
+}
+func (DeploymentDbUpdateTaskStatusFieldPathBuilder) ReadyShards() Deployment_DbUpdateTaskStatusPathSelectorReadyShards {
+	return Deployment_DbUpdateTaskStatusPathSelectorReadyShards{}
+}
+func (DeploymentDbUpdateTaskStatusFieldPathBuilder) TargetVersion() Deployment_DbUpdateTaskStatusPathSelectorTargetVersion {
+	return Deployment_DbUpdateTaskStatusPathSelectorTargetVersion{}
+}
+func (DeploymentDbUpdateTaskStatusFieldPathBuilder) ProgressBar() Deployment_DbUpdateTaskStatusPathSelectorProgressBar {
+	return Deployment_DbUpdateTaskStatusPathSelectorProgressBar{}
+}
+
+type Deployment_DbUpdateTaskStatusPathSelectorTaskTag struct{}
+
+func (Deployment_DbUpdateTaskStatusPathSelectorTaskTag) FieldPath() *DeploymentDbUpdateTaskStatus_FieldTerminalPath {
+	return &DeploymentDbUpdateTaskStatus_FieldTerminalPath{selector: DeploymentDbUpdateTaskStatus_FieldPathSelectorTaskTag}
+}
+
+func (s Deployment_DbUpdateTaskStatusPathSelectorTaskTag) WithValue(value string) *DeploymentDbUpdateTaskStatus_FieldTerminalPathValue {
+	return s.FieldPath().WithIValue(value).(*DeploymentDbUpdateTaskStatus_FieldTerminalPathValue)
+}
+
+func (s Deployment_DbUpdateTaskStatusPathSelectorTaskTag) WithArrayOfValues(values []string) *DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues)
+}
+
+type Deployment_DbUpdateTaskStatusPathSelectorShardsCount struct{}
+
+func (Deployment_DbUpdateTaskStatusPathSelectorShardsCount) FieldPath() *DeploymentDbUpdateTaskStatus_FieldTerminalPath {
+	return &DeploymentDbUpdateTaskStatus_FieldTerminalPath{selector: DeploymentDbUpdateTaskStatus_FieldPathSelectorShardsCount}
+}
+
+func (s Deployment_DbUpdateTaskStatusPathSelectorShardsCount) WithValue(value int64) *DeploymentDbUpdateTaskStatus_FieldTerminalPathValue {
+	return s.FieldPath().WithIValue(value).(*DeploymentDbUpdateTaskStatus_FieldTerminalPathValue)
+}
+
+func (s Deployment_DbUpdateTaskStatusPathSelectorShardsCount) WithArrayOfValues(values []int64) *DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues)
+}
+
+type Deployment_DbUpdateTaskStatusPathSelectorReadyShards struct{}
+
+func (Deployment_DbUpdateTaskStatusPathSelectorReadyShards) FieldPath() *DeploymentDbUpdateTaskStatus_FieldTerminalPath {
+	return &DeploymentDbUpdateTaskStatus_FieldTerminalPath{selector: DeploymentDbUpdateTaskStatus_FieldPathSelectorReadyShards}
+}
+
+func (s Deployment_DbUpdateTaskStatusPathSelectorReadyShards) WithValue(value []int64) *DeploymentDbUpdateTaskStatus_FieldTerminalPathValue {
+	return s.FieldPath().WithIValue(value).(*DeploymentDbUpdateTaskStatus_FieldTerminalPathValue)
+}
+
+func (s Deployment_DbUpdateTaskStatusPathSelectorReadyShards) WithArrayOfValues(values [][]int64) *DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues)
+}
+
+func (s Deployment_DbUpdateTaskStatusPathSelectorReadyShards) WithItemValue(value int64) *DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayItemValue {
+	return s.FieldPath().WithIArrayItemValue(value).(*DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayItemValue)
+}
+
+type Deployment_DbUpdateTaskStatusPathSelectorTargetVersion struct{}
+
+func (Deployment_DbUpdateTaskStatusPathSelectorTargetVersion) FieldPath() *DeploymentDbUpdateTaskStatus_FieldTerminalPath {
+	return &DeploymentDbUpdateTaskStatus_FieldTerminalPath{selector: DeploymentDbUpdateTaskStatus_FieldPathSelectorTargetVersion}
+}
+
+func (s Deployment_DbUpdateTaskStatusPathSelectorTargetVersion) WithValue(value string) *DeploymentDbUpdateTaskStatus_FieldTerminalPathValue {
+	return s.FieldPath().WithIValue(value).(*DeploymentDbUpdateTaskStatus_FieldTerminalPathValue)
+}
+
+func (s Deployment_DbUpdateTaskStatusPathSelectorTargetVersion) WithArrayOfValues(values []string) *DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues)
+}
+
+type Deployment_DbUpdateTaskStatusPathSelectorProgressBar struct{}
+
+func (Deployment_DbUpdateTaskStatusPathSelectorProgressBar) FieldPath() *DeploymentDbUpdateTaskStatus_FieldTerminalPath {
+	return &DeploymentDbUpdateTaskStatus_FieldTerminalPath{selector: DeploymentDbUpdateTaskStatus_FieldPathSelectorProgressBar}
+}
+
+func (s Deployment_DbUpdateTaskStatusPathSelectorProgressBar) WithValue(value []*structpb.Struct) *DeploymentDbUpdateTaskStatus_FieldTerminalPathValue {
+	return s.FieldPath().WithIValue(value).(*DeploymentDbUpdateTaskStatus_FieldTerminalPathValue)
+}
+
+func (s Deployment_DbUpdateTaskStatusPathSelectorProgressBar) WithArrayOfValues(values [][]*structpb.Struct) *DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues)
+}
+
+func (s Deployment_DbUpdateTaskStatusPathSelectorProgressBar) WithItemValue(value *structpb.Struct) *DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayItemValue {
+	return s.FieldPath().WithIArrayItemValue(value).(*DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayItemValue)
 }

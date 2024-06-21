@@ -70,13 +70,12 @@ type Resource_FieldPath interface {
 type Resource_FieldPathSelector int32
 
 const (
-	Resource_FieldPathSelectorName                      Resource_FieldPathSelector = 0
-	Resource_FieldPathSelectorMetadata                  Resource_FieldPathSelector = 1
-	Resource_FieldPathSelectorPluralName                Resource_FieldPathSelector = 2
-	Resource_FieldPathSelectorFqn                       Resource_FieldPathSelector = 3
-	Resource_FieldPathSelectorVersions                  Resource_FieldPathSelector = 4
-	Resource_FieldPathSelectorVersionedInfos            Resource_FieldPathSelector = 5
-	Resource_FieldPathSelectorAllowedServicesGeneration Resource_FieldPathSelector = 6
+	Resource_FieldPathSelectorName           Resource_FieldPathSelector = 0
+	Resource_FieldPathSelectorMetadata       Resource_FieldPathSelector = 1
+	Resource_FieldPathSelectorPluralName     Resource_FieldPathSelector = 2
+	Resource_FieldPathSelectorFqn            Resource_FieldPathSelector = 3
+	Resource_FieldPathSelectorVersions       Resource_FieldPathSelector = 4
+	Resource_FieldPathSelectorVersionedInfos Resource_FieldPathSelector = 5
 )
 
 func (s Resource_FieldPathSelector) String() string {
@@ -93,8 +92,6 @@ func (s Resource_FieldPathSelector) String() string {
 		return "versions"
 	case Resource_FieldPathSelectorVersionedInfos:
 		return "versioned_infos"
-	case Resource_FieldPathSelectorAllowedServicesGeneration:
-		return "allowed_services_generation"
 	default:
 		panic(fmt.Sprintf("Invalid selector for Resource: %d", s))
 	}
@@ -118,8 +115,6 @@ func BuildResource_FieldPath(fp gotenobject.RawFieldPath) (Resource_FieldPath, e
 			return &Resource_FieldTerminalPath{selector: Resource_FieldPathSelectorVersions}, nil
 		case "versioned_infos", "versionedInfos", "versioned-infos":
 			return &Resource_FieldTerminalPath{selector: Resource_FieldPathSelectorVersionedInfos}, nil
-		case "allowed_services_generation", "allowedServicesGeneration", "allowed-services-generation":
-			return &Resource_FieldTerminalPath{selector: Resource_FieldPathSelectorAllowedServicesGeneration}, nil
 		}
 	} else {
 		switch fp[0] {
@@ -200,8 +195,6 @@ func (fp *Resource_FieldTerminalPath) Get(source *Resource) (values []interface{
 			for _, value := range source.GetVersionedInfos() {
 				values = append(values, value)
 			}
-		case Resource_FieldPathSelectorAllowedServicesGeneration:
-			values = append(values, source.AllowedServicesGeneration)
 		default:
 			panic(fmt.Sprintf("Invalid selector for Resource: %d", fp.selector))
 		}
@@ -232,8 +225,6 @@ func (fp *Resource_FieldTerminalPath) GetSingle(source *Resource) (interface{}, 
 	case Resource_FieldPathSelectorVersionedInfos:
 		res := source.GetVersionedInfos()
 		return res, res != nil
-	case Resource_FieldPathSelectorAllowedServicesGeneration:
-		return source.GetAllowedServicesGeneration(), source != nil
 	default:
 		panic(fmt.Sprintf("Invalid selector for Resource: %d", fp.selector))
 	}
@@ -258,8 +249,6 @@ func (fp *Resource_FieldTerminalPath) GetDefault() interface{} {
 		return ([]string)(nil)
 	case Resource_FieldPathSelectorVersionedInfos:
 		return ([]*Resource_VersionedInfo)(nil)
-	case Resource_FieldPathSelectorAllowedServicesGeneration:
-		return int64(0)
 	default:
 		panic(fmt.Sprintf("Invalid selector for Resource: %d", fp.selector))
 	}
@@ -280,8 +269,6 @@ func (fp *Resource_FieldTerminalPath) ClearValue(item *Resource) {
 			item.Versions = nil
 		case Resource_FieldPathSelectorVersionedInfos:
 			item.VersionedInfos = nil
-		case Resource_FieldPathSelectorAllowedServicesGeneration:
-			item.AllowedServicesGeneration = int64(0)
 		default:
 			panic(fmt.Sprintf("Invalid selector for Resource: %d", fp.selector))
 		}
@@ -297,8 +284,7 @@ func (fp *Resource_FieldTerminalPath) IsLeaf() bool {
 	return fp.selector == Resource_FieldPathSelectorName ||
 		fp.selector == Resource_FieldPathSelectorPluralName ||
 		fp.selector == Resource_FieldPathSelectorFqn ||
-		fp.selector == Resource_FieldPathSelectorVersions ||
-		fp.selector == Resource_FieldPathSelectorAllowedServicesGeneration
+		fp.selector == Resource_FieldPathSelectorVersions
 }
 
 func (fp *Resource_FieldTerminalPath) SplitIntoTerminalIPaths() []gotenobject.FieldPath {
@@ -319,8 +305,6 @@ func (fp *Resource_FieldTerminalPath) WithIValue(value interface{}) Resource_Fie
 		return &Resource_FieldTerminalPathValue{Resource_FieldTerminalPath: *fp, value: value.([]string)}
 	case Resource_FieldPathSelectorVersionedInfos:
 		return &Resource_FieldTerminalPathValue{Resource_FieldTerminalPath: *fp, value: value.([]*Resource_VersionedInfo)}
-	case Resource_FieldPathSelectorAllowedServicesGeneration:
-		return &Resource_FieldTerminalPathValue{Resource_FieldTerminalPath: *fp, value: value.(int64)}
 	default:
 		panic(fmt.Sprintf("Invalid selector for Resource: %d", fp.selector))
 	}
@@ -345,8 +329,6 @@ func (fp *Resource_FieldTerminalPath) WithIArrayOfValues(values interface{}) Res
 		return &Resource_FieldTerminalPathArrayOfValues{Resource_FieldTerminalPath: *fp, values: values.([][]string)}
 	case Resource_FieldPathSelectorVersionedInfos:
 		return &Resource_FieldTerminalPathArrayOfValues{Resource_FieldTerminalPath: *fp, values: values.([][]*Resource_VersionedInfo)}
-	case Resource_FieldPathSelectorAllowedServicesGeneration:
-		return &Resource_FieldTerminalPathArrayOfValues{Resource_FieldTerminalPath: *fp, values: values.([]int64)}
 	default:
 		panic(fmt.Sprintf("Invalid selector for Resource: %d", fp.selector))
 	}
@@ -564,10 +546,6 @@ func (fpv *Resource_FieldTerminalPathValue) AsVersionedInfosValue() ([]*Resource
 	res, ok := fpv.value.([]*Resource_VersionedInfo)
 	return res, ok
 }
-func (fpv *Resource_FieldTerminalPathValue) AsAllowedServicesGenerationValue() (int64, bool) {
-	res, ok := fpv.value.(int64)
-	return res, ok
-}
 
 // SetTo stores value for selected field for object Resource
 func (fpv *Resource_FieldTerminalPathValue) SetTo(target **Resource) {
@@ -587,8 +565,6 @@ func (fpv *Resource_FieldTerminalPathValue) SetTo(target **Resource) {
 		(*target).Versions = fpv.value.([]string)
 	case Resource_FieldPathSelectorVersionedInfos:
 		(*target).VersionedInfos = fpv.value.([]*Resource_VersionedInfo)
-	case Resource_FieldPathSelectorAllowedServicesGeneration:
-		(*target).AllowedServicesGeneration = fpv.value.(int64)
 	default:
 		panic(fmt.Sprintf("Invalid selector for Resource: %d", fpv.selector))
 	}
@@ -647,16 +623,6 @@ func (fpv *Resource_FieldTerminalPathValue) CompareWith(source *Resource) (int, 
 		return 0, false
 	case Resource_FieldPathSelectorVersionedInfos:
 		return 0, false
-	case Resource_FieldPathSelectorAllowedServicesGeneration:
-		leftValue := fpv.value.(int64)
-		rightValue := source.GetAllowedServicesGeneration()
-		if (leftValue) == (rightValue) {
-			return 0, true
-		} else if (leftValue) < (rightValue) {
-			return -1, true
-		} else {
-			return 1, true
-		}
 	default:
 		panic(fmt.Sprintf("Invalid selector for Resource: %d", fpv.selector))
 	}
@@ -881,10 +847,6 @@ func (fpaov *Resource_FieldTerminalPathArrayOfValues) GetRawValues() (values []i
 		for _, v := range fpaov.values.([][]*Resource_VersionedInfo) {
 			values = append(values, v)
 		}
-	case Resource_FieldPathSelectorAllowedServicesGeneration:
-		for _, v := range fpaov.values.([]int64) {
-			values = append(values, v)
-		}
 	}
 	return
 }
@@ -910,10 +872,6 @@ func (fpaov *Resource_FieldTerminalPathArrayOfValues) AsVersionsArrayOfValues() 
 }
 func (fpaov *Resource_FieldTerminalPathArrayOfValues) AsVersionedInfosArrayOfValues() ([][]*Resource_VersionedInfo, bool) {
 	res, ok := fpaov.values.([][]*Resource_VersionedInfo)
-	return res, ok
-}
-func (fpaov *Resource_FieldTerminalPathArrayOfValues) AsAllowedServicesGenerationArrayOfValues() ([]int64, bool) {
-	res, ok := fpaov.values.([]int64)
 	return res, ok
 }
 

@@ -71,10 +71,6 @@ message Service {
   // from operator.
   bool automatic_version_switch = 11;
 
-  // Internal field for controlling metadata.services field - used internally by
-  // controller.
-  AllowedServicesCtrlFlag services_ctrl = 12;
-
   // ImportedVersions contains information which version of the imported service
   // is used by current service in specific version.
   message ImportedVersions {
@@ -89,13 +85,5 @@ message Service {
     string current_service_version = 3;
   }
 
-  // AllowedServicesCtrlFlag is internal helper field used by controller
-  // for metadata.services synchronization.
-  message AllowedServicesCtrlFlag {
-    // Whether job needs to be done.
-    bool is_dirty = 1;
-
-    // Generation to match in deployments/resources
-    int64 generation = 2;
-  }
+  reserved 12;
 }

@@ -22,6 +22,7 @@ import (
 import (
 	deployment "github.com/cloudwan/goten-sdk/meta-service/resources/v1/deployment"
 	service "github.com/cloudwan/goten-sdk/meta-service/resources/v1/service"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 )
 
 var (
@@ -35,10 +36,15 @@ var (
 	_ = utf8.RuneCountInString
 	_ = url.Parse
 	_ = gotenvalidate.NewValidationError
+
+	validation_regex_BeginUpgradeRequest_db_data_version_49f735b4dbb98b565e79d44caeb0f8e7                       = regexp.MustCompile("(^$|^v[0-9.]{1,64}$)")
+	validation_regex_GetOrRegisterDataUpdateTaskRequest_db_data_target_version_4cebaaa10b56d200ea5ab99425a64e1d = regexp.MustCompile("^v[0-9.]{1,64}$")
+	validation_regex_UpdateDataTaskUpdateRequest_db_data_target_version_4cebaaa10b56d200ea5ab99425a64e1d        = regexp.MustCompile("^v[0-9.]{1,64}$")
 )
 
 // make sure we're using proto imports
 var (
+	_ = &structpb.Struct{}
 	_ = &deployment.Deployment{}
 	_ = &service.Service{}
 )
@@ -46,6 +52,9 @@ var (
 func (obj *BeginUpgradeRequest) GotenValidate() error {
 	if obj == nil {
 		return nil
+	}
+	if !validation_regex_BeginUpgradeRequest_db_data_version_49f735b4dbb98b565e79d44caeb0f8e7.Match([]byte(obj.DbDataVersion)) {
+		return gotenvalidate.NewValidationError("BeginUpgradeRequest", "dbDataVersion", obj.DbDataVersion, "field must match the regex (^$|^v[0-9.]{1,64}$)", nil)
 	}
 	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
 		return cvobj.GotenCustomValidate()
@@ -55,6 +64,47 @@ func (obj *BeginUpgradeRequest) GotenValidate() error {
 func (obj *NotifyShardsUpgradeReadinessRequest) GotenValidate() error {
 	if obj == nil {
 		return nil
+	}
+	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
+		return cvobj.GotenCustomValidate()
+	}
+	return nil
+}
+func (obj *GetOrRegisterDataUpdateTaskRequest) GotenValidate() error {
+	if obj == nil {
+		return nil
+	}
+	if !(obj.ShardsCount > 0) {
+		return gotenvalidate.NewValidationError("GetOrRegisterDataUpdateTaskRequest", "shardsCount", obj.ShardsCount, "field must be greater than 0", nil)
+	}
+	if !validation_regex_GetOrRegisterDataUpdateTaskRequest_db_data_target_version_4cebaaa10b56d200ea5ab99425a64e1d.Match([]byte(obj.DbDataTargetVersion)) {
+		return gotenvalidate.NewValidationError("GetOrRegisterDataUpdateTaskRequest", "dbDataTargetVersion", obj.DbDataTargetVersion, "field must match the regex ^v[0-9.]{1,64}$", nil)
+	}
+	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
+		return cvobj.GotenCustomValidate()
+	}
+	return nil
+}
+func (obj *GetOrRegisterDataUpdateTaskResponse) GotenValidate() error {
+	if obj == nil {
+		return nil
+	}
+	if subobj, ok := interface{}(obj.Status).(gotenvalidate.Validator); ok {
+		if err := subobj.GotenValidate(); err != nil {
+			return gotenvalidate.NewValidationError("GetOrRegisterDataUpdateTaskResponse", "status", obj.Status, "nested object validation failed", err)
+		}
+	}
+	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
+		return cvobj.GotenCustomValidate()
+	}
+	return nil
+}
+func (obj *UpdateDataTaskUpdateRequest) GotenValidate() error {
+	if obj == nil {
+		return nil
+	}
+	if !validation_regex_UpdateDataTaskUpdateRequest_db_data_target_version_4cebaaa10b56d200ea5ab99425a64e1d.Match([]byte(obj.DbDataTargetVersion)) {
+		return gotenvalidate.NewValidationError("UpdateDataTaskUpdateRequest", "dbDataTargetVersion", obj.DbDataTargetVersion, "field must match the regex ^v[0-9.]{1,64}$", nil)
 	}
 	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
 		return cvobj.GotenCustomValidate()

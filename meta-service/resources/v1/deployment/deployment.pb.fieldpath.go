@@ -26,6 +26,7 @@ import (
 	region "github.com/cloudwan/goten-sdk/meta-service/resources/v1/region"
 	service "github.com/cloudwan/goten-sdk/meta-service/resources/v1/service"
 	meta "github.com/cloudwan/goten-sdk/types/meta"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 )
 
 // ensure the imports are used
@@ -48,6 +49,7 @@ var (
 
 // make sure we're using proto imports
 var (
+	_ = &structpb.Struct{}
 	_ = &region.Region{}
 	_ = &service.Service{}
 	_ = &meta.Meta{}
@@ -72,20 +74,21 @@ type Deployment_FieldPath interface {
 type Deployment_FieldPathSelector int32
 
 const (
-	Deployment_FieldPathSelectorName                      Deployment_FieldPathSelector = 0
-	Deployment_FieldPathSelectorMetadata                  Deployment_FieldPathSelector = 1
-	Deployment_FieldPathSelectorServiceName               Deployment_FieldPathSelector = 2
-	Deployment_FieldPathSelectorRegion                    Deployment_FieldPathSelector = 3
-	Deployment_FieldPathSelectorPublicDomain              Deployment_FieldPathSelector = 4
-	Deployment_FieldPathSelectorPrivateDomain             Deployment_FieldPathSelector = 5
-	Deployment_FieldPathSelectorLocalNetworkId            Deployment_FieldPathSelector = 6
-	Deployment_FieldPathSelectorLocation                  Deployment_FieldPathSelector = 7
-	Deployment_FieldPathSelectorIsDisabled                Deployment_FieldPathSelector = 8
-	Deployment_FieldPathSelectorEnvRegistryGeneration     Deployment_FieldPathSelector = 9
-	Deployment_FieldPathSelectorCurrentVersion            Deployment_FieldPathSelector = 10
-	Deployment_FieldPathSelectorAutomaticVersionSwitch    Deployment_FieldPathSelector = 11
-	Deployment_FieldPathSelectorUpgradeState              Deployment_FieldPathSelector = 12
-	Deployment_FieldPathSelectorAllowedServicesGeneration Deployment_FieldPathSelector = 13
+	Deployment_FieldPathSelectorName                   Deployment_FieldPathSelector = 0
+	Deployment_FieldPathSelectorMetadata               Deployment_FieldPathSelector = 1
+	Deployment_FieldPathSelectorServiceName            Deployment_FieldPathSelector = 2
+	Deployment_FieldPathSelectorRegion                 Deployment_FieldPathSelector = 3
+	Deployment_FieldPathSelectorPublicDomain           Deployment_FieldPathSelector = 4
+	Deployment_FieldPathSelectorPrivateDomain          Deployment_FieldPathSelector = 5
+	Deployment_FieldPathSelectorLocalNetworkId         Deployment_FieldPathSelector = 6
+	Deployment_FieldPathSelectorLocation               Deployment_FieldPathSelector = 7
+	Deployment_FieldPathSelectorIsDisabled             Deployment_FieldPathSelector = 8
+	Deployment_FieldPathSelectorEnvRegistryGeneration  Deployment_FieldPathSelector = 9
+	Deployment_FieldPathSelectorCurrentVersion         Deployment_FieldPathSelector = 10
+	Deployment_FieldPathSelectorAutomaticVersionSwitch Deployment_FieldPathSelector = 11
+	Deployment_FieldPathSelectorUpgradeState           Deployment_FieldPathSelector = 12
+	Deployment_FieldPathSelectorDbDataVersion          Deployment_FieldPathSelector = 13
+	Deployment_FieldPathSelectorDataUpdateStatuses     Deployment_FieldPathSelector = 14
 )
 
 func (s Deployment_FieldPathSelector) String() string {
@@ -116,8 +119,10 @@ func (s Deployment_FieldPathSelector) String() string {
 		return "automatic_version_switch"
 	case Deployment_FieldPathSelectorUpgradeState:
 		return "upgrade_state"
-	case Deployment_FieldPathSelectorAllowedServicesGeneration:
-		return "allowed_services_generation"
+	case Deployment_FieldPathSelectorDbDataVersion:
+		return "db_data_version"
+	case Deployment_FieldPathSelectorDataUpdateStatuses:
+		return "data_update_statuses"
 	default:
 		panic(fmt.Sprintf("Invalid selector for Deployment: %d", s))
 	}
@@ -155,8 +160,10 @@ func BuildDeployment_FieldPath(fp gotenobject.RawFieldPath) (Deployment_FieldPat
 			return &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorAutomaticVersionSwitch}, nil
 		case "upgrade_state", "upgradeState", "upgrade-state":
 			return &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorUpgradeState}, nil
-		case "allowed_services_generation", "allowedServicesGeneration", "allowed-services-generation":
-			return &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorAllowedServicesGeneration}, nil
+		case "db_data_version", "dbDataVersion", "db-data-version":
+			return &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorDbDataVersion}, nil
+		case "data_update_statuses", "dataUpdateStatuses", "data-update-statuses":
+			return &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorDataUpdateStatuses}, nil
 		}
 	} else {
 		switch fp[0] {
@@ -177,6 +184,12 @@ func BuildDeployment_FieldPath(fp gotenobject.RawFieldPath) (Deployment_FieldPat
 				return nil, err
 			} else {
 				return &Deployment_FieldSubPath{selector: Deployment_FieldPathSelectorUpgradeState, subPath: subpath}, nil
+			}
+		case "data_update_statuses", "dataUpdateStatuses", "data-update-statuses":
+			if subpath, err := BuildDeploymentDbUpdateTaskStatus_FieldPath(fp[1:]); err != nil {
+				return nil, err
+			} else {
+				return &Deployment_FieldSubPath{selector: Deployment_FieldPathSelectorDataUpdateStatuses, subPath: subpath}, nil
 			}
 		}
 	}
@@ -259,8 +272,12 @@ func (fp *Deployment_FieldTerminalPath) Get(source *Deployment) (values []interf
 			if source.UpgradeState != nil {
 				values = append(values, source.UpgradeState)
 			}
-		case Deployment_FieldPathSelectorAllowedServicesGeneration:
-			values = append(values, source.AllowedServicesGeneration)
+		case Deployment_FieldPathSelectorDbDataVersion:
+			values = append(values, source.DbDataVersion)
+		case Deployment_FieldPathSelectorDataUpdateStatuses:
+			for _, value := range source.GetDataUpdateStatuses() {
+				values = append(values, value)
+			}
 		default:
 			panic(fmt.Sprintf("Invalid selector for Deployment: %d", fp.selector))
 		}
@@ -306,8 +323,11 @@ func (fp *Deployment_FieldTerminalPath) GetSingle(source *Deployment) (interface
 	case Deployment_FieldPathSelectorUpgradeState:
 		res := source.GetUpgradeState()
 		return res, res != nil
-	case Deployment_FieldPathSelectorAllowedServicesGeneration:
-		return source.GetAllowedServicesGeneration(), source != nil
+	case Deployment_FieldPathSelectorDbDataVersion:
+		return source.GetDbDataVersion(), source != nil
+	case Deployment_FieldPathSelectorDataUpdateStatuses:
+		res := source.GetDataUpdateStatuses()
+		return res, res != nil
 	default:
 		panic(fmt.Sprintf("Invalid selector for Deployment: %d", fp.selector))
 	}
@@ -346,8 +366,10 @@ func (fp *Deployment_FieldTerminalPath) GetDefault() interface{} {
 		return false
 	case Deployment_FieldPathSelectorUpgradeState:
 		return (*Deployment_UpgradeState)(nil)
-	case Deployment_FieldPathSelectorAllowedServicesGeneration:
-		return int64(0)
+	case Deployment_FieldPathSelectorDbDataVersion:
+		return ""
+	case Deployment_FieldPathSelectorDataUpdateStatuses:
+		return ([]*Deployment_DbUpdateTaskStatus)(nil)
 	default:
 		panic(fmt.Sprintf("Invalid selector for Deployment: %d", fp.selector))
 	}
@@ -382,8 +404,10 @@ func (fp *Deployment_FieldTerminalPath) ClearValue(item *Deployment) {
 			item.AutomaticVersionSwitch = false
 		case Deployment_FieldPathSelectorUpgradeState:
 			item.UpgradeState = nil
-		case Deployment_FieldPathSelectorAllowedServicesGeneration:
-			item.AllowedServicesGeneration = int64(0)
+		case Deployment_FieldPathSelectorDbDataVersion:
+			item.DbDataVersion = ""
+		case Deployment_FieldPathSelectorDataUpdateStatuses:
+			item.DataUpdateStatuses = nil
 		default:
 			panic(fmt.Sprintf("Invalid selector for Deployment: %d", fp.selector))
 		}
@@ -406,7 +430,7 @@ func (fp *Deployment_FieldTerminalPath) IsLeaf() bool {
 		fp.selector == Deployment_FieldPathSelectorEnvRegistryGeneration ||
 		fp.selector == Deployment_FieldPathSelectorCurrentVersion ||
 		fp.selector == Deployment_FieldPathSelectorAutomaticVersionSwitch ||
-		fp.selector == Deployment_FieldPathSelectorAllowedServicesGeneration
+		fp.selector == Deployment_FieldPathSelectorDbDataVersion
 }
 
 func (fp *Deployment_FieldTerminalPath) SplitIntoTerminalIPaths() []gotenobject.FieldPath {
@@ -441,8 +465,10 @@ func (fp *Deployment_FieldTerminalPath) WithIValue(value interface{}) Deployment
 		return &Deployment_FieldTerminalPathValue{Deployment_FieldTerminalPath: *fp, value: value.(bool)}
 	case Deployment_FieldPathSelectorUpgradeState:
 		return &Deployment_FieldTerminalPathValue{Deployment_FieldTerminalPath: *fp, value: value.(*Deployment_UpgradeState)}
-	case Deployment_FieldPathSelectorAllowedServicesGeneration:
-		return &Deployment_FieldTerminalPathValue{Deployment_FieldTerminalPath: *fp, value: value.(int64)}
+	case Deployment_FieldPathSelectorDbDataVersion:
+		return &Deployment_FieldTerminalPathValue{Deployment_FieldTerminalPath: *fp, value: value.(string)}
+	case Deployment_FieldPathSelectorDataUpdateStatuses:
+		return &Deployment_FieldTerminalPathValue{Deployment_FieldTerminalPath: *fp, value: value.([]*Deployment_DbUpdateTaskStatus)}
 	default:
 		panic(fmt.Sprintf("Invalid selector for Deployment: %d", fp.selector))
 	}
@@ -481,8 +507,10 @@ func (fp *Deployment_FieldTerminalPath) WithIArrayOfValues(values interface{}) D
 		return &Deployment_FieldTerminalPathArrayOfValues{Deployment_FieldTerminalPath: *fp, values: values.([]bool)}
 	case Deployment_FieldPathSelectorUpgradeState:
 		return &Deployment_FieldTerminalPathArrayOfValues{Deployment_FieldTerminalPath: *fp, values: values.([]*Deployment_UpgradeState)}
-	case Deployment_FieldPathSelectorAllowedServicesGeneration:
-		return &Deployment_FieldTerminalPathArrayOfValues{Deployment_FieldTerminalPath: *fp, values: values.([]int64)}
+	case Deployment_FieldPathSelectorDbDataVersion:
+		return &Deployment_FieldTerminalPathArrayOfValues{Deployment_FieldTerminalPath: *fp, values: values.([]string)}
+	case Deployment_FieldPathSelectorDataUpdateStatuses:
+		return &Deployment_FieldTerminalPathArrayOfValues{Deployment_FieldTerminalPath: *fp, values: values.([][]*Deployment_DbUpdateTaskStatus)}
 	default:
 		panic(fmt.Sprintf("Invalid selector for Deployment: %d", fp.selector))
 	}
@@ -495,6 +523,8 @@ func (fp *Deployment_FieldTerminalPath) WithRawIArrayOfValues(values interface{}
 
 func (fp *Deployment_FieldTerminalPath) WithIArrayItemValue(value interface{}) Deployment_FieldPathArrayItemValue {
 	switch fp.selector {
+	case Deployment_FieldPathSelectorDataUpdateStatuses:
+		return &Deployment_FieldTerminalPathArrayItemValue{Deployment_FieldTerminalPath: *fp, value: value.(*Deployment_DbUpdateTaskStatus)}
 	default:
 		panic(fmt.Sprintf("Invalid selector for Deployment: %d", fp.selector))
 	}
@@ -526,6 +556,10 @@ func (fps *Deployment_FieldSubPath) AsUpgradeStateSubPath() (DeploymentUpgradeSt
 	res, ok := fps.subPath.(DeploymentUpgradeState_FieldPath)
 	return res, ok
 }
+func (fps *Deployment_FieldSubPath) AsDataUpdateStatusesSubPath() (DeploymentDbUpdateTaskStatus_FieldPath, bool) {
+	res, ok := fps.subPath.(DeploymentDbUpdateTaskStatus_FieldPath)
+	return res, ok
+}
 
 // String returns path representation in proto convention
 func (fps *Deployment_FieldSubPath) String() string {
@@ -546,6 +580,10 @@ func (fps *Deployment_FieldSubPath) Get(source *Deployment) (values []interface{
 		values = append(values, fps.subPath.GetRaw(source.GetLocation())...)
 	case Deployment_FieldPathSelectorUpgradeState:
 		values = append(values, fps.subPath.GetRaw(source.GetUpgradeState())...)
+	case Deployment_FieldPathSelectorDataUpdateStatuses:
+		for _, item := range source.GetDataUpdateStatuses() {
+			values = append(values, fps.subPath.GetRaw(item)...)
+		}
 	default:
 		panic(fmt.Sprintf("Invalid selector for Deployment: %d", fps.selector))
 	}
@@ -574,6 +612,11 @@ func (fps *Deployment_FieldSubPath) GetSingle(source *Deployment) (interface{}, 
 			return nil, false
 		}
 		return fps.subPath.GetSingleRaw(source.GetUpgradeState())
+	case Deployment_FieldPathSelectorDataUpdateStatuses:
+		if len(source.GetDataUpdateStatuses()) == 0 {
+			return nil, false
+		}
+		return fps.subPath.GetSingleRaw(source.GetDataUpdateStatuses()[0])
 	default:
 		panic(fmt.Sprintf("Invalid selector for Deployment: %d", fps.selector))
 	}
@@ -597,6 +640,10 @@ func (fps *Deployment_FieldSubPath) ClearValue(item *Deployment) {
 			fps.subPath.ClearValueRaw(item.Location)
 		case Deployment_FieldPathSelectorUpgradeState:
 			fps.subPath.ClearValueRaw(item.UpgradeState)
+		case Deployment_FieldPathSelectorDataUpdateStatuses:
+			for _, subItem := range item.DataUpdateStatuses {
+				fps.subPath.ClearValueRaw(subItem)
+			}
 		default:
 			panic(fmt.Sprintf("Invalid selector for Deployment: %d", fps.selector))
 		}
@@ -733,8 +780,12 @@ func (fpv *Deployment_FieldTerminalPathValue) AsUpgradeStateValue() (*Deployment
 	res, ok := fpv.value.(*Deployment_UpgradeState)
 	return res, ok
 }
-func (fpv *Deployment_FieldTerminalPathValue) AsAllowedServicesGenerationValue() (int64, bool) {
-	res, ok := fpv.value.(int64)
+func (fpv *Deployment_FieldTerminalPathValue) AsDbDataVersionValue() (string, bool) {
+	res, ok := fpv.value.(string)
+	return res, ok
+}
+func (fpv *Deployment_FieldTerminalPathValue) AsDataUpdateStatusesValue() ([]*Deployment_DbUpdateTaskStatus, bool) {
+	res, ok := fpv.value.([]*Deployment_DbUpdateTaskStatus)
 	return res, ok
 }
 
@@ -770,8 +821,10 @@ func (fpv *Deployment_FieldTerminalPathValue) SetTo(target **Deployment) {
 		(*target).AutomaticVersionSwitch = fpv.value.(bool)
 	case Deployment_FieldPathSelectorUpgradeState:
 		(*target).UpgradeState = fpv.value.(*Deployment_UpgradeState)
-	case Deployment_FieldPathSelectorAllowedServicesGeneration:
-		(*target).AllowedServicesGeneration = fpv.value.(int64)
+	case Deployment_FieldPathSelectorDbDataVersion:
+		(*target).DbDataVersion = fpv.value.(string)
+	case Deployment_FieldPathSelectorDataUpdateStatuses:
+		(*target).DataUpdateStatuses = fpv.value.([]*Deployment_DbUpdateTaskStatus)
 	default:
 		panic(fmt.Sprintf("Invalid selector for Deployment: %d", fpv.selector))
 	}
@@ -909,9 +962,9 @@ func (fpv *Deployment_FieldTerminalPathValue) CompareWith(source *Deployment) (i
 		}
 	case Deployment_FieldPathSelectorUpgradeState:
 		return 0, false
-	case Deployment_FieldPathSelectorAllowedServicesGeneration:
-		leftValue := fpv.value.(int64)
-		rightValue := source.GetAllowedServicesGeneration()
+	case Deployment_FieldPathSelectorDbDataVersion:
+		leftValue := fpv.value.(string)
+		rightValue := source.GetDbDataVersion()
 		if (leftValue) == (rightValue) {
 			return 0, true
 		} else if (leftValue) < (rightValue) {
@@ -919,6 +972,8 @@ func (fpv *Deployment_FieldTerminalPathValue) CompareWith(source *Deployment) (i
 		} else {
 			return 1, true
 		}
+	case Deployment_FieldPathSelectorDataUpdateStatuses:
+		return 0, false
 	default:
 		panic(fmt.Sprintf("Invalid selector for Deployment: %d", fpv.selector))
 	}
@@ -947,6 +1002,10 @@ func (fpvs *Deployment_FieldSubPathValue) AsUpgradeStatePathValue() (DeploymentU
 	res, ok := fpvs.subPathValue.(DeploymentUpgradeState_FieldPathValue)
 	return res, ok
 }
+func (fpvs *Deployment_FieldSubPathValue) AsDataUpdateStatusesPathValue() (DeploymentDbUpdateTaskStatus_FieldPathValue, bool) {
+	res, ok := fpvs.subPathValue.(DeploymentDbUpdateTaskStatus_FieldPathValue)
+	return res, ok
+}
 
 func (fpvs *Deployment_FieldSubPathValue) SetTo(target **Deployment) {
 	if *target == nil {
@@ -959,6 +1018,8 @@ func (fpvs *Deployment_FieldSubPathValue) SetTo(target **Deployment) {
 		fpvs.subPathValue.(DeploymentLocation_FieldPathValue).SetTo(&(*target).Location)
 	case Deployment_FieldPathSelectorUpgradeState:
 		fpvs.subPathValue.(DeploymentUpgradeState_FieldPathValue).SetTo(&(*target).UpgradeState)
+	case Deployment_FieldPathSelectorDataUpdateStatuses:
+		panic("FieldPath setter is unsupported for array subpaths")
 	default:
 		panic(fmt.Sprintf("Invalid selector for Deployment: %d", fpvs.Selector()))
 	}
@@ -981,6 +1042,8 @@ func (fpvs *Deployment_FieldSubPathValue) CompareWith(source *Deployment) (int, 
 		return fpvs.subPathValue.(DeploymentLocation_FieldPathValue).CompareWith(source.GetLocation())
 	case Deployment_FieldPathSelectorUpgradeState:
 		return fpvs.subPathValue.(DeploymentUpgradeState_FieldPathValue).CompareWith(source.GetUpgradeState())
+	case Deployment_FieldPathSelectorDataUpdateStatuses:
+		return 0, false // repeated field
 	default:
 		panic(fmt.Sprintf("Invalid selector for Deployment: %d", fpvs.Selector()))
 	}
@@ -1030,6 +1093,10 @@ var _ Deployment_FieldPathArrayItemValue = (*Deployment_FieldTerminalPathArrayIt
 func (fpaiv *Deployment_FieldTerminalPathArrayItemValue) GetRawItemValue() interface{} {
 	return fpaiv.value
 }
+func (fpaiv *Deployment_FieldTerminalPathArrayItemValue) AsDataUpdateStatusesItemValue() (*Deployment_DbUpdateTaskStatus, bool) {
+	res, ok := fpaiv.value.(*Deployment_DbUpdateTaskStatus)
+	return res, ok
+}
 
 func (fpaiv *Deployment_FieldTerminalPathArrayItemValue) GetSingle(source *Deployment) (interface{}, bool) {
 	return nil, false
@@ -1075,6 +1142,10 @@ func (fpaivs *Deployment_FieldSubPathArrayItemValue) AsUpgradeStatePathItemValue
 	res, ok := fpaivs.subPathItemValue.(DeploymentUpgradeState_FieldPathArrayItemValue)
 	return res, ok
 }
+func (fpaivs *Deployment_FieldSubPathArrayItemValue) AsDataUpdateStatusesPathItemValue() (DeploymentDbUpdateTaskStatus_FieldPathArrayItemValue, bool) {
+	res, ok := fpaivs.subPathItemValue.(DeploymentDbUpdateTaskStatus_FieldPathArrayItemValue)
+	return res, ok
+}
 
 // Contains returns a boolean indicating if value that is being held is present in given 'Deployment'
 func (fpaivs *Deployment_FieldSubPathArrayItemValue) ContainsValue(source *Deployment) bool {
@@ -1085,6 +1156,8 @@ func (fpaivs *Deployment_FieldSubPathArrayItemValue) ContainsValue(source *Deplo
 		return fpaivs.subPathItemValue.(DeploymentLocation_FieldPathArrayItemValue).ContainsValue(source.GetLocation())
 	case Deployment_FieldPathSelectorUpgradeState:
 		return fpaivs.subPathItemValue.(DeploymentUpgradeState_FieldPathArrayItemValue).ContainsValue(source.GetUpgradeState())
+	case Deployment_FieldPathSelectorDataUpdateStatuses:
+		return false // repeated/map field
 	default:
 		panic(fmt.Sprintf("Invalid selector for Deployment: %d", fpaivs.Selector()))
 	}
@@ -1177,8 +1250,12 @@ func (fpaov *Deployment_FieldTerminalPathArrayOfValues) GetRawValues() (values [
 		for _, v := range fpaov.values.([]*Deployment_UpgradeState) {
 			values = append(values, v)
 		}
-	case Deployment_FieldPathSelectorAllowedServicesGeneration:
-		for _, v := range fpaov.values.([]int64) {
+	case Deployment_FieldPathSelectorDbDataVersion:
+		for _, v := range fpaov.values.([]string) {
+			values = append(values, v)
+		}
+	case Deployment_FieldPathSelectorDataUpdateStatuses:
+		for _, v := range fpaov.values.([][]*Deployment_DbUpdateTaskStatus) {
 			values = append(values, v)
 		}
 	}
@@ -1236,8 +1313,12 @@ func (fpaov *Deployment_FieldTerminalPathArrayOfValues) AsUpgradeStateArrayOfVal
 	res, ok := fpaov.values.([]*Deployment_UpgradeState)
 	return res, ok
 }
-func (fpaov *Deployment_FieldTerminalPathArrayOfValues) AsAllowedServicesGenerationArrayOfValues() ([]int64, bool) {
-	res, ok := fpaov.values.([]int64)
+func (fpaov *Deployment_FieldTerminalPathArrayOfValues) AsDbDataVersionArrayOfValues() ([]string, bool) {
+	res, ok := fpaov.values.([]string)
+	return res, ok
+}
+func (fpaov *Deployment_FieldTerminalPathArrayOfValues) AsDataUpdateStatusesArrayOfValues() ([][]*Deployment_DbUpdateTaskStatus, bool) {
+	res, ok := fpaov.values.([][]*Deployment_DbUpdateTaskStatus)
 	return res, ok
 }
 
@@ -1261,6 +1342,10 @@ func (fpsaov *Deployment_FieldSubPathArrayOfValues) AsLocationPathArrayOfValues(
 }
 func (fpsaov *Deployment_FieldSubPathArrayOfValues) AsUpgradeStatePathArrayOfValues() (DeploymentUpgradeState_FieldPathArrayOfValues, bool) {
 	res, ok := fpsaov.subPathArrayOfValues.(DeploymentUpgradeState_FieldPathArrayOfValues)
+	return res, ok
+}
+func (fpsaov *Deployment_FieldSubPathArrayOfValues) AsDataUpdateStatusesPathArrayOfValues() (DeploymentDbUpdateTaskStatus_FieldPathArrayOfValues, bool) {
+	res, ok := fpsaov.subPathArrayOfValues.(DeploymentDbUpdateTaskStatus_FieldPathArrayOfValues)
 	return res, ok
 }
 
@@ -1830,10 +1915,11 @@ type DeploymentUpgradeState_FieldPath interface {
 type DeploymentUpgradeState_FieldPathSelector int32
 
 const (
-	DeploymentUpgradeState_FieldPathSelectorTargetVersion DeploymentUpgradeState_FieldPathSelector = 0
-	DeploymentUpgradeState_FieldPathSelectorReadyShards   DeploymentUpgradeState_FieldPathSelector = 1
-	DeploymentUpgradeState_FieldPathSelectorPendingShards DeploymentUpgradeState_FieldPathSelector = 2
-	DeploymentUpgradeState_FieldPathSelectorStage         DeploymentUpgradeState_FieldPathSelector = 3
+	DeploymentUpgradeState_FieldPathSelectorTargetVersion       DeploymentUpgradeState_FieldPathSelector = 0
+	DeploymentUpgradeState_FieldPathSelectorReadyShards         DeploymentUpgradeState_FieldPathSelector = 1
+	DeploymentUpgradeState_FieldPathSelectorPendingShards       DeploymentUpgradeState_FieldPathSelector = 2
+	DeploymentUpgradeState_FieldPathSelectorStage               DeploymentUpgradeState_FieldPathSelector = 3
+	DeploymentUpgradeState_FieldPathSelectorDbDataTargetVersion DeploymentUpgradeState_FieldPathSelector = 4
 )
 
 func (s DeploymentUpgradeState_FieldPathSelector) String() string {
@@ -1846,6 +1932,8 @@ func (s DeploymentUpgradeState_FieldPathSelector) String() string {
 		return "pending_shards"
 	case DeploymentUpgradeState_FieldPathSelectorStage:
 		return "stage"
+	case DeploymentUpgradeState_FieldPathSelectorDbDataTargetVersion:
+		return "db_data_target_version"
 	default:
 		panic(fmt.Sprintf("Invalid selector for Deployment_UpgradeState: %d", s))
 	}
@@ -1865,6 +1953,8 @@ func BuildDeploymentUpgradeState_FieldPath(fp gotenobject.RawFieldPath) (Deploym
 			return &DeploymentUpgradeState_FieldTerminalPath{selector: DeploymentUpgradeState_FieldPathSelectorPendingShards}, nil
 		case "stage":
 			return &DeploymentUpgradeState_FieldTerminalPath{selector: DeploymentUpgradeState_FieldPathSelectorStage}, nil
+		case "db_data_target_version", "dbDataTargetVersion", "db-data-target-version":
+			return &DeploymentUpgradeState_FieldTerminalPath{selector: DeploymentUpgradeState_FieldPathSelectorDbDataTargetVersion}, nil
 		}
 	}
 	return nil, status.Errorf(codes.InvalidArgument, "unknown field path '%s' for object Deployment_UpgradeState", fp)
@@ -1922,6 +2012,8 @@ func (fp *DeploymentUpgradeState_FieldTerminalPath) Get(source *Deployment_Upgra
 			}
 		case DeploymentUpgradeState_FieldPathSelectorStage:
 			values = append(values, source.Stage)
+		case DeploymentUpgradeState_FieldPathSelectorDbDataTargetVersion:
+			values = append(values, source.DbDataTargetVersion)
 		default:
 			panic(fmt.Sprintf("Invalid selector for Deployment_UpgradeState: %d", fp.selector))
 		}
@@ -1946,6 +2038,8 @@ func (fp *DeploymentUpgradeState_FieldTerminalPath) GetSingle(source *Deployment
 		return res, res != nil
 	case DeploymentUpgradeState_FieldPathSelectorStage:
 		return source.GetStage(), source != nil
+	case DeploymentUpgradeState_FieldPathSelectorDbDataTargetVersion:
+		return source.GetDbDataTargetVersion(), source != nil
 	default:
 		panic(fmt.Sprintf("Invalid selector for Deployment_UpgradeState: %d", fp.selector))
 	}
@@ -1966,6 +2060,8 @@ func (fp *DeploymentUpgradeState_FieldTerminalPath) GetDefault() interface{} {
 		return ([]int64)(nil)
 	case DeploymentUpgradeState_FieldPathSelectorStage:
 		return Deployment_UpgradeState_READY
+	case DeploymentUpgradeState_FieldPathSelectorDbDataTargetVersion:
+		return ""
 	default:
 		panic(fmt.Sprintf("Invalid selector for Deployment_UpgradeState: %d", fp.selector))
 	}
@@ -1982,6 +2078,8 @@ func (fp *DeploymentUpgradeState_FieldTerminalPath) ClearValue(item *Deployment_
 			item.PendingShards = nil
 		case DeploymentUpgradeState_FieldPathSelectorStage:
 			item.Stage = Deployment_UpgradeState_READY
+		case DeploymentUpgradeState_FieldPathSelectorDbDataTargetVersion:
+			item.DbDataTargetVersion = ""
 		default:
 			panic(fmt.Sprintf("Invalid selector for Deployment_UpgradeState: %d", fp.selector))
 		}
@@ -1997,7 +2095,8 @@ func (fp *DeploymentUpgradeState_FieldTerminalPath) IsLeaf() bool {
 	return fp.selector == DeploymentUpgradeState_FieldPathSelectorTargetVersion ||
 		fp.selector == DeploymentUpgradeState_FieldPathSelectorReadyShards ||
 		fp.selector == DeploymentUpgradeState_FieldPathSelectorPendingShards ||
-		fp.selector == DeploymentUpgradeState_FieldPathSelectorStage
+		fp.selector == DeploymentUpgradeState_FieldPathSelectorStage ||
+		fp.selector == DeploymentUpgradeState_FieldPathSelectorDbDataTargetVersion
 }
 
 func (fp *DeploymentUpgradeState_FieldTerminalPath) SplitIntoTerminalIPaths() []gotenobject.FieldPath {
@@ -2014,6 +2113,8 @@ func (fp *DeploymentUpgradeState_FieldTerminalPath) WithIValue(value interface{}
 		return &DeploymentUpgradeState_FieldTerminalPathValue{DeploymentUpgradeState_FieldTerminalPath: *fp, value: value.([]int64)}
 	case DeploymentUpgradeState_FieldPathSelectorStage:
 		return &DeploymentUpgradeState_FieldTerminalPathValue{DeploymentUpgradeState_FieldTerminalPath: *fp, value: value.(Deployment_UpgradeState_Stage)}
+	case DeploymentUpgradeState_FieldPathSelectorDbDataTargetVersion:
+		return &DeploymentUpgradeState_FieldTerminalPathValue{DeploymentUpgradeState_FieldTerminalPath: *fp, value: value.(string)}
 	default:
 		panic(fmt.Sprintf("Invalid selector for Deployment_UpgradeState: %d", fp.selector))
 	}
@@ -2034,6 +2135,8 @@ func (fp *DeploymentUpgradeState_FieldTerminalPath) WithIArrayOfValues(values in
 		return &DeploymentUpgradeState_FieldTerminalPathArrayOfValues{DeploymentUpgradeState_FieldTerminalPath: *fp, values: values.([][]int64)}
 	case DeploymentUpgradeState_FieldPathSelectorStage:
 		return &DeploymentUpgradeState_FieldTerminalPathArrayOfValues{DeploymentUpgradeState_FieldTerminalPath: *fp, values: values.([]Deployment_UpgradeState_Stage)}
+	case DeploymentUpgradeState_FieldPathSelectorDbDataTargetVersion:
+		return &DeploymentUpgradeState_FieldTerminalPathArrayOfValues{DeploymentUpgradeState_FieldTerminalPath: *fp, values: values.([]string)}
 	default:
 		panic(fmt.Sprintf("Invalid selector for Deployment_UpgradeState: %d", fp.selector))
 	}
@@ -2114,6 +2217,10 @@ func (fpv *DeploymentUpgradeState_FieldTerminalPathValue) AsStageValue() (Deploy
 	res, ok := fpv.value.(Deployment_UpgradeState_Stage)
 	return res, ok
 }
+func (fpv *DeploymentUpgradeState_FieldTerminalPathValue) AsDbDataTargetVersionValue() (string, bool) {
+	res, ok := fpv.value.(string)
+	return res, ok
+}
 
 // SetTo stores value for selected field for object UpgradeState
 func (fpv *DeploymentUpgradeState_FieldTerminalPathValue) SetTo(target **Deployment_UpgradeState) {
@@ -2129,6 +2236,8 @@ func (fpv *DeploymentUpgradeState_FieldTerminalPathValue) SetTo(target **Deploym
 		(*target).PendingShards = fpv.value.([]int64)
 	case DeploymentUpgradeState_FieldPathSelectorStage:
 		(*target).Stage = fpv.value.(Deployment_UpgradeState_Stage)
+	case DeploymentUpgradeState_FieldPathSelectorDbDataTargetVersion:
+		(*target).DbDataTargetVersion = fpv.value.(string)
 	default:
 		panic(fmt.Sprintf("Invalid selector for Deployment_UpgradeState: %d", fpv.selector))
 	}
@@ -2159,6 +2268,16 @@ func (fpv *DeploymentUpgradeState_FieldTerminalPathValue) CompareWith(source *De
 	case DeploymentUpgradeState_FieldPathSelectorStage:
 		leftValue := fpv.value.(Deployment_UpgradeState_Stage)
 		rightValue := source.GetStage()
+		if (leftValue) == (rightValue) {
+			return 0, true
+		} else if (leftValue) < (rightValue) {
+			return -1, true
+		} else {
+			return 1, true
+		}
+	case DeploymentUpgradeState_FieldPathSelectorDbDataTargetVersion:
+		leftValue := fpv.value.(string)
+		rightValue := source.GetDbDataTargetVersion()
 		if (leftValue) == (rightValue) {
 			return 0, true
 		} else if (leftValue) < (rightValue) {
@@ -2298,6 +2417,10 @@ func (fpaov *DeploymentUpgradeState_FieldTerminalPathArrayOfValues) GetRawValues
 		for _, v := range fpaov.values.([]Deployment_UpgradeState_Stage) {
 			values = append(values, v)
 		}
+	case DeploymentUpgradeState_FieldPathSelectorDbDataTargetVersion:
+		for _, v := range fpaov.values.([]string) {
+			values = append(values, v)
+		}
 	}
 	return
 }
@@ -2315,5 +2438,558 @@ func (fpaov *DeploymentUpgradeState_FieldTerminalPathArrayOfValues) AsPendingSha
 }
 func (fpaov *DeploymentUpgradeState_FieldTerminalPathArrayOfValues) AsStageArrayOfValues() ([]Deployment_UpgradeState_Stage, bool) {
 	res, ok := fpaov.values.([]Deployment_UpgradeState_Stage)
+	return res, ok
+}
+func (fpaov *DeploymentUpgradeState_FieldTerminalPathArrayOfValues) AsDbDataTargetVersionArrayOfValues() ([]string, bool) {
+	res, ok := fpaov.values.([]string)
+	return res, ok
+}
+
+// FieldPath provides implementation to handle
+// https://github.com/protocolbuffers/protobuf/blob/master/src/google/protobuf/field_mask.proto
+type DeploymentDbUpdateTaskStatus_FieldPath interface {
+	gotenobject.FieldPath
+	Selector() DeploymentDbUpdateTaskStatus_FieldPathSelector
+	Get(source *Deployment_DbUpdateTaskStatus) []interface{}
+	GetSingle(source *Deployment_DbUpdateTaskStatus) (interface{}, bool)
+	ClearValue(item *Deployment_DbUpdateTaskStatus)
+
+	// Those methods build corresponding DeploymentDbUpdateTaskStatus_FieldPathValue
+	// (or array of values) and holds passed value. Panics if injected type is incorrect.
+	WithIValue(value interface{}) DeploymentDbUpdateTaskStatus_FieldPathValue
+	WithIArrayOfValues(values interface{}) DeploymentDbUpdateTaskStatus_FieldPathArrayOfValues
+	WithIArrayItemValue(value interface{}) DeploymentDbUpdateTaskStatus_FieldPathArrayItemValue
+}
+
+type DeploymentDbUpdateTaskStatus_FieldPathSelector int32
+
+const (
+	DeploymentDbUpdateTaskStatus_FieldPathSelectorTaskTag       DeploymentDbUpdateTaskStatus_FieldPathSelector = 0
+	DeploymentDbUpdateTaskStatus_FieldPathSelectorShardsCount   DeploymentDbUpdateTaskStatus_FieldPathSelector = 1
+	DeploymentDbUpdateTaskStatus_FieldPathSelectorReadyShards   DeploymentDbUpdateTaskStatus_FieldPathSelector = 2
+	DeploymentDbUpdateTaskStatus_FieldPathSelectorTargetVersion DeploymentDbUpdateTaskStatus_FieldPathSelector = 3
+	DeploymentDbUpdateTaskStatus_FieldPathSelectorProgressBar   DeploymentDbUpdateTaskStatus_FieldPathSelector = 4
+)
+
+func (s DeploymentDbUpdateTaskStatus_FieldPathSelector) String() string {
+	switch s {
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorTaskTag:
+		return "task_tag"
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorShardsCount:
+		return "shards_count"
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorReadyShards:
+		return "ready_shards"
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorTargetVersion:
+		return "target_version"
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorProgressBar:
+		return "progress_bar"
+	default:
+		panic(fmt.Sprintf("Invalid selector for Deployment_DbUpdateTaskStatus: %d", s))
+	}
+}
+
+func BuildDeploymentDbUpdateTaskStatus_FieldPath(fp gotenobject.RawFieldPath) (DeploymentDbUpdateTaskStatus_FieldPath, error) {
+	if len(fp) == 0 {
+		return nil, status.Error(codes.InvalidArgument, "empty field path for object Deployment_DbUpdateTaskStatus")
+	}
+	if len(fp) == 1 {
+		switch fp[0] {
+		case "task_tag", "taskTag", "task-tag":
+			return &DeploymentDbUpdateTaskStatus_FieldTerminalPath{selector: DeploymentDbUpdateTaskStatus_FieldPathSelectorTaskTag}, nil
+		case "shards_count", "shardsCount", "shards-count":
+			return &DeploymentDbUpdateTaskStatus_FieldTerminalPath{selector: DeploymentDbUpdateTaskStatus_FieldPathSelectorShardsCount}, nil
+		case "ready_shards", "readyShards", "ready-shards":
+			return &DeploymentDbUpdateTaskStatus_FieldTerminalPath{selector: DeploymentDbUpdateTaskStatus_FieldPathSelectorReadyShards}, nil
+		case "target_version", "targetVersion", "target-version":
+			return &DeploymentDbUpdateTaskStatus_FieldTerminalPath{selector: DeploymentDbUpdateTaskStatus_FieldPathSelectorTargetVersion}, nil
+		case "progress_bar", "progressBar", "progress-bar":
+			return &DeploymentDbUpdateTaskStatus_FieldTerminalPath{selector: DeploymentDbUpdateTaskStatus_FieldPathSelectorProgressBar}, nil
+		}
+	}
+	return nil, status.Errorf(codes.InvalidArgument, "unknown field path '%s' for object Deployment_DbUpdateTaskStatus", fp)
+}
+
+func ParseDeploymentDbUpdateTaskStatus_FieldPath(rawField string) (DeploymentDbUpdateTaskStatus_FieldPath, error) {
+	fp, err := gotenobject.ParseRawFieldPath(rawField)
+	if err != nil {
+		return nil, err
+	}
+	return BuildDeploymentDbUpdateTaskStatus_FieldPath(fp)
+}
+
+func MustParseDeploymentDbUpdateTaskStatus_FieldPath(rawField string) DeploymentDbUpdateTaskStatus_FieldPath {
+	fp, err := ParseDeploymentDbUpdateTaskStatus_FieldPath(rawField)
+	if err != nil {
+		panic(err)
+	}
+	return fp
+}
+
+type DeploymentDbUpdateTaskStatus_FieldTerminalPath struct {
+	selector DeploymentDbUpdateTaskStatus_FieldPathSelector
+}
+
+var _ DeploymentDbUpdateTaskStatus_FieldPath = (*DeploymentDbUpdateTaskStatus_FieldTerminalPath)(nil)
+
+func (fp *DeploymentDbUpdateTaskStatus_FieldTerminalPath) Selector() DeploymentDbUpdateTaskStatus_FieldPathSelector {
+	return fp.selector
+}
+
+// String returns path representation in proto convention
+func (fp *DeploymentDbUpdateTaskStatus_FieldTerminalPath) String() string {
+	return fp.selector.String()
+}
+
+// JSONString returns path representation is JSON convention
+func (fp *DeploymentDbUpdateTaskStatus_FieldTerminalPath) JSONString() string {
+	return strcase.ToLowerCamel(fp.String())
+}
+
+// Get returns all values pointed by specific field from source Deployment_DbUpdateTaskStatus
+func (fp *DeploymentDbUpdateTaskStatus_FieldTerminalPath) Get(source *Deployment_DbUpdateTaskStatus) (values []interface{}) {
+	if source != nil {
+		switch fp.selector {
+		case DeploymentDbUpdateTaskStatus_FieldPathSelectorTaskTag:
+			values = append(values, source.TaskTag)
+		case DeploymentDbUpdateTaskStatus_FieldPathSelectorShardsCount:
+			values = append(values, source.ShardsCount)
+		case DeploymentDbUpdateTaskStatus_FieldPathSelectorReadyShards:
+			for _, value := range source.GetReadyShards() {
+				values = append(values, value)
+			}
+		case DeploymentDbUpdateTaskStatus_FieldPathSelectorTargetVersion:
+			values = append(values, source.TargetVersion)
+		case DeploymentDbUpdateTaskStatus_FieldPathSelectorProgressBar:
+			for _, value := range source.GetProgressBar() {
+				values = append(values, value)
+			}
+		default:
+			panic(fmt.Sprintf("Invalid selector for Deployment_DbUpdateTaskStatus: %d", fp.selector))
+		}
+	}
+	return
+}
+
+func (fp *DeploymentDbUpdateTaskStatus_FieldTerminalPath) GetRaw(source proto.Message) []interface{} {
+	return fp.Get(source.(*Deployment_DbUpdateTaskStatus))
+}
+
+// GetSingle returns value pointed by specific field of from source Deployment_DbUpdateTaskStatus
+func (fp *DeploymentDbUpdateTaskStatus_FieldTerminalPath) GetSingle(source *Deployment_DbUpdateTaskStatus) (interface{}, bool) {
+	switch fp.selector {
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorTaskTag:
+		return source.GetTaskTag(), source != nil
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorShardsCount:
+		return source.GetShardsCount(), source != nil
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorReadyShards:
+		res := source.GetReadyShards()
+		return res, res != nil
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorTargetVersion:
+		return source.GetTargetVersion(), source != nil
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorProgressBar:
+		res := source.GetProgressBar()
+		return res, res != nil
+	default:
+		panic(fmt.Sprintf("Invalid selector for Deployment_DbUpdateTaskStatus: %d", fp.selector))
+	}
+}
+
+func (fp *DeploymentDbUpdateTaskStatus_FieldTerminalPath) GetSingleRaw(source proto.Message) (interface{}, bool) {
+	return fp.GetSingle(source.(*Deployment_DbUpdateTaskStatus))
+}
+
+// GetDefault returns a default value of the field type
+func (fp *DeploymentDbUpdateTaskStatus_FieldTerminalPath) GetDefault() interface{} {
+	switch fp.selector {
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorTaskTag:
+		return ""
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorShardsCount:
+		return int64(0)
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorReadyShards:
+		return ([]int64)(nil)
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorTargetVersion:
+		return ""
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorProgressBar:
+		return ([]*structpb.Struct)(nil)
+	default:
+		panic(fmt.Sprintf("Invalid selector for Deployment_DbUpdateTaskStatus: %d", fp.selector))
+	}
+}
+
+func (fp *DeploymentDbUpdateTaskStatus_FieldTerminalPath) ClearValue(item *Deployment_DbUpdateTaskStatus) {
+	if item != nil {
+		switch fp.selector {
+		case DeploymentDbUpdateTaskStatus_FieldPathSelectorTaskTag:
+			item.TaskTag = ""
+		case DeploymentDbUpdateTaskStatus_FieldPathSelectorShardsCount:
+			item.ShardsCount = int64(0)
+		case DeploymentDbUpdateTaskStatus_FieldPathSelectorReadyShards:
+			item.ReadyShards = nil
+		case DeploymentDbUpdateTaskStatus_FieldPathSelectorTargetVersion:
+			item.TargetVersion = ""
+		case DeploymentDbUpdateTaskStatus_FieldPathSelectorProgressBar:
+			item.ProgressBar = nil
+		default:
+			panic(fmt.Sprintf("Invalid selector for Deployment_DbUpdateTaskStatus: %d", fp.selector))
+		}
+	}
+}
+
+func (fp *DeploymentDbUpdateTaskStatus_FieldTerminalPath) ClearValueRaw(item proto.Message) {
+	fp.ClearValue(item.(*Deployment_DbUpdateTaskStatus))
+}
+
+// IsLeaf - whether field path is holds simple value
+func (fp *DeploymentDbUpdateTaskStatus_FieldTerminalPath) IsLeaf() bool {
+	return fp.selector == DeploymentDbUpdateTaskStatus_FieldPathSelectorTaskTag ||
+		fp.selector == DeploymentDbUpdateTaskStatus_FieldPathSelectorShardsCount ||
+		fp.selector == DeploymentDbUpdateTaskStatus_FieldPathSelectorReadyShards ||
+		fp.selector == DeploymentDbUpdateTaskStatus_FieldPathSelectorTargetVersion ||
+		fp.selector == DeploymentDbUpdateTaskStatus_FieldPathSelectorProgressBar
+}
+
+func (fp *DeploymentDbUpdateTaskStatus_FieldTerminalPath) SplitIntoTerminalIPaths() []gotenobject.FieldPath {
+	return []gotenobject.FieldPath{fp}
+}
+
+func (fp *DeploymentDbUpdateTaskStatus_FieldTerminalPath) WithIValue(value interface{}) DeploymentDbUpdateTaskStatus_FieldPathValue {
+	switch fp.selector {
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorTaskTag:
+		return &DeploymentDbUpdateTaskStatus_FieldTerminalPathValue{DeploymentDbUpdateTaskStatus_FieldTerminalPath: *fp, value: value.(string)}
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorShardsCount:
+		return &DeploymentDbUpdateTaskStatus_FieldTerminalPathValue{DeploymentDbUpdateTaskStatus_FieldTerminalPath: *fp, value: value.(int64)}
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorReadyShards:
+		return &DeploymentDbUpdateTaskStatus_FieldTerminalPathValue{DeploymentDbUpdateTaskStatus_FieldTerminalPath: *fp, value: value.([]int64)}
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorTargetVersion:
+		return &DeploymentDbUpdateTaskStatus_FieldTerminalPathValue{DeploymentDbUpdateTaskStatus_FieldTerminalPath: *fp, value: value.(string)}
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorProgressBar:
+		return &DeploymentDbUpdateTaskStatus_FieldTerminalPathValue{DeploymentDbUpdateTaskStatus_FieldTerminalPath: *fp, value: value.([]*structpb.Struct)}
+	default:
+		panic(fmt.Sprintf("Invalid selector for Deployment_DbUpdateTaskStatus: %d", fp.selector))
+	}
+}
+
+func (fp *DeploymentDbUpdateTaskStatus_FieldTerminalPath) WithRawIValue(value interface{}) gotenobject.FieldPathValue {
+	return fp.WithIValue(value)
+}
+
+func (fp *DeploymentDbUpdateTaskStatus_FieldTerminalPath) WithIArrayOfValues(values interface{}) DeploymentDbUpdateTaskStatus_FieldPathArrayOfValues {
+	fpaov := &DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues{DeploymentDbUpdateTaskStatus_FieldTerminalPath: *fp}
+	switch fp.selector {
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorTaskTag:
+		return &DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues{DeploymentDbUpdateTaskStatus_FieldTerminalPath: *fp, values: values.([]string)}
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorShardsCount:
+		return &DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues{DeploymentDbUpdateTaskStatus_FieldTerminalPath: *fp, values: values.([]int64)}
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorReadyShards:
+		return &DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues{DeploymentDbUpdateTaskStatus_FieldTerminalPath: *fp, values: values.([][]int64)}
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorTargetVersion:
+		return &DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues{DeploymentDbUpdateTaskStatus_FieldTerminalPath: *fp, values: values.([]string)}
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorProgressBar:
+		return &DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues{DeploymentDbUpdateTaskStatus_FieldTerminalPath: *fp, values: values.([][]*structpb.Struct)}
+	default:
+		panic(fmt.Sprintf("Invalid selector for Deployment_DbUpdateTaskStatus: %d", fp.selector))
+	}
+	return fpaov
+}
+
+func (fp *DeploymentDbUpdateTaskStatus_FieldTerminalPath) WithRawIArrayOfValues(values interface{}) gotenobject.FieldPathArrayOfValues {
+	return fp.WithIArrayOfValues(values)
+}
+
+func (fp *DeploymentDbUpdateTaskStatus_FieldTerminalPath) WithIArrayItemValue(value interface{}) DeploymentDbUpdateTaskStatus_FieldPathArrayItemValue {
+	switch fp.selector {
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorReadyShards:
+		return &DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayItemValue{DeploymentDbUpdateTaskStatus_FieldTerminalPath: *fp, value: value.(int64)}
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorProgressBar:
+		return &DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayItemValue{DeploymentDbUpdateTaskStatus_FieldTerminalPath: *fp, value: value.(*structpb.Struct)}
+	default:
+		panic(fmt.Sprintf("Invalid selector for Deployment_DbUpdateTaskStatus: %d", fp.selector))
+	}
+}
+
+func (fp *DeploymentDbUpdateTaskStatus_FieldTerminalPath) WithRawIArrayItemValue(value interface{}) gotenobject.FieldPathArrayItemValue {
+	return fp.WithIArrayItemValue(value)
+}
+
+// DeploymentDbUpdateTaskStatus_FieldPathValue allows storing values for DbUpdateTaskStatus fields according to their type
+type DeploymentDbUpdateTaskStatus_FieldPathValue interface {
+	DeploymentDbUpdateTaskStatus_FieldPath
+	gotenobject.FieldPathValue
+	SetTo(target **Deployment_DbUpdateTaskStatus)
+	CompareWith(*Deployment_DbUpdateTaskStatus) (cmp int, comparable bool)
+}
+
+func ParseDeploymentDbUpdateTaskStatus_FieldPathValue(pathStr, valueStr string) (DeploymentDbUpdateTaskStatus_FieldPathValue, error) {
+	fp, err := ParseDeploymentDbUpdateTaskStatus_FieldPath(pathStr)
+	if err != nil {
+		return nil, err
+	}
+	fpv, err := gotenobject.ParseFieldPathValue(fp, valueStr)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "error parsing DbUpdateTaskStatus field path value from %s: %v", valueStr, err)
+	}
+	return fpv.(DeploymentDbUpdateTaskStatus_FieldPathValue), nil
+}
+
+func MustParseDeploymentDbUpdateTaskStatus_FieldPathValue(pathStr, valueStr string) DeploymentDbUpdateTaskStatus_FieldPathValue {
+	fpv, err := ParseDeploymentDbUpdateTaskStatus_FieldPathValue(pathStr, valueStr)
+	if err != nil {
+		panic(err)
+	}
+	return fpv
+}
+
+type DeploymentDbUpdateTaskStatus_FieldTerminalPathValue struct {
+	DeploymentDbUpdateTaskStatus_FieldTerminalPath
+	value interface{}
+}
+
+var _ DeploymentDbUpdateTaskStatus_FieldPathValue = (*DeploymentDbUpdateTaskStatus_FieldTerminalPathValue)(nil)
+
+// GetRawValue returns raw value stored under selected path for 'DbUpdateTaskStatus' as interface{}
+func (fpv *DeploymentDbUpdateTaskStatus_FieldTerminalPathValue) GetRawValue() interface{} {
+	return fpv.value
+}
+func (fpv *DeploymentDbUpdateTaskStatus_FieldTerminalPathValue) AsTaskTagValue() (string, bool) {
+	res, ok := fpv.value.(string)
+	return res, ok
+}
+func (fpv *DeploymentDbUpdateTaskStatus_FieldTerminalPathValue) AsShardsCountValue() (int64, bool) {
+	res, ok := fpv.value.(int64)
+	return res, ok
+}
+func (fpv *DeploymentDbUpdateTaskStatus_FieldTerminalPathValue) AsReadyShardsValue() ([]int64, bool) {
+	res, ok := fpv.value.([]int64)
+	return res, ok
+}
+func (fpv *DeploymentDbUpdateTaskStatus_FieldTerminalPathValue) AsTargetVersionValue() (string, bool) {
+	res, ok := fpv.value.(string)
+	return res, ok
+}
+func (fpv *DeploymentDbUpdateTaskStatus_FieldTerminalPathValue) AsProgressBarValue() ([]*structpb.Struct, bool) {
+	res, ok := fpv.value.([]*structpb.Struct)
+	return res, ok
+}
+
+// SetTo stores value for selected field for object DbUpdateTaskStatus
+func (fpv *DeploymentDbUpdateTaskStatus_FieldTerminalPathValue) SetTo(target **Deployment_DbUpdateTaskStatus) {
+	if *target == nil {
+		*target = new(Deployment_DbUpdateTaskStatus)
+	}
+	switch fpv.selector {
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorTaskTag:
+		(*target).TaskTag = fpv.value.(string)
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorShardsCount:
+		(*target).ShardsCount = fpv.value.(int64)
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorReadyShards:
+		(*target).ReadyShards = fpv.value.([]int64)
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorTargetVersion:
+		(*target).TargetVersion = fpv.value.(string)
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorProgressBar:
+		(*target).ProgressBar = fpv.value.([]*structpb.Struct)
+	default:
+		panic(fmt.Sprintf("Invalid selector for Deployment_DbUpdateTaskStatus: %d", fpv.selector))
+	}
+}
+
+func (fpv *DeploymentDbUpdateTaskStatus_FieldTerminalPathValue) SetToRaw(target proto.Message) {
+	typedObject := target.(*Deployment_DbUpdateTaskStatus)
+	fpv.SetTo(&typedObject)
+}
+
+// CompareWith compares value in the 'DeploymentDbUpdateTaskStatus_FieldTerminalPathValue' with the value under path in 'Deployment_DbUpdateTaskStatus'.
+func (fpv *DeploymentDbUpdateTaskStatus_FieldTerminalPathValue) CompareWith(source *Deployment_DbUpdateTaskStatus) (int, bool) {
+	switch fpv.selector {
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorTaskTag:
+		leftValue := fpv.value.(string)
+		rightValue := source.GetTaskTag()
+		if (leftValue) == (rightValue) {
+			return 0, true
+		} else if (leftValue) < (rightValue) {
+			return -1, true
+		} else {
+			return 1, true
+		}
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorShardsCount:
+		leftValue := fpv.value.(int64)
+		rightValue := source.GetShardsCount()
+		if (leftValue) == (rightValue) {
+			return 0, true
+		} else if (leftValue) < (rightValue) {
+			return -1, true
+		} else {
+			return 1, true
+		}
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorReadyShards:
+		return 0, false
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorTargetVersion:
+		leftValue := fpv.value.(string)
+		rightValue := source.GetTargetVersion()
+		if (leftValue) == (rightValue) {
+			return 0, true
+		} else if (leftValue) < (rightValue) {
+			return -1, true
+		} else {
+			return 1, true
+		}
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorProgressBar:
+		return 0, false
+	default:
+		panic(fmt.Sprintf("Invalid selector for Deployment_DbUpdateTaskStatus: %d", fpv.selector))
+	}
+}
+
+func (fpv *DeploymentDbUpdateTaskStatus_FieldTerminalPathValue) CompareWithRaw(source proto.Message) (int, bool) {
+	return fpv.CompareWith(source.(*Deployment_DbUpdateTaskStatus))
+}
+
+// DeploymentDbUpdateTaskStatus_FieldPathArrayItemValue allows storing single item in Path-specific values for DbUpdateTaskStatus according to their type
+// Present only for array (repeated) types.
+type DeploymentDbUpdateTaskStatus_FieldPathArrayItemValue interface {
+	gotenobject.FieldPathArrayItemValue
+	DeploymentDbUpdateTaskStatus_FieldPath
+	ContainsValue(*Deployment_DbUpdateTaskStatus) bool
+}
+
+// ParseDeploymentDbUpdateTaskStatus_FieldPathArrayItemValue parses string and JSON-encoded value to its Value
+func ParseDeploymentDbUpdateTaskStatus_FieldPathArrayItemValue(pathStr, valueStr string) (DeploymentDbUpdateTaskStatus_FieldPathArrayItemValue, error) {
+	fp, err := ParseDeploymentDbUpdateTaskStatus_FieldPath(pathStr)
+	if err != nil {
+		return nil, err
+	}
+	fpaiv, err := gotenobject.ParseFieldPathArrayItemValue(fp, valueStr)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "error parsing DbUpdateTaskStatus field path array item value from %s: %v", valueStr, err)
+	}
+	return fpaiv.(DeploymentDbUpdateTaskStatus_FieldPathArrayItemValue), nil
+}
+
+func MustParseDeploymentDbUpdateTaskStatus_FieldPathArrayItemValue(pathStr, valueStr string) DeploymentDbUpdateTaskStatus_FieldPathArrayItemValue {
+	fpaiv, err := ParseDeploymentDbUpdateTaskStatus_FieldPathArrayItemValue(pathStr, valueStr)
+	if err != nil {
+		panic(err)
+	}
+	return fpaiv
+}
+
+type DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayItemValue struct {
+	DeploymentDbUpdateTaskStatus_FieldTerminalPath
+	value interface{}
+}
+
+var _ DeploymentDbUpdateTaskStatus_FieldPathArrayItemValue = (*DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayItemValue)(nil)
+
+// GetRawValue returns stored element value for array in object Deployment_DbUpdateTaskStatus as interface{}
+func (fpaiv *DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayItemValue) GetRawItemValue() interface{} {
+	return fpaiv.value
+}
+func (fpaiv *DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayItemValue) AsReadyShardsItemValue() (int64, bool) {
+	res, ok := fpaiv.value.(int64)
+	return res, ok
+}
+func (fpaiv *DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayItemValue) AsProgressBarItemValue() (*structpb.Struct, bool) {
+	res, ok := fpaiv.value.(*structpb.Struct)
+	return res, ok
+}
+
+func (fpaiv *DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayItemValue) GetSingle(source *Deployment_DbUpdateTaskStatus) (interface{}, bool) {
+	return nil, false
+}
+
+func (fpaiv *DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayItemValue) GetSingleRaw(source proto.Message) (interface{}, bool) {
+	return fpaiv.GetSingle(source.(*Deployment_DbUpdateTaskStatus))
+}
+
+// Contains returns a boolean indicating if value that is being held is present in given 'DbUpdateTaskStatus'
+func (fpaiv *DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayItemValue) ContainsValue(source *Deployment_DbUpdateTaskStatus) bool {
+	slice := fpaiv.DeploymentDbUpdateTaskStatus_FieldTerminalPath.Get(source)
+	for _, v := range slice {
+		if asProtoMsg, ok := fpaiv.value.(proto.Message); ok {
+			if proto.Equal(asProtoMsg, v.(proto.Message)) {
+				return true
+			}
+		} else if reflect.DeepEqual(v, fpaiv.value) {
+			return true
+		}
+	}
+	return false
+}
+
+// DeploymentDbUpdateTaskStatus_FieldPathArrayOfValues allows storing slice of values for DbUpdateTaskStatus fields according to their type
+type DeploymentDbUpdateTaskStatus_FieldPathArrayOfValues interface {
+	gotenobject.FieldPathArrayOfValues
+	DeploymentDbUpdateTaskStatus_FieldPath
+}
+
+func ParseDeploymentDbUpdateTaskStatus_FieldPathArrayOfValues(pathStr, valuesStr string) (DeploymentDbUpdateTaskStatus_FieldPathArrayOfValues, error) {
+	fp, err := ParseDeploymentDbUpdateTaskStatus_FieldPath(pathStr)
+	if err != nil {
+		return nil, err
+	}
+	fpaov, err := gotenobject.ParseFieldPathArrayOfValues(fp, valuesStr)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "error parsing DbUpdateTaskStatus field path array of values from %s: %v", valuesStr, err)
+	}
+	return fpaov.(DeploymentDbUpdateTaskStatus_FieldPathArrayOfValues), nil
+}
+
+func MustParseDeploymentDbUpdateTaskStatus_FieldPathArrayOfValues(pathStr, valuesStr string) DeploymentDbUpdateTaskStatus_FieldPathArrayOfValues {
+	fpaov, err := ParseDeploymentDbUpdateTaskStatus_FieldPathArrayOfValues(pathStr, valuesStr)
+	if err != nil {
+		panic(err)
+	}
+	return fpaov
+}
+
+type DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues struct {
+	DeploymentDbUpdateTaskStatus_FieldTerminalPath
+	values interface{}
+}
+
+var _ DeploymentDbUpdateTaskStatus_FieldPathArrayOfValues = (*DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues)(nil)
+
+func (fpaov *DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues) GetRawValues() (values []interface{}) {
+	switch fpaov.selector {
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorTaskTag:
+		for _, v := range fpaov.values.([]string) {
+			values = append(values, v)
+		}
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorShardsCount:
+		for _, v := range fpaov.values.([]int64) {
+			values = append(values, v)
+		}
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorReadyShards:
+		for _, v := range fpaov.values.([][]int64) {
+			values = append(values, v)
+		}
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorTargetVersion:
+		for _, v := range fpaov.values.([]string) {
+			values = append(values, v)
+		}
+	case DeploymentDbUpdateTaskStatus_FieldPathSelectorProgressBar:
+		for _, v := range fpaov.values.([][]*structpb.Struct) {
+			values = append(values, v)
+		}
+	}
+	return
+}
+func (fpaov *DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues) AsTaskTagArrayOfValues() ([]string, bool) {
+	res, ok := fpaov.values.([]string)
+	return res, ok
+}
+func (fpaov *DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues) AsShardsCountArrayOfValues() ([]int64, bool) {
+	res, ok := fpaov.values.([]int64)
+	return res, ok
+}
+func (fpaov *DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues) AsReadyShardsArrayOfValues() ([][]int64, bool) {
+	res, ok := fpaov.values.([][]int64)
+	return res, ok
+}
+func (fpaov *DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues) AsTargetVersionArrayOfValues() ([]string, bool) {
+	res, ok := fpaov.values.([]string)
+	return res, ok
+}
+func (fpaov *DeploymentDbUpdateTaskStatus_FieldTerminalPathArrayOfValues) AsProgressBarArrayOfValues() ([][]*structpb.Struct, bool) {
+	res, ok := fpaov.values.([][]*structpb.Struct)
 	return res, ok
 }

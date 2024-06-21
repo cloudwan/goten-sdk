@@ -13,6 +13,7 @@ import (
 	region "github.com/cloudwan/goten-sdk/meta-service/resources/v1/region"
 	service "github.com/cloudwan/goten-sdk/meta-service/resources/v1/service"
 	meta "github.com/cloudwan/goten-sdk/types/meta"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 )
 
 // ensure the imports are used
@@ -22,6 +23,7 @@ var (
 
 // make sure we're using proto imports
 var (
+	_ = &structpb.Struct{}
 	_ = &region.Region{}
 	_ = &service.Service{}
 	_ = &meta.Meta{}

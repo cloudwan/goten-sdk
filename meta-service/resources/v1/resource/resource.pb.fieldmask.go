@@ -57,7 +57,6 @@ func FullResource_FieldMask() *Resource_FieldMask {
 	res.Paths = append(res.Paths, &Resource_FieldTerminalPath{selector: Resource_FieldPathSelectorFqn})
 	res.Paths = append(res.Paths, &Resource_FieldTerminalPath{selector: Resource_FieldPathSelectorVersions})
 	res.Paths = append(res.Paths, &Resource_FieldTerminalPath{selector: Resource_FieldPathSelectorVersionedInfos})
-	res.Paths = append(res.Paths, &Resource_FieldTerminalPath{selector: Resource_FieldPathSelectorAllowedServicesGeneration})
 	return res
 }
 
@@ -101,7 +100,7 @@ func (fieldMask *Resource_FieldMask) IsFull() bool {
 	if fieldMask == nil {
 		return false
 	}
-	presentSelectors := make([]bool, 7)
+	presentSelectors := make([]bool, 6)
 	for _, path := range fieldMask.Paths {
 		if asFinal, ok := path.(*Resource_FieldTerminalPath); ok {
 			presentSelectors[int(asFinal.selector)] = true
@@ -131,7 +130,7 @@ func (fieldMask *Resource_FieldMask) Reset() {
 
 func (fieldMask *Resource_FieldMask) Subtract(other *Resource_FieldMask) *Resource_FieldMask {
 	result := &Resource_FieldMask{}
-	removedSelectors := make([]bool, 7)
+	removedSelectors := make([]bool, 6)
 	otherSubMasks := map[Resource_FieldPathSelector]gotenobject.FieldMask{
 		Resource_FieldPathSelectorMetadata:       &meta.Meta_FieldMask{},
 		Resource_FieldPathSelectorVersionedInfos: &Resource_VersionedInfo_FieldMask{},
@@ -191,7 +190,6 @@ func (fieldMask *Resource_FieldMask) FilterInputFields() *Resource_FieldMask {
 	for _, path := range fieldMask.Paths {
 		switch path.Selector() {
 		case Resource_FieldPathSelectorFqn:
-		case Resource_FieldPathSelectorAllowedServicesGeneration:
 		case Resource_FieldPathSelectorMetadata:
 			if _, ok := path.(*Resource_FieldTerminalPath); ok {
 				for _, subpath := range meta.FullMeta_FieldMask().FilterInputFields().Paths {
@@ -353,8 +351,6 @@ func (fieldMask *Resource_FieldMask) Project(source *Resource) *Resource {
 			case Resource_FieldPathSelectorVersionedInfos:
 				result.VersionedInfos = source.VersionedInfos
 				wholeVersionedInfosAccepted = true
-			case Resource_FieldPathSelectorAllowedServicesGeneration:
-				result.AllowedServicesGeneration = source.AllowedServicesGeneration
 			}
 		case *Resource_FieldSubPath:
 			switch tp.selector {

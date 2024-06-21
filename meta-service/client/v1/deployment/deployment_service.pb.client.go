@@ -59,6 +59,8 @@ type DeploymentServiceClient interface {
 	DeleteDeployment(ctx context.Context, in *DeleteDeploymentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	BeginUpgrade(ctx context.Context, in *BeginUpgradeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	NotifyShardsUpgradeReadiness(ctx context.Context, in *NotifyShardsUpgradeReadinessRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	GetOrRegisterDataUpdateTask(ctx context.Context, in *GetOrRegisterDataUpdateTaskRequest, opts ...grpc.CallOption) (*GetOrRegisterDataUpdateTaskResponse, error)
+	UpdateDataTaskUpdate(ctx context.Context, in *UpdateDataTaskUpdateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type client struct {
@@ -209,6 +211,24 @@ func (c *client) BeginUpgrade(ctx context.Context, in *BeginUpgradeRequest, opts
 func (c *client) NotifyShardsUpgradeReadiness(ctx context.Context, in *NotifyShardsUpgradeReadinessRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/goten.meta.v1.DeploymentService/NotifyShardsUpgradeReadiness", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *client) GetOrRegisterDataUpdateTask(ctx context.Context, in *GetOrRegisterDataUpdateTaskRequest, opts ...grpc.CallOption) (*GetOrRegisterDataUpdateTaskResponse, error) {
+	out := new(GetOrRegisterDataUpdateTaskResponse)
+	err := c.cc.Invoke(ctx, "/goten.meta.v1.DeploymentService/GetOrRegisterDataUpdateTask", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *client) UpdateDataTaskUpdate(ctx context.Context, in *UpdateDataTaskUpdateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/goten.meta.v1.DeploymentService/UpdateDataTaskUpdate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}

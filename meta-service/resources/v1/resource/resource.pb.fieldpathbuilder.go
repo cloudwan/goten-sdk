@@ -43,9 +43,6 @@ func (ResourceFieldPathBuilder) Versions() ResourcePathSelectorVersions {
 func (ResourceFieldPathBuilder) VersionedInfos() ResourcePathSelectorVersionedInfos {
 	return ResourcePathSelectorVersionedInfos{}
 }
-func (ResourceFieldPathBuilder) AllowedServicesGeneration() ResourcePathSelectorAllowedServicesGeneration {
-	return ResourcePathSelectorAllowedServicesGeneration{}
-}
 
 type ResourcePathSelectorName struct{}
 
@@ -841,20 +838,6 @@ func (s ResourcePathSelectorVersionedInfosIsRegional) WithValue(value bool) *Res
 
 func (s ResourcePathSelectorVersionedInfosIsRegional) WithArrayOfValues(values []bool) *Resource_FieldSubPathArrayOfValues {
 	return s.FieldPath().WithIArrayOfValues(values).(*Resource_FieldSubPathArrayOfValues)
-}
-
-type ResourcePathSelectorAllowedServicesGeneration struct{}
-
-func (ResourcePathSelectorAllowedServicesGeneration) FieldPath() *Resource_FieldTerminalPath {
-	return &Resource_FieldTerminalPath{selector: Resource_FieldPathSelectorAllowedServicesGeneration}
-}
-
-func (s ResourcePathSelectorAllowedServicesGeneration) WithValue(value int64) *Resource_FieldTerminalPathValue {
-	return s.FieldPath().WithIValue(value).(*Resource_FieldTerminalPathValue)
-}
-
-func (s ResourcePathSelectorAllowedServicesGeneration) WithArrayOfValues(values []int64) *Resource_FieldTerminalPathArrayOfValues {
-	return s.FieldPath().WithIArrayOfValues(values).(*Resource_FieldTerminalPathArrayOfValues)
 }
 
 type ResourceVersionedInfoFieldPathBuilder struct{}

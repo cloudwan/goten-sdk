@@ -46,10 +46,6 @@ message Resource {
   // only. Sorted exactly like versions list.
   repeated VersionedInfo versioned_infos = 6;
 
-  // Internal allowed services generation field from Service resource.
-  // Used for metadata synchronization.
-  int64 allowed_services_generation = 7;
-
   // VersionedInfo contains specification part that is versioned.
   message VersionedInfo {
     // Resource version this information applies to.
@@ -58,4 +54,6 @@ message Resource {
     // Whether resource is regional.
     bool is_regional = 2;
   }
+
+  reserved 7;
 }
