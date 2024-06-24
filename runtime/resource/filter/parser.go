@@ -236,8 +236,12 @@ any = "\u0000"…"\uffff" .
 
 func Parse(data []byte) (*Expression, error) {
 	filter := &Expression{}
-	if err := filterParser.Parse(bytes.NewReader(data), filter); err != nil {
-		return nil, fmt.Errorf("error when parsing filter expression: \"%q\": %s", string(data), err)
+	if len(data) == 2 && data[0] == '(' && data[1] == ')' {
+		filter.And = append(filter.And, AndCondition{})
+	} else {
+		if err := filterParser.Parse(bytes.NewReader(data), filter); err != nil {
+			return nil, fmt.Errorf("error when parsing filter expression: \"%q\": %s", string(data), err)
+		}
 	}
 	return filter, nil
 }
