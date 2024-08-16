@@ -54,7 +54,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Request message for method [GetService][goten.meta.v1.GetService]
+// A request message of the GetService method.
 type GetServiceRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -161,7 +161,7 @@ func (m *GetServiceRequest) SetView(fv view.View) {
 	m.View = fv
 }
 
-// Request message for method [BatchGetServices][goten.meta.v1.BatchGetServices]
+// A request message of the BatchGetServices method.
 type BatchGetServicesRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -268,7 +268,7 @@ func (m *BatchGetServicesRequest) SetView(fv view.View) {
 	m.View = fv
 }
 
-// BatchGetServicesResponse
+// A response message of the BatchGetServices method.
 type BatchGetServicesResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -357,7 +357,7 @@ func (m *BatchGetServicesResponse) SetMissing(fv []*service.Name) {
 	m.Missing = fv
 }
 
-// Request message for method [ListServices][goten.meta.v1.ListServices]
+// A request message of the ListServices method.
 type ListServicesRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -367,7 +367,7 @@ type ListServicesRequest struct {
 	PageSize int32 `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty" firestore:"pageSize"`
 	// A token identifying a page of results the server should return.
 	// Typically, this is the value of
-	// [ListServicesResponse.next_page_token][goten.meta.v1.ListServicesResponse.next_page_token]
+	// ListServicesResponse.next_page_token.
 	PageToken *service.PagerCursor `protobuf:"bytes,3,opt,customtype=PagerCursor,name=page_token,json=pageToken,proto3" json:"page_token,omitempty" firestore:"pageToken"`
 	// Order By -
 	// https://cloud.google.com/apis/design/design_patterns#list_pagination list
@@ -541,18 +541,20 @@ func (m *ListServicesRequest) SetIncludePagingInfo(fv bool) {
 	m.IncludePagingInfo = fv
 }
 
-// Request message for method [ListServices][goten.meta.v1.ListServices]
+// A response message of the ListServices method.
 type ListServicesResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 	// The list of Services
 	Services []*service.Service `protobuf:"bytes,1,rep,name=services,proto3" json:"services,omitempty" firestore:"services"`
-	// A token to retrieve previous page of results. Pass this value in the
-	// [ListServicesRequest.page_token][goten.meta.v1.ListServicesRequest.page_token]
+	// A token to retrieve previous page of results.
+	//
+	// Pass this value in the ListServicesRequest.page_token.
 	PrevPageToken *service.PagerCursor `protobuf:"bytes,3,opt,customtype=PagerCursor,name=prev_page_token,json=prevPageToken,proto3" json:"prev_page_token,omitempty" firestore:"prevPageToken"`
-	// A token to retrieve next page of results. Pass this value in the
-	// [ListServicesRequest.page_token][goten.meta.v1.ListServicesRequest.page_token]
+	// A token to retrieve next page of results.
+	//
+	// Pass this value in the ListServicesRequest.page_token.
 	NextPageToken *service.PagerCursor `protobuf:"bytes,4,opt,customtype=PagerCursor,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty" firestore:"nextPageToken"`
 	// Current offset from the first page or 0 if no page tokens were given,
 	// paging info was not requested or there was an error while trying to get
@@ -684,7 +686,7 @@ func (m *ListServicesResponse) SetTotalResultsCount(fv int32) {
 	m.TotalResultsCount = fv
 }
 
-// Request message for method [WatchService][goten.meta.v1.WatchService]
+// A request message of the WatchService method.
 type WatchServiceRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -791,7 +793,7 @@ func (m *WatchServiceRequest) SetView(fv view.View) {
 	m.View = fv
 }
 
-// WatchServiceResponse
+// A response message of the WatchService method.
 type WatchServiceResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -863,7 +865,7 @@ func (m *WatchServiceResponse) SetChange(fv *service.ServiceChange) {
 	m.Change = fv
 }
 
-// Request message for method [WatchServices][goten.meta.v1.WatchServices]
+// A request message of the WatchServices method.
 type WatchServicesRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1104,7 +1106,7 @@ func (m *WatchServicesRequest) SetMaxChunkSize(fv int32) {
 	m.MaxChunkSize = fv
 }
 
-// WatchServicesResponse
+// A response message of the WatchServices method.
 type WatchServicesResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1307,7 +1309,7 @@ func (m *WatchServicesResponse) SetIsHardReset(fv bool) {
 	m.IsHardReset = fv
 }
 
-// Request message for method [CreateService][goten.meta.v1.CreateService]
+// A request message of the CreateService method.
 type CreateServiceRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1380,7 +1382,7 @@ func (m *CreateServiceRequest) SetService(fv *service.Service) {
 	m.Service = fv
 }
 
-// Request message for method [UpdateService][goten.meta.v1.UpdateService]
+// A request message of the UpdateService method.
 type UpdateServiceRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1510,7 +1512,7 @@ func (m *UpdateServiceRequest) SetAllowMissing(fv bool) {
 	m.AllowMissing = fv
 }
 
-// Request message for method [DeleteService][goten.meta.v1.DeleteService]
+// A request message of the DeleteService method.
 type DeleteServiceRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
