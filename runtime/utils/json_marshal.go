@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -11,6 +12,10 @@ import (
 )
 
 func JsonMarshal(v interface{}) ([]byte, error) {
+	if asByteArray, isByteArray := v.([]byte); isByteArray {
+		encoded := fmt.Sprintf("\"%s\"", base64.StdEncoding.EncodeToString(asByteArray))
+		return []byte(encoded), nil
+	}
 	vv := reflect.ValueOf(v)
 	if vv.Kind() == reflect.Slice {
 		items := make([]string, 0, vv.Len())

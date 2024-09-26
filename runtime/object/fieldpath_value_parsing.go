@@ -1,6 +1,7 @@
 package object
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"reflect"
 	"strconv"
@@ -60,6 +61,20 @@ func ParseFieldPathArrayOfValues(fp FieldPath, valuesStr string) (FieldPathArray
 }
 
 func parseValueForType(defaultValue interface{}, valueStr string) (interface{}, error) {
+	// special case for byte[] array
+	if _, isBytesArray := defaultValue.([]byte); isBytesArray {
+		if len(valueStr) > 0 && (valueStr[0] == '"' || valueStr[0] == '\'') {
+			valueStr = valueStr[1:]
+		}
+		if len(valueStr) > 0 && (valueStr[len(valueStr)-1] == '"' || valueStr[len(valueStr)-1] == '\'') {
+			valueStr = valueStr[:len(valueStr)-1]
+		}
+		bytesArray, err := base64.StdEncoding.DecodeString(valueStr)
+		if err != nil {
+			return nil, err
+		}
+		return bytesArray, nil
+	}
 	valueType := reflect.TypeOf(defaultValue)
 
 	// Elements in containers (maps, slices) are often different compared to their go types.
