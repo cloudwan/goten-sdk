@@ -1,6 +1,7 @@
 package resource
 
 import (
+	"fmt"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/cloudwan/goten-sdk/types/meta"
@@ -47,6 +48,18 @@ func MakeMetaOwnerReference(owner Resource, flags ...OwnerRefFlag) *meta.OwnerRe
 		Version: ownerDescriptor.GetResourceTypeName().Version(),
 		Name:    owner.GetRawName().String(),
 		Region:  owner.GetMetadata().GetSyncing().GetOwningRegion(),
+	}
+	if ownerRef.GetRegion() == "" {
+		if IsRegionalResource(ownerDescriptor) {
+			ownerRef.Region = owner.GetRawName().GetIdParts()["region_id"]
+		}
+	}
+	if ownerRef.GetRegion() == "" {
+		panic(fmt.Errorf(
+			"MakeMetaOwnerReference must be called with a resource containing region ID in either "+
+				"metadata.syncing.owning_region field path, or with region ID segment in the name field. Got resource "+
+				"with name %s, and metadata.syncing.owning_region is unset",
+			owner.GetRawName()))
 	}
 	for _, flag := range flags {
 		flag(ownerRef)

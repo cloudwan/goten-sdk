@@ -10,6 +10,22 @@ import (
 	preflect "google.golang.org/protobuf/reflect/protoreflect"
 )
 
+// ToProtoCase Converts name to proto convention (replacing capital
+// letters with _ and lowercase letter).
+// No special treatment for digits.
+func ToProtoCase(name string) string {
+	var b []byte
+	for i := 0; i < len(name); i++ {
+		c := name[i]
+		if 'A' <= c && c <= 'Z' {
+			b = append(b, '_')
+			c += 'a' - 'A' // convert to lowercase
+		}
+		b = append(b, c)
+	}
+	return string(b)
+}
+
 // TODO: Consider removing GetValueFromProtoPath
 
 func GetValueFromProtoPath(msg proto.Message, rawPath string) (interface{}, bool) {
@@ -18,7 +34,7 @@ func GetValueFromProtoPath(msg proto.Message, rawPath string) (interface{}, bool
 	lastMsgItem := msg
 
 	for i, item := range pathItems {
-		fd := descriptor.Fields().ByName(preflect.Name(strcase.ToSnake(item)))
+		fd := descriptor.Fields().ByName(preflect.Name(ToProtoCase(item)))
 		if fd == nil {
 			panic(fmt.Sprintf("Field path %s not found in message %s", rawPath, descriptor.Name()))
 		}
@@ -79,7 +95,7 @@ func GetValuesFromProtoPath(msg proto.Message, rawPath string) ([]interface{}, b
 		}
 		descriptor := msg.ProtoReflect().Descriptor()
 		pathItem := remainingPathItems[0]
-		fd := descriptor.Fields().ByName(preflect.Name(strcase.ToSnake(pathItem)))
+		fd := descriptor.Fields().ByName(preflect.Name(ToProtoCase(pathItem)))
 		if fd == nil {
 			return nil, false, fmt.Errorf("field path %s not found in message %s (item %s)", rawPath, origDescriptor.Name(), pathItem)
 		}
@@ -191,7 +207,7 @@ func SetFieldPathValueToProtoMsg(target proto.Message, rawPath string, v any) {
 	pathItems := strings.Split(rawPath, ".")
 	lastMsgItem := target
 	for i, item := range pathItems {
-		fd := descriptor.Fields().ByName(preflect.Name(strcase.ToSnake(item)))
+		fd := descriptor.Fields().ByName(preflect.Name(ToProtoCase(item)))
 		if fd == nil {
 			panic(fmt.Sprintf("Field path %s not found in message %s", rawPath, descriptor.Name()))
 		}
