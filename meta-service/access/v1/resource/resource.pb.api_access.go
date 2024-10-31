@@ -130,6 +130,9 @@ func (a *apiResourceAccess) WatchResource(ctx context.Context, query *resource.G
 		Name:      &query.Reference.Name,
 		FieldMask: query.Mask,
 	}
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	changesStream, initErr := a.client.WatchResource(ctx, request)
 	if initErr != nil {
 		return initErr
@@ -153,6 +156,7 @@ func (a *apiResourceAccess) WatchResources(ctx context.Context, query *resource.
 		MaxChunkSize: int32(query.ChunkSize),
 		Type:         query.WatchType,
 		ResumeToken:  query.ResumeToken,
+		StartingTime: query.StartingTime,
 	}
 	if query.Pager != nil {
 		request.OrderBy = query.Pager.OrderBy
@@ -162,6 +166,9 @@ func (a *apiResourceAccess) WatchResources(ctx context.Context, query *resource.
 	if query.Filter != nil && query.Filter.GetCondition() != nil {
 		request.Filter, request.Parent = getParentAndFilter(query.Filter)
 	}
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	changesStream, initErr := a.client.WatchResources(ctx, request)
 	if initErr != nil {
 		return initErr

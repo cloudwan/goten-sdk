@@ -130,6 +130,9 @@ func (a *apiDeploymentAccess) WatchDeployment(ctx context.Context, query *deploy
 		Name:      &query.Reference.Name,
 		FieldMask: query.Mask,
 	}
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	changesStream, initErr := a.client.WatchDeployment(ctx, request)
 	if initErr != nil {
 		return initErr
@@ -153,6 +156,7 @@ func (a *apiDeploymentAccess) WatchDeployments(ctx context.Context, query *deplo
 		MaxChunkSize: int32(query.ChunkSize),
 		Type:         query.WatchType,
 		ResumeToken:  query.ResumeToken,
+		StartingTime: query.StartingTime,
 	}
 	if query.Pager != nil {
 		request.OrderBy = query.Pager.OrderBy
@@ -162,6 +166,9 @@ func (a *apiDeploymentAccess) WatchDeployments(ctx context.Context, query *deplo
 	if query.Filter != nil && query.Filter.GetCondition() != nil {
 		request.Filter, request.Parent = getParentAndFilter(query.Filter)
 	}
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	changesStream, initErr := a.client.WatchDeployments(ctx, request)
 	if initErr != nil {
 		return initErr

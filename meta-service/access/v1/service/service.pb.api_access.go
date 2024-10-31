@@ -127,6 +127,9 @@ func (a *apiServiceAccess) WatchService(ctx context.Context, query *service.GetQ
 		Name:      &query.Reference.Name,
 		FieldMask: query.Mask,
 	}
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	changesStream, initErr := a.client.WatchService(ctx, request)
 	if initErr != nil {
 		return initErr
@@ -150,12 +153,16 @@ func (a *apiServiceAccess) WatchServices(ctx context.Context, query *service.Wat
 		MaxChunkSize: int32(query.ChunkSize),
 		Type:         query.WatchType,
 		ResumeToken:  query.ResumeToken,
+		StartingTime: query.StartingTime,
 	}
 	if query.Pager != nil {
 		request.OrderBy = query.Pager.OrderBy
 		request.PageSize = int32(query.Pager.Limit)
 		request.PageToken = query.Pager.Cursor
 	}
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	changesStream, initErr := a.client.WatchServices(ctx, request)
 	if initErr != nil {
 		return initErr
