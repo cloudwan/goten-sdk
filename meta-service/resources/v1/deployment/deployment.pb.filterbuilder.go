@@ -250,16 +250,24 @@ func (b *filterCndBuilder) CurrentVersion() *filterCndBuilderCurrentVersion {
 	return &filterCndBuilderCurrentVersion{builder: b.builder}
 }
 
+func (b *filterCndBuilder) DbDataVersion() *filterCndBuilderDbDataVersion {
+	return &filterCndBuilderDbDataVersion{builder: b.builder}
+}
+
+func (b *filterCndBuilder) DbLocationTag() *filterCndBuilderDbLocationTag {
+	return &filterCndBuilderDbLocationTag{builder: b.builder}
+}
+
 func (b *filterCndBuilder) AutomaticVersionSwitch() *filterCndBuilderAutomaticVersionSwitch {
 	return &filterCndBuilderAutomaticVersionSwitch{builder: b.builder}
 }
 
-func (b *filterCndBuilder) UpgradeState() *filterCndBuilderUpgradeState {
-	return &filterCndBuilderUpgradeState{builder: b.builder}
+func (b *filterCndBuilder) AvailableUpgrade() *filterCndBuilderAvailableUpgrade {
+	return &filterCndBuilderAvailableUpgrade{builder: b.builder}
 }
 
-func (b *filterCndBuilder) DbDataVersion() *filterCndBuilderDbDataVersion {
-	return &filterCndBuilderDbDataVersion{builder: b.builder}
+func (b *filterCndBuilder) UpgradeState() *filterCndBuilderUpgradeState {
+	return &filterCndBuilderUpgradeState{builder: b.builder}
 }
 
 func (b *filterCndBuilder) DataUpdateStatuses() *filterCndBuilderDataUpdateStatuses {
@@ -3196,6 +3204,124 @@ func (b *filterCndBuilderCurrentVersion) compare(op gotenfilter.CompareOperator,
 	})
 }
 
+type filterCndBuilderDbDataVersion struct {
+	builder *FilterBuilder
+}
+
+func (b *filterCndBuilderDbDataVersion) Eq(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Eq, value)
+}
+
+func (b *filterCndBuilderDbDataVersion) Neq(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Neq, value)
+}
+
+func (b *filterCndBuilderDbDataVersion) Gt(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Gt, value)
+}
+
+func (b *filterCndBuilderDbDataVersion) Gte(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Gte, value)
+}
+
+func (b *filterCndBuilderDbDataVersion) Lt(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Lt, value)
+}
+
+func (b *filterCndBuilderDbDataVersion) Lte(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Lte, value)
+}
+
+func (b *filterCndBuilderDbDataVersion) In(values []string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIn{
+		Deployment_FieldPathArrayOfValues: NewDeploymentFieldPathBuilder().DbDataVersion().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderDbDataVersion) NotIn(values []string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionNotIn{
+		Deployment_FieldPathArrayOfValues: NewDeploymentFieldPathBuilder().DbDataVersion().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderDbDataVersion) IsNull() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNull{
+		FieldPath: NewDeploymentFieldPathBuilder().DbDataVersion().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderDbDataVersion) IsNan() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNaN{
+		FieldPath: NewDeploymentFieldPathBuilder().DbDataVersion().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderDbDataVersion) compare(op gotenfilter.CompareOperator, value string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionCompare{
+		Operator:                  op,
+		Deployment_FieldPathValue: NewDeploymentFieldPathBuilder().DbDataVersion().WithValue(value),
+	})
+}
+
+type filterCndBuilderDbLocationTag struct {
+	builder *FilterBuilder
+}
+
+func (b *filterCndBuilderDbLocationTag) Eq(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Eq, value)
+}
+
+func (b *filterCndBuilderDbLocationTag) Neq(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Neq, value)
+}
+
+func (b *filterCndBuilderDbLocationTag) Gt(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Gt, value)
+}
+
+func (b *filterCndBuilderDbLocationTag) Gte(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Gte, value)
+}
+
+func (b *filterCndBuilderDbLocationTag) Lt(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Lt, value)
+}
+
+func (b *filterCndBuilderDbLocationTag) Lte(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Lte, value)
+}
+
+func (b *filterCndBuilderDbLocationTag) In(values []string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIn{
+		Deployment_FieldPathArrayOfValues: NewDeploymentFieldPathBuilder().DbLocationTag().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderDbLocationTag) NotIn(values []string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionNotIn{
+		Deployment_FieldPathArrayOfValues: NewDeploymentFieldPathBuilder().DbLocationTag().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderDbLocationTag) IsNull() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNull{
+		FieldPath: NewDeploymentFieldPathBuilder().DbLocationTag().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderDbLocationTag) IsNan() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNaN{
+		FieldPath: NewDeploymentFieldPathBuilder().DbLocationTag().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderDbLocationTag) compare(op gotenfilter.CompareOperator, value string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionCompare{
+		Operator:                  op,
+		Deployment_FieldPathValue: NewDeploymentFieldPathBuilder().DbLocationTag().WithValue(value),
+	})
+}
+
 type filterCndBuilderAutomaticVersionSwitch struct {
 	builder *FilterBuilder
 }
@@ -3252,6 +3378,317 @@ func (b *filterCndBuilderAutomaticVersionSwitch) compare(op gotenfilter.CompareO
 	return b.builder.addCond(&FilterConditionCompare{
 		Operator:                  op,
 		Deployment_FieldPathValue: NewDeploymentFieldPathBuilder().AutomaticVersionSwitch().WithValue(value),
+	})
+}
+
+type filterCndBuilderAvailableUpgrade struct {
+	builder *FilterBuilder
+}
+
+func (b *filterCndBuilderAvailableUpgrade) Eq(value *Deployment_AvailableUpgrade) *FilterBuilder {
+	return b.compare(gotenfilter.Eq, value)
+}
+
+func (b *filterCndBuilderAvailableUpgrade) Neq(value *Deployment_AvailableUpgrade) *FilterBuilder {
+	return b.compare(gotenfilter.Neq, value)
+}
+
+func (b *filterCndBuilderAvailableUpgrade) Gt(value *Deployment_AvailableUpgrade) *FilterBuilder {
+	return b.compare(gotenfilter.Gt, value)
+}
+
+func (b *filterCndBuilderAvailableUpgrade) Gte(value *Deployment_AvailableUpgrade) *FilterBuilder {
+	return b.compare(gotenfilter.Gte, value)
+}
+
+func (b *filterCndBuilderAvailableUpgrade) Lt(value *Deployment_AvailableUpgrade) *FilterBuilder {
+	return b.compare(gotenfilter.Lt, value)
+}
+
+func (b *filterCndBuilderAvailableUpgrade) Lte(value *Deployment_AvailableUpgrade) *FilterBuilder {
+	return b.compare(gotenfilter.Lte, value)
+}
+
+func (b *filterCndBuilderAvailableUpgrade) In(values []*Deployment_AvailableUpgrade) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIn{
+		Deployment_FieldPathArrayOfValues: NewDeploymentFieldPathBuilder().AvailableUpgrade().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderAvailableUpgrade) NotIn(values []*Deployment_AvailableUpgrade) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionNotIn{
+		Deployment_FieldPathArrayOfValues: NewDeploymentFieldPathBuilder().AvailableUpgrade().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderAvailableUpgrade) IsNull() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNull{
+		FieldPath: NewDeploymentFieldPathBuilder().AvailableUpgrade().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderAvailableUpgrade) IsNan() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNaN{
+		FieldPath: NewDeploymentFieldPathBuilder().AvailableUpgrade().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderAvailableUpgrade) compare(op gotenfilter.CompareOperator, value *Deployment_AvailableUpgrade) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionCompare{
+		Operator:                  op,
+		Deployment_FieldPathValue: NewDeploymentFieldPathBuilder().AvailableUpgrade().WithValue(value),
+	})
+}
+
+func (b *filterCndBuilderAvailableUpgrade) ApiVersion() *filterCndBuilderAvailableUpgradeApiVersion {
+	return &filterCndBuilderAvailableUpgradeApiVersion{builder: b.builder}
+}
+
+func (b *filterCndBuilderAvailableUpgrade) DbDataVersion() *filterCndBuilderAvailableUpgradeDbDataVersion {
+	return &filterCndBuilderAvailableUpgradeDbDataVersion{builder: b.builder}
+}
+
+func (b *filterCndBuilderAvailableUpgrade) DbLocationTag() *filterCndBuilderAvailableUpgradeDbLocationTag {
+	return &filterCndBuilderAvailableUpgradeDbLocationTag{builder: b.builder}
+}
+
+func (b *filterCndBuilderAvailableUpgrade) TotalShardsCount() *filterCndBuilderAvailableUpgradeTotalShardsCount {
+	return &filterCndBuilderAvailableUpgradeTotalShardsCount{builder: b.builder}
+}
+
+type filterCndBuilderAvailableUpgradeApiVersion struct {
+	builder *FilterBuilder
+}
+
+func (b *filterCndBuilderAvailableUpgradeApiVersion) Eq(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Eq, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeApiVersion) Neq(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Neq, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeApiVersion) Gt(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Gt, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeApiVersion) Gte(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Gte, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeApiVersion) Lt(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Lt, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeApiVersion) Lte(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Lte, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeApiVersion) In(values []string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIn{
+		Deployment_FieldPathArrayOfValues: NewDeploymentFieldPathBuilder().AvailableUpgrade().ApiVersion().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderAvailableUpgradeApiVersion) NotIn(values []string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionNotIn{
+		Deployment_FieldPathArrayOfValues: NewDeploymentFieldPathBuilder().AvailableUpgrade().ApiVersion().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderAvailableUpgradeApiVersion) IsNull() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNull{
+		FieldPath: NewDeploymentFieldPathBuilder().AvailableUpgrade().ApiVersion().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderAvailableUpgradeApiVersion) IsNan() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNaN{
+		FieldPath: NewDeploymentFieldPathBuilder().AvailableUpgrade().ApiVersion().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderAvailableUpgradeApiVersion) compare(op gotenfilter.CompareOperator, value string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionCompare{
+		Operator:                  op,
+		Deployment_FieldPathValue: NewDeploymentFieldPathBuilder().AvailableUpgrade().ApiVersion().WithValue(value),
+	})
+}
+
+type filterCndBuilderAvailableUpgradeDbDataVersion struct {
+	builder *FilterBuilder
+}
+
+func (b *filterCndBuilderAvailableUpgradeDbDataVersion) Eq(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Eq, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeDbDataVersion) Neq(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Neq, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeDbDataVersion) Gt(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Gt, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeDbDataVersion) Gte(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Gte, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeDbDataVersion) Lt(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Lt, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeDbDataVersion) Lte(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Lte, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeDbDataVersion) In(values []string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIn{
+		Deployment_FieldPathArrayOfValues: NewDeploymentFieldPathBuilder().AvailableUpgrade().DbDataVersion().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderAvailableUpgradeDbDataVersion) NotIn(values []string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionNotIn{
+		Deployment_FieldPathArrayOfValues: NewDeploymentFieldPathBuilder().AvailableUpgrade().DbDataVersion().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderAvailableUpgradeDbDataVersion) IsNull() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNull{
+		FieldPath: NewDeploymentFieldPathBuilder().AvailableUpgrade().DbDataVersion().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderAvailableUpgradeDbDataVersion) IsNan() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNaN{
+		FieldPath: NewDeploymentFieldPathBuilder().AvailableUpgrade().DbDataVersion().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderAvailableUpgradeDbDataVersion) compare(op gotenfilter.CompareOperator, value string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionCompare{
+		Operator:                  op,
+		Deployment_FieldPathValue: NewDeploymentFieldPathBuilder().AvailableUpgrade().DbDataVersion().WithValue(value),
+	})
+}
+
+type filterCndBuilderAvailableUpgradeDbLocationTag struct {
+	builder *FilterBuilder
+}
+
+func (b *filterCndBuilderAvailableUpgradeDbLocationTag) Eq(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Eq, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeDbLocationTag) Neq(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Neq, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeDbLocationTag) Gt(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Gt, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeDbLocationTag) Gte(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Gte, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeDbLocationTag) Lt(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Lt, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeDbLocationTag) Lte(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Lte, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeDbLocationTag) In(values []string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIn{
+		Deployment_FieldPathArrayOfValues: NewDeploymentFieldPathBuilder().AvailableUpgrade().DbLocationTag().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderAvailableUpgradeDbLocationTag) NotIn(values []string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionNotIn{
+		Deployment_FieldPathArrayOfValues: NewDeploymentFieldPathBuilder().AvailableUpgrade().DbLocationTag().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderAvailableUpgradeDbLocationTag) IsNull() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNull{
+		FieldPath: NewDeploymentFieldPathBuilder().AvailableUpgrade().DbLocationTag().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderAvailableUpgradeDbLocationTag) IsNan() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNaN{
+		FieldPath: NewDeploymentFieldPathBuilder().AvailableUpgrade().DbLocationTag().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderAvailableUpgradeDbLocationTag) compare(op gotenfilter.CompareOperator, value string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionCompare{
+		Operator:                  op,
+		Deployment_FieldPathValue: NewDeploymentFieldPathBuilder().AvailableUpgrade().DbLocationTag().WithValue(value),
+	})
+}
+
+type filterCndBuilderAvailableUpgradeTotalShardsCount struct {
+	builder *FilterBuilder
+}
+
+func (b *filterCndBuilderAvailableUpgradeTotalShardsCount) Eq(value int64) *FilterBuilder {
+	return b.compare(gotenfilter.Eq, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeTotalShardsCount) Neq(value int64) *FilterBuilder {
+	return b.compare(gotenfilter.Neq, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeTotalShardsCount) Gt(value int64) *FilterBuilder {
+	return b.compare(gotenfilter.Gt, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeTotalShardsCount) Gte(value int64) *FilterBuilder {
+	return b.compare(gotenfilter.Gte, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeTotalShardsCount) Lt(value int64) *FilterBuilder {
+	return b.compare(gotenfilter.Lt, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeTotalShardsCount) Lte(value int64) *FilterBuilder {
+	return b.compare(gotenfilter.Lte, value)
+}
+
+func (b *filterCndBuilderAvailableUpgradeTotalShardsCount) In(values []int64) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIn{
+		Deployment_FieldPathArrayOfValues: NewDeploymentFieldPathBuilder().AvailableUpgrade().TotalShardsCount().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderAvailableUpgradeTotalShardsCount) NotIn(values []int64) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionNotIn{
+		Deployment_FieldPathArrayOfValues: NewDeploymentFieldPathBuilder().AvailableUpgrade().TotalShardsCount().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderAvailableUpgradeTotalShardsCount) IsNull() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNull{
+		FieldPath: NewDeploymentFieldPathBuilder().AvailableUpgrade().TotalShardsCount().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderAvailableUpgradeTotalShardsCount) IsNan() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNaN{
+		FieldPath: NewDeploymentFieldPathBuilder().AvailableUpgrade().TotalShardsCount().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderAvailableUpgradeTotalShardsCount) compare(op gotenfilter.CompareOperator, value int64) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionCompare{
+		Operator:                  op,
+		Deployment_FieldPathValue: NewDeploymentFieldPathBuilder().AvailableUpgrade().TotalShardsCount().WithValue(value),
 	})
 }
 
@@ -3332,6 +3769,10 @@ func (b *filterCndBuilderUpgradeState) Stage() *filterCndBuilderUpgradeStateStag
 
 func (b *filterCndBuilderUpgradeState) DbDataTargetVersion() *filterCndBuilderUpgradeStateDbDataTargetVersion {
 	return &filterCndBuilderUpgradeStateDbDataTargetVersion{builder: b.builder}
+}
+
+func (b *filterCndBuilderUpgradeState) DbTargetLocationTag() *filterCndBuilderUpgradeStateDbTargetLocationTag {
+	return &filterCndBuilderUpgradeStateDbTargetLocationTag{builder: b.builder}
 }
 
 type filterCndBuilderUpgradeStateTargetVersion struct {
@@ -3697,62 +4138,62 @@ func (b *filterCndBuilderUpgradeStateDbDataTargetVersion) compare(op gotenfilter
 	})
 }
 
-type filterCndBuilderDbDataVersion struct {
+type filterCndBuilderUpgradeStateDbTargetLocationTag struct {
 	builder *FilterBuilder
 }
 
-func (b *filterCndBuilderDbDataVersion) Eq(value string) *FilterBuilder {
+func (b *filterCndBuilderUpgradeStateDbTargetLocationTag) Eq(value string) *FilterBuilder {
 	return b.compare(gotenfilter.Eq, value)
 }
 
-func (b *filterCndBuilderDbDataVersion) Neq(value string) *FilterBuilder {
+func (b *filterCndBuilderUpgradeStateDbTargetLocationTag) Neq(value string) *FilterBuilder {
 	return b.compare(gotenfilter.Neq, value)
 }
 
-func (b *filterCndBuilderDbDataVersion) Gt(value string) *FilterBuilder {
+func (b *filterCndBuilderUpgradeStateDbTargetLocationTag) Gt(value string) *FilterBuilder {
 	return b.compare(gotenfilter.Gt, value)
 }
 
-func (b *filterCndBuilderDbDataVersion) Gte(value string) *FilterBuilder {
+func (b *filterCndBuilderUpgradeStateDbTargetLocationTag) Gte(value string) *FilterBuilder {
 	return b.compare(gotenfilter.Gte, value)
 }
 
-func (b *filterCndBuilderDbDataVersion) Lt(value string) *FilterBuilder {
+func (b *filterCndBuilderUpgradeStateDbTargetLocationTag) Lt(value string) *FilterBuilder {
 	return b.compare(gotenfilter.Lt, value)
 }
 
-func (b *filterCndBuilderDbDataVersion) Lte(value string) *FilterBuilder {
+func (b *filterCndBuilderUpgradeStateDbTargetLocationTag) Lte(value string) *FilterBuilder {
 	return b.compare(gotenfilter.Lte, value)
 }
 
-func (b *filterCndBuilderDbDataVersion) In(values []string) *FilterBuilder {
+func (b *filterCndBuilderUpgradeStateDbTargetLocationTag) In(values []string) *FilterBuilder {
 	return b.builder.addCond(&FilterConditionIn{
-		Deployment_FieldPathArrayOfValues: NewDeploymentFieldPathBuilder().DbDataVersion().WithArrayOfValues(values),
+		Deployment_FieldPathArrayOfValues: NewDeploymentFieldPathBuilder().UpgradeState().DbTargetLocationTag().WithArrayOfValues(values),
 	})
 }
 
-func (b *filterCndBuilderDbDataVersion) NotIn(values []string) *FilterBuilder {
+func (b *filterCndBuilderUpgradeStateDbTargetLocationTag) NotIn(values []string) *FilterBuilder {
 	return b.builder.addCond(&FilterConditionNotIn{
-		Deployment_FieldPathArrayOfValues: NewDeploymentFieldPathBuilder().DbDataVersion().WithArrayOfValues(values),
+		Deployment_FieldPathArrayOfValues: NewDeploymentFieldPathBuilder().UpgradeState().DbTargetLocationTag().WithArrayOfValues(values),
 	})
 }
 
-func (b *filterCndBuilderDbDataVersion) IsNull() *FilterBuilder {
+func (b *filterCndBuilderUpgradeStateDbTargetLocationTag) IsNull() *FilterBuilder {
 	return b.builder.addCond(&FilterConditionIsNull{
-		FieldPath: NewDeploymentFieldPathBuilder().DbDataVersion().FieldPath(),
+		FieldPath: NewDeploymentFieldPathBuilder().UpgradeState().DbTargetLocationTag().FieldPath(),
 	})
 }
 
-func (b *filterCndBuilderDbDataVersion) IsNan() *FilterBuilder {
+func (b *filterCndBuilderUpgradeStateDbTargetLocationTag) IsNan() *FilterBuilder {
 	return b.builder.addCond(&FilterConditionIsNaN{
-		FieldPath: NewDeploymentFieldPathBuilder().DbDataVersion().FieldPath(),
+		FieldPath: NewDeploymentFieldPathBuilder().UpgradeState().DbTargetLocationTag().FieldPath(),
 	})
 }
 
-func (b *filterCndBuilderDbDataVersion) compare(op gotenfilter.CompareOperator, value string) *FilterBuilder {
+func (b *filterCndBuilderUpgradeStateDbTargetLocationTag) compare(op gotenfilter.CompareOperator, value string) *FilterBuilder {
 	return b.builder.addCond(&FilterConditionCompare{
 		Operator:                  op,
-		Deployment_FieldPathValue: NewDeploymentFieldPathBuilder().DbDataVersion().WithValue(value),
+		Deployment_FieldPathValue: NewDeploymentFieldPathBuilder().UpgradeState().DbTargetLocationTag().WithValue(value),
 	})
 }
 

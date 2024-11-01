@@ -37,7 +37,7 @@ var (
 	_ = url.Parse
 	_ = gotenvalidate.NewValidationError
 
-	validation_regex_BeginUpgradeRequest_db_data_version_49f735b4dbb98b565e79d44caeb0f8e7                       = regexp.MustCompile("(^$|^v[0-9.]{1,64}$)")
+	validation_regex_SetAvailableUpgradeRequest_target_db_data_version_49f735b4dbb98b565e79d44caeb0f8e7         = regexp.MustCompile("(^$|^v[0-9.]{1,64}$)")
 	validation_regex_GetOrRegisterDataUpdateTaskRequest_db_data_target_version_4cebaaa10b56d200ea5ab99425a64e1d = regexp.MustCompile("^v[0-9.]{1,64}$")
 	validation_regex_UpdateDataTaskUpdateRequest_db_data_target_version_4cebaaa10b56d200ea5ab99425a64e1d        = regexp.MustCompile("^v[0-9.]{1,64}$")
 )
@@ -53,8 +53,17 @@ func (obj *BeginUpgradeRequest) GotenValidate() error {
 	if obj == nil {
 		return nil
 	}
-	if !validation_regex_BeginUpgradeRequest_db_data_version_49f735b4dbb98b565e79d44caeb0f8e7.Match([]byte(obj.DbDataVersion)) {
-		return gotenvalidate.NewValidationError("BeginUpgradeRequest", "dbDataVersion", obj.DbDataVersion, "field must match the regex (^$|^v[0-9.]{1,64}$)", nil)
+	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
+		return cvobj.GotenCustomValidate()
+	}
+	return nil
+}
+func (obj *SetAvailableUpgradeRequest) GotenValidate() error {
+	if obj == nil {
+		return nil
+	}
+	if !validation_regex_SetAvailableUpgradeRequest_target_db_data_version_49f735b4dbb98b565e79d44caeb0f8e7.Match([]byte(obj.TargetDbDataVersion)) {
+		return gotenvalidate.NewValidationError("SetAvailableUpgradeRequest", "targetDbDataVersion", obj.TargetDbDataVersion, "field must match the regex (^$|^v[0-9.]{1,64}$)", nil)
 	}
 	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
 		return cvobj.GotenCustomValidate()

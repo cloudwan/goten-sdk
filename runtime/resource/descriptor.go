@@ -43,6 +43,7 @@ type Descriptor interface {
 	GetParentResDescriptors() []Descriptor
 
 	SupportsMetadata() bool
+	SupportsDbConstraints() bool
 
 	// ParseFieldPath returns a field path matching given string. If does not exist, error
 	// is returned and returned interface is None.

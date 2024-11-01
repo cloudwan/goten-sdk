@@ -9,6 +9,17 @@ import (
 
 type DbDataVersion []int
 
+func (v DbDataVersion) String() string {
+	s := "v"
+	for i, vi := range v {
+		if i > 0 {
+			s += "."
+		}
+		s += fmt.Sprintf("%d", vi)
+	}
+	return s
+}
+
 func ParseAsDbDataVersion(dataVersion string) (DbDataVersion, error) {
 	var verRegexp = regexp.MustCompile("^v[0-9.]{1,64}$")
 	if !verRegexp.MatchString(dataVersion) {

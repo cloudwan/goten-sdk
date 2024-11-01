@@ -16,11 +16,22 @@ message BeginUpgradeRequest {
   //  name of goten.meta.v1.Deployment
   string name = 1;
 
-  string target_version = 2;
+  reserved 2, 3, 4;
+}
+
+// Request message for method
+// [SetAvailableUpgrade][goten.meta.v1.SetAvailableUpgrade]
+message SetAvailableUpgradeRequest {
+  //  name of goten.meta.v1.Deployment
+  string name = 1;
+
+  string target_api_version = 2;
 
   int64 total_shards_count = 3;
 
-  string db_data_version = 4;
+  string target_db_data_version = 4;
+
+  string target_db_location_tag = 5;
 }
 
 // Request message for method
@@ -34,6 +45,8 @@ message NotifyShardsUpgradeReadinessRequest {
   int64 shards_to = 3;
 
   bool ready = 4;
+
+  int64 total_shards_count = 5;
 }
 
 // Request message for method

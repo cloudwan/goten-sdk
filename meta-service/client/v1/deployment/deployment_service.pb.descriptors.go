@@ -42,6 +42,7 @@ var (
 	updateDeploymentDescriptor             *UpdateDeploymentDescriptor
 	deleteDeploymentDescriptor             *DeleteDeploymentDescriptor
 	beginUpgradeDescriptor                 *BeginUpgradeDescriptor
+	setAvailableUpgradeDescriptor          *SetAvailableUpgradeDescriptor
 	notifyShardsUpgradeReadinessDescriptor *NotifyShardsUpgradeReadinessDescriptor
 	getOrRegisterDataUpdateTaskDescriptor  *GetOrRegisterDataUpdateTaskDescriptor
 	updateDataTaskUpdateDescriptor         *UpdateDataTaskUpdateDescriptor
@@ -2074,6 +2075,221 @@ func GetBeginUpgradeDescriptor() *BeginUpgradeDescriptor {
 	return beginUpgradeDescriptor
 }
 
+type SetAvailableUpgradeDescriptor struct{}
+
+type SetAvailableUpgradeDescriptorClientMsgHandle struct{}
+
+type SetAvailableUpgradeDescriptorServerMsgHandle struct{}
+
+func (d *SetAvailableUpgradeDescriptor) NewEmptyClientMsg() proto.Message {
+	return &SetAvailableUpgradeRequest{}
+}
+
+func (d *SetAvailableUpgradeDescriptor) NewEmptyServerMsg() proto.Message {
+	return &emptypb.Empty{}
+}
+
+func (d *SetAvailableUpgradeDescriptor) IsUnary() bool {
+	return true
+}
+
+func (d *SetAvailableUpgradeDescriptor) IsClientStream() bool {
+	return false
+}
+
+func (d *SetAvailableUpgradeDescriptor) IsServerStream() bool {
+	return false
+}
+
+func (d *SetAvailableUpgradeDescriptor) IsCollection() bool {
+	return false
+}
+
+func (d *SetAvailableUpgradeDescriptor) IsPlural() bool {
+	return false
+}
+
+func (d *SetAvailableUpgradeDescriptor) HasResource() bool {
+	return true
+}
+
+func (d *SetAvailableUpgradeDescriptor) RequestHasResourceBody() bool {
+	return false
+}
+
+func (d *SetAvailableUpgradeDescriptor) GetVerb() string {
+	return "setAvailableUpgrade"
+}
+
+func (d *SetAvailableUpgradeDescriptor) GetMethodName() string {
+	return "SetAvailableUpgrade"
+}
+
+func (d *SetAvailableUpgradeDescriptor) GetFullMethodName() string {
+	return "/goten.meta.v1.DeploymentService/SetAvailableUpgrade"
+}
+
+func (d *SetAvailableUpgradeDescriptor) GetProtoPkgName() string {
+	return "goten.meta.v1"
+}
+
+func (d *SetAvailableUpgradeDescriptor) GetApiName() string {
+	return "DeploymentService"
+}
+
+func (d *SetAvailableUpgradeDescriptor) GetServiceDomain() string {
+	return "meta.goten.com"
+}
+
+func (d *SetAvailableUpgradeDescriptor) GetServiceVersion() string {
+	return "v1"
+}
+
+func (d *SetAvailableUpgradeDescriptor) GetApiDescriptor() gotenclient.ApiDescriptor {
+	return deploymentServiceDescriptor
+}
+
+func (d *SetAvailableUpgradeDescriptor) GetResourceDescriptor() gotenresource.Descriptor {
+	return deployment.GetDescriptor()
+}
+
+func (d *SetAvailableUpgradeDescriptor) GetClientMsgReflectHandle() gotenclient.MethodMsgHandle {
+	return &SetAvailableUpgradeDescriptorClientMsgHandle{}
+}
+
+func (d *SetAvailableUpgradeDescriptor) GetServerMsgReflectHandle() gotenclient.MethodMsgHandle {
+	return &SetAvailableUpgradeDescriptorServerMsgHandle{}
+}
+
+func (h *SetAvailableUpgradeDescriptorClientMsgHandle) ExtractResourceName(msg proto.Message) gotenresource.Name {
+	typedMsg := msg.(*SetAvailableUpgradeRequest)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceName(*SetAvailableUpgradeRequest) *deployment.Name
+	})
+	if ok {
+		return override.OverrideExtractResourceName(typedMsg)
+	}
+	{
+		if name := typedMsg.GetName(); name != nil {
+			return name
+		}
+	}
+	return (*deployment.Name)(nil)
+}
+
+func (h *SetAvailableUpgradeDescriptorClientMsgHandle) ExtractResourceNames(msg proto.Message) gotenresource.NameList {
+	typedMsg := msg.(*SetAvailableUpgradeRequest)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceNames(*SetAvailableUpgradeRequest) []*deployment.Name
+	})
+	if ok {
+		return deployment.DeploymentNameList(override.OverrideExtractResourceNames(typedMsg))
+	}
+	return nil
+}
+
+func (h *SetAvailableUpgradeDescriptorClientMsgHandle) ExtractCollectionName(msg proto.Message) gotenresource.Name {
+	typedMsg := msg.(*SetAvailableUpgradeRequest)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractCollectionName(*SetAvailableUpgradeRequest) *deployment.ParentName
+	})
+	if ok {
+		return override.OverrideExtractCollectionName(typedMsg)
+	}
+	return nil
+}
+
+func (h *SetAvailableUpgradeDescriptorClientMsgHandle) ExtractResourceBody(msg proto.Message) gotenresource.Resource {
+	typedMsg := msg.(*SetAvailableUpgradeRequest)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceBody(*SetAvailableUpgradeRequest) *deployment.Deployment
+	})
+	if ok {
+		return override.OverrideExtractResourceBody(typedMsg)
+	}
+	return nil
+}
+
+func (h *SetAvailableUpgradeDescriptorClientMsgHandle) ExtractResourceBodies(msg proto.Message) gotenresource.ResourceList {
+	typedMsg := msg.(*SetAvailableUpgradeRequest)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceBodies(*SetAvailableUpgradeRequest) []*deployment.Deployment
+	})
+	if ok {
+		return deployment.DeploymentList(override.OverrideExtractResourceBodies(typedMsg))
+	}
+	return nil
+}
+
+func (h *SetAvailableUpgradeDescriptorServerMsgHandle) ExtractResourceName(msg proto.Message) gotenresource.Name {
+	typedMsg := msg.(*emptypb.Empty)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceName(*emptypb.Empty) *deployment.Name
+	})
+	if ok {
+		return override.OverrideExtractResourceName(typedMsg)
+	}
+	return nil
+}
+
+func (h *SetAvailableUpgradeDescriptorServerMsgHandle) ExtractResourceNames(msg proto.Message) gotenresource.NameList {
+	typedMsg := msg.(*emptypb.Empty)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceNames(*emptypb.Empty) []*deployment.Name
+	})
+	if ok {
+		return deployment.DeploymentNameList(override.OverrideExtractResourceNames(typedMsg))
+	}
+	return nil
+}
+
+func (h *SetAvailableUpgradeDescriptorServerMsgHandle) ExtractCollectionName(msg proto.Message) gotenresource.Name {
+	typedMsg := msg.(*emptypb.Empty)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractCollectionName(*emptypb.Empty) *deployment.ParentName
+	})
+	if ok {
+		return override.OverrideExtractCollectionName(typedMsg)
+	}
+	return nil
+}
+
+func (h *SetAvailableUpgradeDescriptorServerMsgHandle) ExtractResourceBody(msg proto.Message) gotenresource.Resource {
+	typedMsg := msg.(*emptypb.Empty)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceBody(*emptypb.Empty) *deployment.Deployment
+	})
+	if ok {
+		return override.OverrideExtractResourceBody(typedMsg)
+	}
+	return nil
+}
+
+func (h *SetAvailableUpgradeDescriptorServerMsgHandle) ExtractResourceBodies(msg proto.Message) gotenresource.ResourceList {
+	typedMsg := msg.(*emptypb.Empty)
+	var asInterface interface{} = h
+	override, ok := asInterface.(interface {
+		OverrideExtractResourceBodies(*emptypb.Empty) []*deployment.Deployment
+	})
+	if ok {
+		return deployment.DeploymentList(override.OverrideExtractResourceBodies(typedMsg))
+	}
+	return nil
+}
+
+func GetSetAvailableUpgradeDescriptor() *SetAvailableUpgradeDescriptor {
+	return setAvailableUpgradeDescriptor
+}
+
 type NotifyShardsUpgradeReadinessDescriptor struct{}
 
 type NotifyShardsUpgradeReadinessDescriptorClientMsgHandle struct{}
@@ -2732,6 +2948,7 @@ func (d *DeploymentServiceDescriptor) AllMethodDescriptors() []gotenclient.Metho
 		updateDeploymentDescriptor,
 		deleteDeploymentDescriptor,
 		beginUpgradeDescriptor,
+		setAvailableUpgradeDescriptor,
 		notifyShardsUpgradeReadinessDescriptor,
 		getOrRegisterDataUpdateTaskDescriptor,
 		updateDataTaskUpdateDescriptor,
@@ -2773,6 +2990,7 @@ func initDescriptors() {
 	updateDeploymentDescriptor = &UpdateDeploymentDescriptor{}
 	deleteDeploymentDescriptor = &DeleteDeploymentDescriptor{}
 	beginUpgradeDescriptor = &BeginUpgradeDescriptor{}
+	setAvailableUpgradeDescriptor = &SetAvailableUpgradeDescriptor{}
 	notifyShardsUpgradeReadinessDescriptor = &NotifyShardsUpgradeReadinessDescriptor{}
 	getOrRegisterDataUpdateTaskDescriptor = &GetOrRegisterDataUpdateTaskDescriptor{}
 	updateDataTaskUpdateDescriptor = &UpdateDataTaskUpdateDescriptor{}
@@ -2786,6 +3004,7 @@ func initDescriptors() {
 	gotenclient.GetRegistry().RegisterMethodDescriptor(updateDeploymentDescriptor)
 	gotenclient.GetRegistry().RegisterMethodDescriptor(deleteDeploymentDescriptor)
 	gotenclient.GetRegistry().RegisterMethodDescriptor(beginUpgradeDescriptor)
+	gotenclient.GetRegistry().RegisterMethodDescriptor(setAvailableUpgradeDescriptor)
 	gotenclient.GetRegistry().RegisterMethodDescriptor(notifyShardsUpgradeReadinessDescriptor)
 	gotenclient.GetRegistry().RegisterMethodDescriptor(getOrRegisterDataUpdateTaskDescriptor)
 	gotenclient.GetRegistry().RegisterMethodDescriptor(updateDataTaskUpdateDescriptor)

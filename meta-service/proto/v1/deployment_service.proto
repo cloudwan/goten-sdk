@@ -393,6 +393,14 @@ service DeploymentService {
     };
   }
 
+  // SetAvailableUpgrade
+  rpc SetAvailableUpgrade(SetAvailableUpgradeRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/meta/v1/{name=services/*/deployments/*}:setAvailableUpgrade"
+    };
+  }
+
   // NotifyShardsUpgradeReadiness
   rpc NotifyShardsUpgradeReadiness(NotifyShardsUpgradeReadinessRequest)
       returns (google.protobuf.Empty) {

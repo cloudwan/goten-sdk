@@ -58,6 +58,7 @@ type DeploymentServiceClient interface {
 	UpdateDeployment(ctx context.Context, in *UpdateDeploymentRequest, opts ...grpc.CallOption) (*deployment.Deployment, error)
 	DeleteDeployment(ctx context.Context, in *DeleteDeploymentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	BeginUpgrade(ctx context.Context, in *BeginUpgradeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	SetAvailableUpgrade(ctx context.Context, in *SetAvailableUpgradeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	NotifyShardsUpgradeReadiness(ctx context.Context, in *NotifyShardsUpgradeReadinessRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetOrRegisterDataUpdateTask(ctx context.Context, in *GetOrRegisterDataUpdateTaskRequest, opts ...grpc.CallOption) (*GetOrRegisterDataUpdateTaskResponse, error)
 	UpdateDataTaskUpdate(ctx context.Context, in *UpdateDataTaskUpdateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -202,6 +203,15 @@ func (c *client) DeleteDeployment(ctx context.Context, in *DeleteDeploymentReque
 func (c *client) BeginUpgrade(ctx context.Context, in *BeginUpgradeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/goten.meta.v1.DeploymentService/BeginUpgrade", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *client) SetAvailableUpgrade(ctx context.Context, in *SetAvailableUpgradeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/goten.meta.v1.DeploymentService/SetAvailableUpgrade", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}

@@ -74,23 +74,30 @@ message Deployment {
   // version till automatic upgrade finishes (or manual switch happens).
   string current_version = 11;
 
+  // Current version of data in the database, it must follow convention
+  // v<Number>.<Number>... (may be more numbers). When deployment is created
+  // first time, value is set to the current value. If non-empty lower
+  // value is detected, db-controller may run update task locally. Do not
+  // confuse this field with "current_version", which describes API version.
+  // If not populated, then "current"/"newest" should be assumed.
+  // current_version signals main API version by deployment, while
+  // db_data_version indicates underlying database data. It can be used for
+  // internal upgrades, database migrations, or simple in-place updates.
+  string db_data_version = 15;
+
+  // Arbitrary database location tag. This should be used if database migration
+  // is needed (different endpoint, backend, namespace...).
+  string db_location_tag = 17;
+
   // If true, then switch to the new version will be automatic (if there is
   // newer), once db upgrade finishes. Otherwise it will require manual call
   // from operator.
   bool automatic_version_switch = 12;
 
+  AvailableUpgrade available_upgrade = 18;
+
   // Current state of the upgrade task.
   UpgradeState upgrade_state = 13;
-
-  // Current version of data in the database, it must follow convention
-  // v<Number>.<Number>... (may be more numbers). When deployment is created
-  // first time, value is set to the current value. If non-empty lower
-  // value is detected, db-controller may run update task locally. This is
-  // not to confuse with "current_version" field, which describes API version.
-  // This field is for controlling smaller in-place data automatic updates.
-  // If not populated, then "current"/"newest" should be assumed. It means
-  // that no update tasks were ever needed as well.
-  string db_data_version = 15;
 
   // Tagged update statuses.
   repeated DbUpdateTaskStatus data_update_statuses = 16;
@@ -114,7 +121,9 @@ message Deployment {
     string cloud = 5;
   }
 
-  // UpgradeState describes current state of database upgrade.
+  // UpgradeState describes current state of database major upgrade.
+  // This corresponds to database migrations, API upgrades, other internal
+  // updates (if needed).
   message UpgradeState {
     string target_version = 1;
 
@@ -127,6 +136,8 @@ message Deployment {
     // Value to switch once update is completed for db_data_version value.
     string db_data_target_version = 5;
 
+    string db_target_location_tag = 6;
+
     enum Stage {
       READY = 0;
 
@@ -134,6 +145,16 @@ message Deployment {
 
       SWITCHING = 2;
     }
+  }
+
+  message AvailableUpgrade {
+    string api_version = 1;
+
+    string db_data_version = 2;
+
+    string db_location_tag = 3;
+
+    int64 total_shards_count = 4;
   }
 
   message DbUpdateTaskStatus {

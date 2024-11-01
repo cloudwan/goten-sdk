@@ -166,7 +166,7 @@ func ParseCustomCursorValue(strValue string) (*CustomCursorValue, error) {
 		valueBytes, err := base64.StdEncoding.DecodeString(split[1])
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument,
-				"error decoding key while parsing custom cursor value, %s is not valid base64: %s", split[1], err)
+				"error decoding value while parsing custom cursor value, %s is not valid base64: %s", split[1], err)
 		}
 		params[string(keyBytes)] = string(valueBytes)
 	}

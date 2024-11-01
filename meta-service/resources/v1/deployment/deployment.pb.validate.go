@@ -108,13 +108,24 @@ func (obj *Deployment) GotenValidate() error {
 	if obj.CurrentVersion == "" {
 		return gotenvalidate.NewValidationError("Deployment", "currentVersion", obj.CurrentVersion, "field is required", nil)
 	}
+	if !validation_regex_Deployment_db_data_version_49f735b4dbb98b565e79d44caeb0f8e7.Match([]byte(obj.DbDataVersion)) {
+		return gotenvalidate.NewValidationError("Deployment", "dbDataVersion", obj.DbDataVersion, "field must match the regex (^$|^v[0-9.]{1,64}$)", nil)
+	}
+	if len(obj.DbLocationTag) < 0 {
+		return gotenvalidate.NewValidationError("Deployment", "dbLocationTag", obj.DbLocationTag, "field must contain at least 0 characters", nil)
+	}
+	if len(obj.DbLocationTag) > 64 {
+		return gotenvalidate.NewValidationError("Deployment", "dbLocationTag", obj.DbLocationTag, "field must contain at most 64 characters", nil)
+	}
+	if subobj, ok := interface{}(obj.AvailableUpgrade).(gotenvalidate.Validator); ok {
+		if err := subobj.GotenValidate(); err != nil {
+			return gotenvalidate.NewValidationError("Deployment", "availableUpgrade", obj.AvailableUpgrade, "nested object validation failed", err)
+		}
+	}
 	if subobj, ok := interface{}(obj.UpgradeState).(gotenvalidate.Validator); ok {
 		if err := subobj.GotenValidate(); err != nil {
 			return gotenvalidate.NewValidationError("Deployment", "upgradeState", obj.UpgradeState, "nested object validation failed", err)
 		}
-	}
-	if !validation_regex_Deployment_db_data_version_49f735b4dbb98b565e79d44caeb0f8e7.Match([]byte(obj.DbDataVersion)) {
-		return gotenvalidate.NewValidationError("Deployment", "dbDataVersion", obj.DbDataVersion, "field must match the regex (^$|^v[0-9.]{1,64}$)", nil)
 	}
 	for idx, elem := range obj.DataUpdateStatuses {
 		if subobj, ok := interface{}(elem).(gotenvalidate.Validator); ok {
@@ -183,6 +194,15 @@ func (obj *Deployment_Location) GotenValidate() error {
 	return nil
 }
 func (obj *Deployment_UpgradeState) GotenValidate() error {
+	if obj == nil {
+		return nil
+	}
+	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
+		return cvobj.GotenCustomValidate()
+	}
+	return nil
+}
+func (obj *Deployment_AvailableUpgrade) GotenValidate() error {
 	if obj == nil {
 		return nil
 	}

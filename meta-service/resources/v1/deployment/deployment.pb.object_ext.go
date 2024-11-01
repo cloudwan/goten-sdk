@@ -107,8 +107,24 @@ func (o *Deployment) MakeDiffFieldMask(other *Deployment) *Deployment_FieldMask 
 	if o.GetCurrentVersion() != other.GetCurrentVersion() {
 		res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorCurrentVersion})
 	}
+	if o.GetDbDataVersion() != other.GetDbDataVersion() {
+		res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorDbDataVersion})
+	}
+	if o.GetDbLocationTag() != other.GetDbLocationTag() {
+		res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorDbLocationTag})
+	}
 	if o.GetAutomaticVersionSwitch() != other.GetAutomaticVersionSwitch() {
 		res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorAutomaticVersionSwitch})
+	}
+	{
+		subMask := o.GetAvailableUpgrade().MakeDiffFieldMask(other.GetAvailableUpgrade())
+		if subMask.IsFull() {
+			res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorAvailableUpgrade})
+		} else {
+			for _, subpath := range subMask.Paths {
+				res.Paths = append(res.Paths, &Deployment_FieldSubPath{selector: Deployment_FieldPathSelectorAvailableUpgrade, subPath: subpath})
+			}
+		}
 	}
 	{
 		subMask := o.GetUpgradeState().MakeDiffFieldMask(other.GetUpgradeState())
@@ -119,9 +135,6 @@ func (o *Deployment) MakeDiffFieldMask(other *Deployment) *Deployment_FieldMask 
 				res.Paths = append(res.Paths, &Deployment_FieldSubPath{selector: Deployment_FieldPathSelectorUpgradeState, subPath: subpath})
 			}
 		}
-	}
-	if o.GetDbDataVersion() != other.GetDbDataVersion() {
-		res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorDbDataVersion})
 	}
 
 	if len(o.GetDataUpdateStatuses()) == len(other.GetDataUpdateStatuses()) {
@@ -176,9 +189,11 @@ func (o *Deployment) Clone() *Deployment {
 	result.IsDisabled = o.IsDisabled
 	result.EnvRegistryGeneration = o.EnvRegistryGeneration
 	result.CurrentVersion = o.CurrentVersion
-	result.AutomaticVersionSwitch = o.AutomaticVersionSwitch
-	result.UpgradeState = o.UpgradeState.Clone()
 	result.DbDataVersion = o.DbDataVersion
+	result.DbLocationTag = o.DbLocationTag
+	result.AutomaticVersionSwitch = o.AutomaticVersionSwitch
+	result.AvailableUpgrade = o.AvailableUpgrade.Clone()
+	result.UpgradeState = o.UpgradeState.Clone()
 	result.DataUpdateStatuses = make([]*Deployment_DbUpdateTaskStatus, len(o.DataUpdateStatuses))
 	for i, sourceValue := range o.DataUpdateStatuses {
 		result.DataUpdateStatuses[i] = sourceValue.Clone()
@@ -234,14 +249,21 @@ func (o *Deployment) Merge(source *Deployment) {
 	o.IsDisabled = source.GetIsDisabled()
 	o.EnvRegistryGeneration = source.GetEnvRegistryGeneration()
 	o.CurrentVersion = source.GetCurrentVersion()
+	o.DbDataVersion = source.GetDbDataVersion()
+	o.DbLocationTag = source.GetDbLocationTag()
 	o.AutomaticVersionSwitch = source.GetAutomaticVersionSwitch()
+	if source.GetAvailableUpgrade() != nil {
+		if o.AvailableUpgrade == nil {
+			o.AvailableUpgrade = new(Deployment_AvailableUpgrade)
+		}
+		o.AvailableUpgrade.Merge(source.GetAvailableUpgrade())
+	}
 	if source.GetUpgradeState() != nil {
 		if o.UpgradeState == nil {
 			o.UpgradeState = new(Deployment_UpgradeState)
 		}
 		o.UpgradeState.Merge(source.GetUpgradeState())
 	}
-	o.DbDataVersion = source.GetDbDataVersion()
 	for _, sourceValue := range source.GetDataUpdateStatuses() {
 		exists := false
 		for _, currentValue := range o.DataUpdateStatuses {
@@ -388,6 +410,9 @@ func (o *Deployment_UpgradeState) MakeDiffFieldMask(other *Deployment_UpgradeSta
 	if o.GetDbDataTargetVersion() != other.GetDbDataTargetVersion() {
 		res.Paths = append(res.Paths, &DeploymentUpgradeState_FieldTerminalPath{selector: DeploymentUpgradeState_FieldPathSelectorDbDataTargetVersion})
 	}
+	if o.GetDbTargetLocationTag() != other.GetDbTargetLocationTag() {
+		res.Paths = append(res.Paths, &DeploymentUpgradeState_FieldTerminalPath{selector: DeploymentUpgradeState_FieldPathSelectorDbTargetLocationTag})
+	}
 	return res
 }
 
@@ -411,6 +436,7 @@ func (o *Deployment_UpgradeState) Clone() *Deployment_UpgradeState {
 	}
 	result.Stage = o.Stage
 	result.DbDataTargetVersion = o.DbDataTargetVersion
+	result.DbTargetLocationTag = o.DbTargetLocationTag
 	return result
 }
 
@@ -452,10 +478,76 @@ func (o *Deployment_UpgradeState) Merge(source *Deployment_UpgradeState) {
 
 	o.Stage = source.GetStage()
 	o.DbDataTargetVersion = source.GetDbDataTargetVersion()
+	o.DbTargetLocationTag = source.GetDbTargetLocationTag()
 }
 
 func (o *Deployment_UpgradeState) MergeRaw(source gotenobject.GotenObjectExt) {
 	o.Merge(source.(*Deployment_UpgradeState))
+}
+
+func (o *Deployment_AvailableUpgrade) GotenObjectExt() {}
+
+func (o *Deployment_AvailableUpgrade) MakeFullFieldMask() *Deployment_AvailableUpgrade_FieldMask {
+	return FullDeployment_AvailableUpgrade_FieldMask()
+}
+
+func (o *Deployment_AvailableUpgrade) MakeRawFullFieldMask() gotenobject.FieldMask {
+	return FullDeployment_AvailableUpgrade_FieldMask()
+}
+
+func (o *Deployment_AvailableUpgrade) MakeDiffFieldMask(other *Deployment_AvailableUpgrade) *Deployment_AvailableUpgrade_FieldMask {
+	if o == nil && other == nil {
+		return &Deployment_AvailableUpgrade_FieldMask{}
+	}
+	if o == nil || other == nil {
+		return FullDeployment_AvailableUpgrade_FieldMask()
+	}
+
+	res := &Deployment_AvailableUpgrade_FieldMask{}
+	if o.GetApiVersion() != other.GetApiVersion() {
+		res.Paths = append(res.Paths, &DeploymentAvailableUpgrade_FieldTerminalPath{selector: DeploymentAvailableUpgrade_FieldPathSelectorApiVersion})
+	}
+	if o.GetDbDataVersion() != other.GetDbDataVersion() {
+		res.Paths = append(res.Paths, &DeploymentAvailableUpgrade_FieldTerminalPath{selector: DeploymentAvailableUpgrade_FieldPathSelectorDbDataVersion})
+	}
+	if o.GetDbLocationTag() != other.GetDbLocationTag() {
+		res.Paths = append(res.Paths, &DeploymentAvailableUpgrade_FieldTerminalPath{selector: DeploymentAvailableUpgrade_FieldPathSelectorDbLocationTag})
+	}
+	if o.GetTotalShardsCount() != other.GetTotalShardsCount() {
+		res.Paths = append(res.Paths, &DeploymentAvailableUpgrade_FieldTerminalPath{selector: DeploymentAvailableUpgrade_FieldPathSelectorTotalShardsCount})
+	}
+	return res
+}
+
+func (o *Deployment_AvailableUpgrade) MakeRawDiffFieldMask(other gotenobject.GotenObjectExt) gotenobject.FieldMask {
+	return o.MakeDiffFieldMask(other.(*Deployment_AvailableUpgrade))
+}
+
+func (o *Deployment_AvailableUpgrade) Clone() *Deployment_AvailableUpgrade {
+	if o == nil {
+		return nil
+	}
+	result := &Deployment_AvailableUpgrade{}
+	result.ApiVersion = o.ApiVersion
+	result.DbDataVersion = o.DbDataVersion
+	result.DbLocationTag = o.DbLocationTag
+	result.TotalShardsCount = o.TotalShardsCount
+	return result
+}
+
+func (o *Deployment_AvailableUpgrade) CloneRaw() gotenobject.GotenObjectExt {
+	return o.Clone()
+}
+
+func (o *Deployment_AvailableUpgrade) Merge(source *Deployment_AvailableUpgrade) {
+	o.ApiVersion = source.GetApiVersion()
+	o.DbDataVersion = source.GetDbDataVersion()
+	o.DbLocationTag = source.GetDbLocationTag()
+	o.TotalShardsCount = source.GetTotalShardsCount()
+}
+
+func (o *Deployment_AvailableUpgrade) MergeRaw(source gotenobject.GotenObjectExt) {
+	o.Merge(source.(*Deployment_AvailableUpgrade))
 }
 
 func (o *Deployment_DbUpdateTaskStatus) GotenObjectExt() {}
