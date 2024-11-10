@@ -193,6 +193,26 @@ func (obj *CreateRegionRequest) GotenValidate() error {
 			return gotenvalidate.NewValidationError("CreateRegionRequest", "region", obj.Region, "nested object validation failed", err)
 		}
 	}
+	if subobj, ok := interface{}(obj.ResponseMask).(gotenvalidate.Validator); ok {
+		if err := subobj.GotenValidate(); err != nil {
+			return gotenvalidate.NewValidationError("CreateRegionRequest", "responseMask", obj.ResponseMask, "nested object validation failed", err)
+		}
+	}
+	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
+		return cvobj.GotenCustomValidate()
+	}
+	return nil
+}
+func (obj *CreateRegionRequest_ResponseMask) GotenValidate() error {
+	if obj == nil {
+		return nil
+	}
+	switch opt := obj.Masking.(type) {
+	case *CreateRegionRequest_ResponseMask_SkipEntireResponseBody:
+	case *CreateRegionRequest_ResponseMask_BodyMask:
+	default:
+		_ = opt
+	}
 	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
 		return cvobj.GotenCustomValidate()
 	}
@@ -215,6 +235,11 @@ func (obj *UpdateRegionRequest) GotenValidate() error {
 			return gotenvalidate.NewValidationError("UpdateRegionRequest", "cas", obj.Cas, "nested object validation failed", err)
 		}
 	}
+	if subobj, ok := interface{}(obj.ResponseMask).(gotenvalidate.Validator); ok {
+		if err := subobj.GotenValidate(); err != nil {
+			return gotenvalidate.NewValidationError("UpdateRegionRequest", "responseMask", obj.ResponseMask, "nested object validation failed", err)
+		}
+	}
 	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
 		return cvobj.GotenCustomValidate()
 	}
@@ -223,6 +248,22 @@ func (obj *UpdateRegionRequest) GotenValidate() error {
 func (obj *UpdateRegionRequest_CAS) GotenValidate() error {
 	if obj == nil {
 		return nil
+	}
+	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
+		return cvobj.GotenCustomValidate()
+	}
+	return nil
+}
+func (obj *UpdateRegionRequest_ResponseMask) GotenValidate() error {
+	if obj == nil {
+		return nil
+	}
+	switch opt := obj.Masking.(type) {
+	case *UpdateRegionRequest_ResponseMask_SkipEntireResponseBody:
+	case *UpdateRegionRequest_ResponseMask_UpdatedFieldsOnly:
+	case *UpdateRegionRequest_ResponseMask_BodyMask:
+	default:
+		_ = opt
 	}
 	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
 		return cvobj.GotenCustomValidate()

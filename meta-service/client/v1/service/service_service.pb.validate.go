@@ -193,6 +193,26 @@ func (obj *CreateServiceRequest) GotenValidate() error {
 			return gotenvalidate.NewValidationError("CreateServiceRequest", "service", obj.Service, "nested object validation failed", err)
 		}
 	}
+	if subobj, ok := interface{}(obj.ResponseMask).(gotenvalidate.Validator); ok {
+		if err := subobj.GotenValidate(); err != nil {
+			return gotenvalidate.NewValidationError("CreateServiceRequest", "responseMask", obj.ResponseMask, "nested object validation failed", err)
+		}
+	}
+	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
+		return cvobj.GotenCustomValidate()
+	}
+	return nil
+}
+func (obj *CreateServiceRequest_ResponseMask) GotenValidate() error {
+	if obj == nil {
+		return nil
+	}
+	switch opt := obj.Masking.(type) {
+	case *CreateServiceRequest_ResponseMask_SkipEntireResponseBody:
+	case *CreateServiceRequest_ResponseMask_BodyMask:
+	default:
+		_ = opt
+	}
 	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
 		return cvobj.GotenCustomValidate()
 	}
@@ -215,6 +235,11 @@ func (obj *UpdateServiceRequest) GotenValidate() error {
 			return gotenvalidate.NewValidationError("UpdateServiceRequest", "cas", obj.Cas, "nested object validation failed", err)
 		}
 	}
+	if subobj, ok := interface{}(obj.ResponseMask).(gotenvalidate.Validator); ok {
+		if err := subobj.GotenValidate(); err != nil {
+			return gotenvalidate.NewValidationError("UpdateServiceRequest", "responseMask", obj.ResponseMask, "nested object validation failed", err)
+		}
+	}
 	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
 		return cvobj.GotenCustomValidate()
 	}
@@ -223,6 +248,22 @@ func (obj *UpdateServiceRequest) GotenValidate() error {
 func (obj *UpdateServiceRequest_CAS) GotenValidate() error {
 	if obj == nil {
 		return nil
+	}
+	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
+		return cvobj.GotenCustomValidate()
+	}
+	return nil
+}
+func (obj *UpdateServiceRequest_ResponseMask) GotenValidate() error {
+	if obj == nil {
+		return nil
+	}
+	switch opt := obj.Masking.(type) {
+	case *UpdateServiceRequest_ResponseMask_SkipEntireResponseBody:
+	case *UpdateServiceRequest_ResponseMask_UpdatedFieldsOnly:
+	case *UpdateServiceRequest_ResponseMask_BodyMask:
+	default:
+		_ = opt
 	}
 	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
 		return cvobj.GotenCustomValidate()

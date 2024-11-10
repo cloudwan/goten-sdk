@@ -195,6 +195,26 @@ func (obj *CreateDeploymentRequest) GotenValidate() error {
 			return gotenvalidate.NewValidationError("CreateDeploymentRequest", "deployment", obj.Deployment, "nested object validation failed", err)
 		}
 	}
+	if subobj, ok := interface{}(obj.ResponseMask).(gotenvalidate.Validator); ok {
+		if err := subobj.GotenValidate(); err != nil {
+			return gotenvalidate.NewValidationError("CreateDeploymentRequest", "responseMask", obj.ResponseMask, "nested object validation failed", err)
+		}
+	}
+	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
+		return cvobj.GotenCustomValidate()
+	}
+	return nil
+}
+func (obj *CreateDeploymentRequest_ResponseMask) GotenValidate() error {
+	if obj == nil {
+		return nil
+	}
+	switch opt := obj.Masking.(type) {
+	case *CreateDeploymentRequest_ResponseMask_SkipEntireResponseBody:
+	case *CreateDeploymentRequest_ResponseMask_BodyMask:
+	default:
+		_ = opt
+	}
 	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
 		return cvobj.GotenCustomValidate()
 	}
@@ -217,6 +237,11 @@ func (obj *UpdateDeploymentRequest) GotenValidate() error {
 			return gotenvalidate.NewValidationError("UpdateDeploymentRequest", "cas", obj.Cas, "nested object validation failed", err)
 		}
 	}
+	if subobj, ok := interface{}(obj.ResponseMask).(gotenvalidate.Validator); ok {
+		if err := subobj.GotenValidate(); err != nil {
+			return gotenvalidate.NewValidationError("UpdateDeploymentRequest", "responseMask", obj.ResponseMask, "nested object validation failed", err)
+		}
+	}
 	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
 		return cvobj.GotenCustomValidate()
 	}
@@ -225,6 +250,22 @@ func (obj *UpdateDeploymentRequest) GotenValidate() error {
 func (obj *UpdateDeploymentRequest_CAS) GotenValidate() error {
 	if obj == nil {
 		return nil
+	}
+	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
+		return cvobj.GotenCustomValidate()
+	}
+	return nil
+}
+func (obj *UpdateDeploymentRequest_ResponseMask) GotenValidate() error {
+	if obj == nil {
+		return nil
+	}
+	switch opt := obj.Masking.(type) {
+	case *UpdateDeploymentRequest_ResponseMask_SkipEntireResponseBody:
+	case *UpdateDeploymentRequest_ResponseMask_UpdatedFieldsOnly:
+	case *UpdateDeploymentRequest_ResponseMask_BodyMask:
+	default:
+		_ = opt
 	}
 	if cvobj, ok := interface{}(obj).(gotenvalidate.CustomValidator); ok {
 		return cvobj.GotenCustomValidate()
