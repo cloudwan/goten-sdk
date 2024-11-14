@@ -8,13 +8,13 @@ import (
 type Access interface {
 	// Get returns single resource. Raises NotFound grpc error if
 	// resource is not found.
-	Get(ctx context.Context, q GetQuery) (Resource, error)
+	Get(ctx context.Context, q GetQuery, opts ...GetOption) (Resource, error)
 
 	// Query returns snapshot of resources within given query spec.
-	Query(ctx context.Context, q ListQuery) (QueryResultSnapshot, error)
+	Query(ctx context.Context, q ListQuery, opts ...QueryOption) (QueryResultSnapshot, error)
 
 	// Search is like Query, but also provides results based on text-search
-	Search(ctx context.Context, q SearchQuery) (QueryResultSnapshot, error)
+	Search(ctx context.Context, q SearchQuery, opts ...QueryOption) (QueryResultSnapshot, error)
 
 	// Watch is blocking call till is finished or error occurred.
 	// Initially, provides ResourceChange of Add type containing full
@@ -72,16 +72,16 @@ type compositeAccess struct {
 	linear []Descriptor
 }
 
-func (ca *compositeAccess) Get(ctx context.Context, q GetQuery) (Resource, error) {
-	return ca.items[q.GetResourceDescriptor()].Get(ctx, q)
+func (ca *compositeAccess) Get(ctx context.Context, q GetQuery, opts ...GetOption) (Resource, error) {
+	return ca.items[q.GetResourceDescriptor()].Get(ctx, q, opts...)
 }
 
-func (ca *compositeAccess) Query(ctx context.Context, q ListQuery) (QueryResultSnapshot, error) {
-	return ca.items[q.GetResourceDescriptor()].Query(ctx, q)
+func (ca *compositeAccess) Query(ctx context.Context, q ListQuery, opts ...QueryOption) (QueryResultSnapshot, error) {
+	return ca.items[q.GetResourceDescriptor()].Query(ctx, q, opts...)
 }
 
-func (ca *compositeAccess) Search(ctx context.Context, q SearchQuery) (QueryResultSnapshot, error) {
-	return ca.items[q.GetResourceDescriptor()].Search(ctx, q)
+func (ca *compositeAccess) Search(ctx context.Context, q SearchQuery, opts ...QueryOption) (QueryResultSnapshot, error) {
+	return ca.items[q.GetResourceDescriptor()].Search(ctx, q, opts...)
 }
 
 func (ca *compositeAccess) Watch(ctx context.Context, q GetQuery, cb func(ch ResourceChange) error) error {

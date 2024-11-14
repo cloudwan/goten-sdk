@@ -17,9 +17,18 @@ type deleteOptions struct {
 	currentResource Resource
 }
 
+type getOptions struct {
+	skipCache bool
+}
+
 type batchGetOptions struct {
 	mustResolveAll bool
 	masks          map[Descriptor]object.FieldMask
+	skipCache      bool
+}
+
+type queryOptions struct {
+	skipCache bool
 }
 
 type SaveOptions interface {
@@ -34,10 +43,19 @@ type DeleteOptions interface {
 	GetDeletedResource() Resource
 }
 
+type GetOptions interface {
+	GetSkipCache() bool
+}
+
 type BatchGetOptions interface {
 	MustResolveAll() bool
 	GetFieldMask(Descriptor) object.FieldMask
 	GetFieldMasks() map[Descriptor]object.FieldMask
+	GetSkipCache() bool
+}
+
+type QueryOptions interface {
+	GetSkipCache() bool
 }
 
 func (so *saveOptions) GetPreviousResource() Resource {
@@ -64,6 +82,14 @@ func (do *deleteOptions) GetDeletedResource() Resource {
 	return do.currentResource
 }
 
+func (opt *getOptions) GetSkipCache() bool {
+	return opt.skipCache
+}
+
+func (opt *queryOptions) GetSkipCache() bool {
+	return opt.skipCache
+}
+
 func (bgo *batchGetOptions) MustResolveAll() bool {
 	return bgo.mustResolveAll
 }
@@ -76,11 +102,19 @@ func (bgo *batchGetOptions) GetFieldMasks() map[Descriptor]object.FieldMask {
 	return bgo.masks
 }
 
+func (bgo *batchGetOptions) GetSkipCache() bool {
+	return bgo.skipCache
+}
+
 type SaveOption func(*saveOptions)
 
 type DeleteOption func(*deleteOptions)
 
 type BatchGetOption func(*batchGetOptions)
+
+type GetOption func(*getOptions)
+
+type QueryOption func(*queryOptions)
 
 func MakeSaveOptions(opts []SaveOption) SaveOptions {
 	sOpts := saveOptions{}
@@ -100,6 +134,22 @@ func MakeDeleteOptions(opts []DeleteOption) DeleteOptions {
 
 func MakeBatchGetOptions(opts []BatchGetOption) BatchGetOptions {
 	dOpts := batchGetOptions{}
+	for _, opt := range opts {
+		opt(&dOpts)
+	}
+	return &dOpts
+}
+
+func MakeGetOptions(opts []GetOption) GetOptions {
+	dOpts := getOptions{}
+	for _, opt := range opts {
+		opt(&dOpts)
+	}
+	return &dOpts
+}
+
+func MakeQueryOptions(opts []QueryOption) QueryOptions {
+	dOpts := queryOptions{}
 	for _, opt := range opts {
 		opt(&dOpts)
 	}
@@ -130,6 +180,24 @@ func WithBatchGetFieldMask(desc Descriptor, mask object.FieldMask) BatchGetOptio
 			o.masks = map[Descriptor]object.FieldMask{}
 		}
 		o.masks[desc] = mask
+	}
+}
+
+func WithBatchGetSkipCache() BatchGetOption {
+	return func(o *batchGetOptions) {
+		o.skipCache = true
+	}
+}
+
+func WithGetSkipCache() GetOption {
+	return func(o *getOptions) {
+		o.skipCache = true
+	}
+}
+
+func WithQuerySkipCache() QueryOption {
+	return func(o *queryOptions) {
+		o.skipCache = true
 	}
 }
 

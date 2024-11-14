@@ -10,6 +10,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
 	gotenaccess "github.com/cloudwan/goten-sdk/runtime/access"
@@ -25,6 +26,7 @@ var (
 	_ = new(context.Context)
 	_ = new(fmt.GoStringer)
 
+	_ = metadata.MD{}
 	_ = new(grpc.ClientConnInterface)
 	_ = codes.NotFound
 	_ = status.Status{}
@@ -43,7 +45,16 @@ func NewApiRegionAccess(client region_client.RegionServiceClient) region.RegionA
 	return &apiRegionAccess{client: client}
 }
 
-func (a *apiRegionAccess) GetRegion(ctx context.Context, query *region.GetQuery) (*region.Region, error) {
+func (a *apiRegionAccess) GetRegion(ctx context.Context, query *region.GetQuery, opts ...gotenresource.GetOption) (*region.Region, error) {
+	getOpts := gotenresource.MakeGetOptions(opts)
+	callHeaders := metadata.MD{}
+	if getOpts.GetSkipCache() {
+		callHeaders["cache-control"] = []string{"no-cache"}
+	}
+	callOpts := []grpc.CallOption{}
+	if len(callHeaders) > 0 {
+		callOpts = append(callOpts, grpc.Header(&callHeaders))
+	}
 	if !query.Reference.IsFullyQualified() {
 		return nil, status.Errorf(codes.InvalidArgument, "Reference %s is not fully specified", query.Reference)
 	}
@@ -51,7 +62,7 @@ func (a *apiRegionAccess) GetRegion(ctx context.Context, query *region.GetQuery)
 		Name:      &query.Reference.Name,
 		FieldMask: query.Mask,
 	}
-	res, err := a.client.GetRegion(ctx, request)
+	res, err := a.client.GetRegion(ctx, request, callOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -61,6 +72,14 @@ func (a *apiRegionAccess) GetRegion(ctx context.Context, query *region.GetQuery)
 
 func (a *apiRegionAccess) BatchGetRegions(ctx context.Context, refs []*region.Reference, opts ...gotenresource.BatchGetOption) error {
 	batchGetOpts := gotenresource.MakeBatchGetOptions(opts)
+	callHeaders := metadata.MD{}
+	if batchGetOpts.GetSkipCache() {
+		callHeaders["cache-control"] = []string{"no-cache"}
+	}
+	callOpts := []grpc.CallOption{}
+	if len(callHeaders) > 0 {
+		callOpts = append(callOpts, grpc.Header(&callHeaders))
+	}
 	asNames := make([]*region.Name, 0, len(refs))
 	for _, ref := range refs {
 		if !ref.IsFullyQualified() {
@@ -75,7 +94,7 @@ func (a *apiRegionAccess) BatchGetRegions(ctx context.Context, refs []*region.Re
 	if fieldMask != nil {
 		request.FieldMask = fieldMask.(*region.Region_FieldMask)
 	}
-	resp, err := a.client.BatchGetRegions(ctx, request)
+	resp, err := a.client.BatchGetRegions(ctx, request, callOpts...)
 	if err != nil {
 		return err
 	}
@@ -95,7 +114,16 @@ func (a *apiRegionAccess) BatchGetRegions(ctx context.Context, refs []*region.Re
 	return nil
 }
 
-func (a *apiRegionAccess) QueryRegions(ctx context.Context, query *region.ListQuery) (*region.QueryResultSnapshot, error) {
+func (a *apiRegionAccess) QueryRegions(ctx context.Context, query *region.ListQuery, opts ...gotenresource.QueryOption) (*region.QueryResultSnapshot, error) {
+	qOpts := gotenresource.MakeQueryOptions(opts)
+	callHeaders := metadata.MD{}
+	if qOpts.GetSkipCache() {
+		callHeaders["cache-control"] = []string{"no-cache"}
+	}
+	callOpts := []grpc.CallOption{}
+	if len(callHeaders) > 0 {
+		callOpts = append(callOpts, grpc.Header(&callHeaders))
+	}
 	request := &region_client.ListRegionsRequest{
 		Filter:            query.Filter,
 		FieldMask:         query.Mask,
