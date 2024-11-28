@@ -136,7 +136,9 @@ message WatchServiceRequest {
 }
 
 // A response message of the WatchService method.
-message WatchServiceResponse { ServiceChange change = 1; }
+message WatchServiceResponse {
+  ServiceChange change = 1;
+}
 
 // A request message of the WatchServices method.
 message WatchServicesRequest {
@@ -354,62 +356,42 @@ service ServiceService {
   option (google.api.oauth_scopes) = "";
 
   // GetService
-  rpc GetService(GetServiceRequest) returns (Service) {
-    option (google.api.http) = {
-      get : "/meta/v1/{name=services/*}"
-    };
+  rpc GetService ( GetServiceRequest ) returns ( Service ) {
+    option (google.api.http) = { get:"/meta/v1/{name=services/*}"  };
   }
 
   // BatchGetServices
-  rpc BatchGetServices(BatchGetServicesRequest)
-      returns (BatchGetServicesResponse) {
-    option (google.api.http) = {
-      get : "/meta/v1/services:batchGet"
-    };
+  rpc BatchGetServices ( BatchGetServicesRequest ) returns ( BatchGetServicesResponse ) {
+    option (google.api.http) = { get:"/meta/v1/services:batchGet"  };
   }
 
   // ListServices
-  rpc ListServices(ListServicesRequest) returns (ListServicesResponse) {
-    option (google.api.http) = {
-      get : "/meta/v1/services"
-    };
+  rpc ListServices ( ListServicesRequest ) returns ( ListServicesResponse ) {
+    option (google.api.http) = { get:"/meta/v1/services"  };
   }
 
   // WatchService
-  rpc WatchService(WatchServiceRequest) returns (stream WatchServiceResponse) {
-    option (google.api.http) = {
-      post : "/meta/v1/{name=services/*}:watch"
-    };
+  rpc WatchService ( WatchServiceRequest ) returns ( stream WatchServiceResponse ) {
+    option (google.api.http) = { post:"/meta/v1/{name=services/*}:watch"  };
   }
 
   // WatchServices
-  rpc WatchServices(WatchServicesRequest)
-      returns (stream WatchServicesResponse) {
-    option (google.api.http) = {
-      post : "/meta/v1/services:watch"
-    };
+  rpc WatchServices ( WatchServicesRequest ) returns ( stream WatchServicesResponse ) {
+    option (google.api.http) = { post:"/meta/v1/services:watch"  };
   }
 
   // CreateService
-  rpc CreateService(CreateServiceRequest) returns (Service) {
-    option (google.api.http) = {
-      post : "/meta/v1/services"
-      body : "service"
-    };
+  rpc CreateService ( CreateServiceRequest ) returns ( Service ) {
+    option (google.api.http) = { post:"/meta/v1/services" body:"service"  };
   }
 
   // UpdateService
-  rpc UpdateService(UpdateServiceRequest) returns (Service) {
-    option (google.api.http) = {
-      put : "/meta/v1/{service.name=services/*}"
-      body : "service"
-    };
+  rpc UpdateService ( UpdateServiceRequest ) returns ( Service ) {
+    option (google.api.http) = { put:"/meta/v1/{service.name=services/*}" body:"service"  };
   }
 
   // DeleteService
-  rpc DeleteService(DeleteServiceRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      delete : "/meta/v1/{name=services/*}"
-    };
+  rpc DeleteService ( DeleteServiceRequest ) returns ( google.protobuf.Empty ) {
+    option (google.api.http) = { delete:"/meta/v1/{name=services/*}"  };
   }
 }

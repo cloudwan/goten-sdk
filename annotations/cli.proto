@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package goten.annotations;
+
+import "google/protobuf/descriptor.proto";
+
+option go_package = "github.com/cloudwan/goten-sdk/annotations/cli";
+option java_multiple_files = true;
+option java_outer_classname = "GotenProtoCli";
+option java_package = "com.ntt.goten.annotations.cli";
+
+extend google.protobuf.FieldOptions {
+  // Marks this field as flat. The field must be of object type.
+  // A flat field behaves as if its fields were placed into the
+  // encompassing object of the field. This allows to simplify
+  // specifying fields of nested messages in the cli.
+  // This option does not work on repeated and map fields.
+  bool flatten = 71001;
+
+  // Marks this field as multiline string. Will preserve newline characters
+  // provided by the user.
+  // This option only works on string fields.
+  bool multiline = 71002;
+}

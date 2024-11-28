@@ -1,0 +1,778 @@
+syntax = "proto3";
+
+package goten.controller;
+
+import "google/protobuf/descriptor.proto";
+
+option go_package = "github.com/cloudwan/goten-sdk/annotations/controller";
+
+// TypeSet is a reusable bundle that consists of resource-based components like
+// inputs, data sources, stores and syncers. They can be imported and used by
+// many Processor instances. Its important to note, that TypeSet defines TYPES,
+// while Processor defines INSTANCES. All resource names provided within any
+// type of TypeSet must comply with following conventions (examples):
+// * iam.edgelq.com/RoleBinding - indicates that given type is based on
+//   resource RoleBinding from iam.edgelq.com service.
+// * RoleBinding - Shorter version of above notation, available if developer
+//   specifies "services" annotation within TypeSet, which provides list
+//   of possible services (with their versions).
+message TypeSet {
+  // Name of a TypeSet bundle. It allows being imported by Processor instances.
+  string name = 1;
+
+  // List of services used by this TypeSet. They can be skipped,
+  repeated SvcImport services = 2;
+
+  // List of Input types to be generated in this bundle.
+  repeated Input inputs = 3;
+
+  // List of DataSource types to be generated in this bundle.
+  repeated DataSource data_sources = 4;
+
+  // List of Store types to be generated in this bundle.
+  repeated Store stores = 5;
+
+  // List of Syncer types to be generated in this bundle.
+  repeated Syncer syncers = 6;
+
+  // Input defines a component that is used by Processor instances as an entry
+  // point allowing data to be provided from the outside. Typically, this
+  // "outside" is a Node instance, which provides input data to its Processor
+  // instances. For example, imagine that there is Node instance that watches
+  // all Pod resources. When some Pods get changed, Node is notified. Then
+  // Node groups changed Pods according to their scope (typically Project) and
+  // pushes data to corresponding to their Project Processor instances. In this
+  // context, Input serves as an entry mechanism allowing Node instance pass
+  // changes to Pod resources into Processors.
+  message Input {
+    // Name of a resource on which Input is based.
+    string resource = 1;
+  }
+
+  // DataSource is somehow similar like Input - it provides data to Processor
+  // instances. However, while Input is just waiting for the outside call,
+  // exposing Processor, DataSource is running on its own thread and using its
+  // own internal client. In other words, this is for internal use.
+  message DataSource {
+    // Name of a resource on which DataSource is based.
+    string resource = 1;
+  }
+
+  // Store is a stateful component holding in its own memory state of all
+  // resources of its kind. It typically is used by Processors to consume
+  // data from Input/DataSource components and index them internally. It
+  // can also compare new state of resource with the previous one, detect
+  // if there are any changes at all, notify subscribed listeners.
+  message Store {
+    // Resource for which this store is.
+    string resource = 1;
+
+    // List of additional unique identifiers or grouping criteria by which
+    // resources will be indexed. By default, code-gen tool generates store
+    // indexing by name only.
+    repeated Index custom_indices = 2;
+
+    // Index describes an additional way by which resource is stored and for
+    // which getter is generated. For example, if in resource "Device" we have
+    // field path spec.vendor.id (of type string) we can define following index:
+    // {
+    //   field_paths: [ "spec.vendor.id" ]
+    //   name: "vendor_id"
+    //   is_unique: true
+    // }
+    // Above will generate additional method attached to the DeviceStore:
+    // GetByVendorId(id string) *Device
+    // Name "vendor_id" is converted to UpperCamelCase notation.
+    // Keys do not have to be unique - they can also group multiple instances
+    // under one value. For example, suppose that each Pod resource has a
+    // reference to a resource Distribution. Each Distribution can have many
+    // Pods.We can define following index then:
+    // {
+    //   field_paths: [ "spec.distribution" ]
+    //   name: "distribution"
+    //   is_unique: false
+    // }
+    // Following extra method will be generated in the PodStore:
+    // GetByDistribution(ref *distribution.Reference) map[pod.Name]*Pod
+    // Index by name is always automatically generated.
+    message Index {
+      // Paths inside a resource schema forming a key.
+      repeated string field_paths = 1;
+
+      // Name of the key. It is used to determine name of the getter. If omitted,
+      // then last element in field_paths is used.
+      string name = 2;
+
+      // Indicates if only one instance of a resource can be present under this
+      // key.
+      bool is_unique = 3;
+    }
+  }
+
+  // Syncer is a final Processor pipeline component that synchronizes between
+  // observed and desired state of a resource view. Observed state is typically
+  // feed by Store component, while desired state comes from transformers.
+  // During construction of a Syncer instance, it is possible to provide many
+  // configuration/customization options. They are:
+  // * UpdateMask: Most important parameter. Mask will be used by syncer to
+  // determine whether instances of an observed and desired resource are same
+  // or not. Typically we want to execute UPDATE request only if some fields
+  // are not matching.
+  // * RequestExecutionDelay: Customized delay between scheduling a request
+  // for execution (Create/Update/Delete) and an actual execution. If not
+  // provided, syncer will pick default value.
+  // * InitialRecoveryBackoff: If syncer encounters an error during execution
+  // of any request, it will suspend its work for given timeout.
+  // * MaximumRecoveryBackoff: If syncer fails to recover after failure, timeout
+  // set with InitialRecoveryBackoff will be increased and increased again in
+  // case of another failure. However MaximumRecoveryBackoff determines ceiling
+  // value for recovery.
+  // * CustomIdBuilder: By default, syncer matches observed and desired
+  // instances by their name fields. However, developer may provide custom ID
+  // extraction (of type string). This allows developer to skip providing full
+  // name to the desired instances.
+  // * AllowDuplicates: Determines if Syncer should delete redundant resources
+  // if it notices that observed state has more than 1 resource of same identifier.
+  // This can happen if CustomIdBuilder option was provided.
+  // * CreationDisabled: Whether syncer should disable creation
+  // * DeletionDisabled: Whether syncer should disable deletion
+  // * UpdateDisabled: Whether syncer should disable update
+  // * CreationAuthorizer: Customized function returning true/false whether
+  // syncer should execute CREATE request for this resource or not.
+  // * UpdateAuthorizer: Customized function returning true/false whether
+  // syncer should execute UPDATE request for this resource or not.
+  // * DeletionAuthorizer: Customized function returning true/false whether
+  // syncer should execute DELETE request for this resource or not.
+  // * CustomCreate: Customized function executing CREATE request. By default
+  // syncer creates resource with standard CREATE request provided by goten.
+  // * CustomUpdate: Customized function executing UPDATE request. By default
+  // syncer creates resource with standard UPDATE request provided by goten.
+  // * CustomDelete: Customized function executing DELETE request. By default
+  // syncer creates resource with standard DELETE request provided by goten.
+  message Syncer {
+    // Name of a resource which view is synchronized between desired and observed
+    // state.
+    string resource = 1;
+  }
+
+  // SvcImport informs TypeSet from which services resources should be taken from.
+  // It can also be used to pin specific service version.
+  message SvcImport {
+    // Name of a service, for example "iam.edgelq.com"
+    string name = 1;
+
+    // Optional version name, for example "v1alpha2". Newest available, if not provided.
+    string version = 2;
+  }
+}
+
+// Processor is a controller module, which focuses on single business logic
+// task, which basically is about maintaining some desired set(s) of resources.
+// Basically: Given some defined set of resources, it should compute another set
+// of desired resources and maintain them. It obtains actual data from the server
+// and uses create/update/delete requests in order to keep desired state in sync.
+// Controller is always scoped - which means, it operates only on set of resources
+// that belong to one scoped resource, which usually is a Project. This ensures
+// data from different scopes dont mix up. Controller itself should consists
+// of as many Processor instances, as many we have possible scopes.
+// Processor utilizes pipeline consisting of:
+// * inputs + data sources - which are used to figure out what is the actual state
+// of environment.
+// * stores - which are used as memory banks, so Processor keeps track of what is
+// going on)
+// * transformers - central part of Processor. Transformer is the simplest function
+// that produces desired state based on observed one. Processor can have many
+// transformers, but they should roughly work on coherent singlr business logic task.
+// * syncers - which are used for maintaining desired set of resources in sync.
+// Apart from transformers, TYPES for all pipeline components are defined in TypeSet
+// components.
+//
+// Protoc code-gen plugin will automatically generate Processor object according
+// to the description provided. It will also generate customizer interface which
+// will have to be implemented by developer in order to:
+// * (Mandatory) Provide implementation+configs to transformers
+// * (Mandatory) Provide configs to syncers
+// * (Optionally) Provide custom configs to stores
+// * (Optionally) Provide pre/post init functions for newly created Processors
+// themselves, allowing more aggressive customizations.
+//
+// Processor instances may use imported TypeSet components. This allows to:
+// * reuse same types among many Processor instances, reducing auto-generated
+// code.
+// * customize certain types (For example we can add extra indices to Stores).
+// By default, if Processor notices that no imported TypeSet defines certain
+// type it needs (for example, Processor needs Syncer for Pod resources, but
+// it is not defined in any TypeSet), then it generates automatically its own
+// instance. It basically has its own internal and dynamic TypeSet where
+// missing types are added at compile time. However, defaults may not always
+// be appropriate.
+message Processor {
+  // Name of the processor.
+  string name = 1;
+
+  // Names of a all TypeSet components imported by Processor.
+  repeated string type_sets = 2;
+
+  // Name of all controlled resources used by this Processor.
+  repeated ControlledResource definitions = 3;
+
+  // Name of the resource determining Scope of the Processor. This is typically
+  // a Project, but does not have to be. Scope must be defined as ControlledResource.
+  string scope = 4;
+
+  // Names of ControlledResource objects for which Processor should generate input
+  // instances. Input instance within Processor should not be confused with Input
+  // within TypeSet. Input instance defined within Processor will consists of two
+  // components:
+  // * MATCHING Input instance from TypeSet
+  // * MATCHING Store instance from TypeSet
+  // Constructor for a Processor will connect Input and Store together. It will
+  // also find all transformer and syncer instances that are interested
+  repeated string inputs = 5;
+
+  // Names of ControlledResource objects for which Processor should generate internal
+  // source instances. Like input instances, internal sources within Processor should
+  // not be confused with Data sources within TypeSet. Internal source instance will
+  // consists of two components:
+  // * MATCHING DataSource instance from TypeSet
+  // * MATCHING Store instance from TypeSet
+  // Constructor for a Processor will connect DataSource and Store together. It will
+  // also find all transformer and syncer instances that would consume data from
+  // them.
+  repeated string internal_sources = 6;
+
+  // All transformers instances used in this Processor.
+  repeated Transformer transformers = 7;
+
+  // All Syncer instances used in this Processor.
+  repeated Syncer syncers = 8;
+
+  // ControlledResource provides a resource definition within business logic
+  // context - typically within this Controller. It is built on top of goten
+  // resource definition - it just adds additional controller definition to it.
+  // In some cases, we may want to provide straightforward definition. For
+  // example, we say that we will be using Device resource in our controller,
+  // which is based on Device resource from devices.edgelq.com service:
+  //   {name: "Device", resource: "devices.edgelq.com/Device"}
+  // However, we may also build more definitions on top of underlying goten
+  // resource, as in this example:
+  //   {name : "WebServiceFrontend", resource : "applications.edgelq.com/Pod"}
+  //   {name : "WebServiceBackend", resource : "applications.edgelq.com/Pod"}
+  // If we provide many definitions based on same resource type, Processor can
+  // separate processing of Pods depending on their actual type in controller
+  // context.
+  // NOTE: All resource names within Processor must match names defined by
+  // ControlledResource instances.
+  // NOTE: Pipeline components (like transformers, syncers...) within Processor
+  // cannot work on its own, they have to be properly connected to each other.
+  // Processor makes all necessary connections by checking ControlledResource
+  // names! For example, if it sees Transformer that takes "Pod" as an input,
+  // then it looks for input or data source that supplies "Pod" resources.
+  message ControlledResource {
+    // Name of the resource within Controller context.
+    string name = 1;
+
+    // Underlying goten resource type name. Should be fully qualified and with
+    // service name. Example: applications.edgelq.com/Pod.
+    string resource = 2;
+
+    // Service version, for example "v1alpha2". If not provided, protoc will look
+    // for the newest available package.
+    string version = 3;
+
+    // Plural version of a "name". If not provided, then:
+    // * If "name" is same as name in the goten "resource" definition, plural
+    // is taken from goten resource definition.
+    // * Otherwise, it is "name"+"s" letter.
+    string plural = 4;
+  }
+
+  // Transformer is a pipeline component (function) that for given set of observed
+  // resources creates a set of desired resources.
+  // Note: Specification defines only skeleton code to be generated
+  // for transformer. It is up to a developer to provide implementation
+  // needed to construct fully functioning Transformer.
+  // Framework currently supports 3 types of transformers, depending on needs one
+  // or another should be used.
+  // NOTE: ALL resource names provided in transformers MUST be of ControlledResource
+  // type, not goten resource names.
+  // NOTE: Framework connects transformers to inputs/data sources on the left side
+  // and syncers on the right side by matching resource names.
+  message Transformer {
+    // Name of the transformer - used for both defining type and instance within
+    // Processor.
+    string name = 1;
+
+    oneof type {
+      // Generic transformer type description
+      GenericTransformer generic = 2;
+
+      // Owner-Ownee transformer type description
+      OwnerOwneeTransformer owner_ownee = 3;
+
+      // Decorator transformer type description
+      DecoratorTransformer decorator = 4;
+    }
+
+    // Schema of a generic transformer - defines simply input and output resource
+    // sets without mentioning how they are related to each other. This is most
+    // elastic version of the transformers. For example, suppose we need to write
+    // some complex transformer, that for each Deployment resource creates
+    // ReplicaSets, which then creates Pods. Also, when Deployment changes and new
+    // ReplicaSet is created (previous will be deleted), Pods need to be moved
+    // from old replica to new one. We can try to split this into many
+    // transformers, but suppose we want to write just one with following
+    // definition because we found that most convenient:
+    // {
+    //   name: "DeploymentController"
+    //   generic: {
+    //     input_resources: [ "Deployment", "ReplicaSet", "Pod" ]
+    //     output_resources: [ "ReplicaSet", "Pod" ]
+    //   }
+    // }
+    // Some words of explanation for this choice: It's very natural for deployment
+    // to be in the list of input resources. This is where things begin.
+    // ReplicaSet is an output resource, because they are being created based on
+    // Deployment input. However, once ReplicaSet is created, same transformer
+    // needs to create Pods for it - hence ReplicaSet is also listed as an input
+    // and Pod is listed as an output. Also, when deployment changes and creates
+    // new ReplicaSet, transformer will move EXISTING Pods under old ReplicaSet
+    // into new one. Because it needs to read "current" Pods resources state, Pod
+    // is also listed as an input resource. If we wanted controller to delete old
+    // pods and create new ones instead of moving from one replica to another,
+    // then we could potentially remove "Pod" from being an input resource.
+    //
+    // Protoc plugin will generate transformer structure that:
+    // * Connects to DeploymentStore, ReplicaSetStore and PodStore instances on
+    // the LEFT side (input).
+    // * Connects to ReplicaSetSyncer and PodSyncer on the RIGHT side (output).
+    // Code-gen cannot generate business logic on its own, therefore developer
+    // who defined skeleton in proto file, will have to provide customized
+    // implementation AND configuration objects.
+    //
+    // * Configuration contains Deployment_FieldMask, ReplicaSet_FieldMask and
+    // Pod_FieldMask (used for updates, described later below) PLUS snapshot
+    // timeout (will describe later below).
+    // * Implementation is for executing business logic, it will look like this:
+    //
+    // interface TransformerImpl {
+    //   CalculateSnapshot() *TransformerSnapshot
+    //   /*
+    //    Optional methods to be implemented:
+    //    OnDeploymentSet(current, previous *Deployment) *DiffActions
+    //    OnDeploymentDeleted(deleted *Deployment) *DiffActions
+    //    OnReplicaSetSet(current, previous *ReplicaSet) *DiffActions
+    //    OnReplicaSetDeleted(deleted *ReplicaSet) *DiffActions
+    //    OnPodSet(current, previous *Pod) *DiffActions
+    //    OnPodDeleted(deleted *Pod) *DiffActions
+    //   */
+    // }
+    //
+    // struct TransformerSnapshot {
+    //   ReplicaSets []*ReplicaSet
+    //   Pod []*Pod
+    // }
+    //
+    // struct DiffActions {
+    //   ReplicaSetsToSet    []*ReplicaSet
+    //   ReplicaSetsToDelete []*ReplicaSet
+    //   PodsToSet           []*Pod
+    //   PodsToDelete        []*Pod
+    // }
+    //
+    // CalculateSnapshot will be called by auto-generated transformer when it
+    // is needed, which is:
+    // * When all input stores are synchronized (controller is starting
+    // up or recovering)
+    // * Some time after Deployment/ReplicaSet/Pod has been added/deleted.
+    // * Some time after Deployment/ReplicaSet/Pod has been modified according to
+    // the field masks passed in the configuration object. This is to prevent
+    // snapshot being called when changed fields are not the ones we are
+    // interested in. You can notice this "Some time after" sentence above.
+    // Updates can happen one after another and calling snapshot every time would
+    // cause unnecessary strain on a CPU/other resources. Instead, timeout is
+    // configured (passed in the Config!) that allow events to be accumulated.
+    // Other way to prevent snapshot from being calculated after any create,
+    // update or delete, is to provide optional implementation, for example this
+    // OnDeploymentSet method as you can see above.
+    // OnDeploymentSet is called when:
+    // * New Deployment has been created (Be aware that "previous" pointer is
+    // nil in this case)
+    // * Deployment has been modified according to the field mask passed in the
+    // config object.
+    // OnDeploymentSet will NOT be called:
+    // * at controller startup or recovery - snapshot remains to be required in
+    // this case.
+    //
+    // If TransformerImpl implements function OnDeploymentSet, then transformer,
+    // instead of scheduling snapshot, will call OnDeploymentSet without any delay
+    // and pass the diff to the syncer object. This will allow developer to write
+    // controller that acts faster than it would be.
+    //
+    // Another thing to note here: You may see that PodsToDelete are of type *Pod
+    // instead of *Name. Same goes for ReplicaSets. It is because transformer
+    // OUTPUT resources are desired, not observed ones. And desired resources
+    // MAY NOT have their names fully specified in the first place. See Syncer
+    // documentation, there is a possibility for custom ID extractor function to
+    // be provided. Because name can be omitted in desired resource (and custom ID
+    // extraction is required from full object), during deletion it is also
+    // required to provide *Pod instead of *Name. However, if developer provides
+    // Name values in the desired resource (in any *ToSet parameter), it is
+    // perfectly fine to put instances with only name field populated in *ToDelete
+    // array. PodsToDelete just needs to be given objects with all fields necessary
+    // for identification purposes.
+    message GenericTransformer {
+      // Type of a snapshot
+      SnapshotModel snapshot_model = 1;
+
+      // List of the input resource names.
+      repeated string input_resources = 2;
+
+      // List of the output resource names.
+      repeated string output_resources = 3;
+
+      // Type of the snapshot model decides when snapshot is requested
+      enum SnapshotModel {
+        // Default type. Snapshot is requested after sync is gained AND after
+        // timeout happens after receiving On<Res>{Set/Deleted} for which
+        // implementation is missing. Between execution of a snapshot and
+        // scheduling updates are not handled. Instead, transformer relies on
+        // store to be updated and will calculate fresh state during snapshot.
+        AFTER_UNHANDLED_UPDATE = 0;
+
+        // Transformer will calculate snapshot during resync and will then keep
+        // recomputing it periodically. Implementation may still implement
+        // On<Res>{Set/Deleted} for each input resource to handle things faster if
+        // it wants.
+        PERIODIC = 1;
+      }
+    }
+
+    // OwnerOwneeTransformer is a special transformer type. It is recommended to
+    // use it when:
+    // * We have only one output resource type - we will call this ownee resource.
+    // * Among input resources we can define "owners", which should hold ownership
+    // of a produced, desired resources. Each set of owners is basically holding
+    // SOME partition of the ownee resources.
+    // * We want transformer to automatically manage ownership (if one of the
+    // owners is deleted, then all associated ownee resources also need to be
+    // deleted and we want this to be done automatically).
+    // For example, suppose we need to write controller that, for some
+    // combinations of Node + DaemonSet, creates Pod resources. We want also to
+    // automatically do garbage collections: When Node is deleted, then Pods also
+    // need to be deleted. When DaemonSet is deleted, then Pods also will need to
+    // be deleted. Also, if we change specification of the DaemonSet, which will
+    // result in some Nodes being "removed" from it, then all relevant Pods also
+    // will need to be deleted. We can then define following transformer:
+    // {
+    //   name: "PodsCreator",
+    //   owner_ownee: {
+    //    owner_resources: [ "DaemonSet", "Node" ]
+    //    ownee_resource: "Pod"
+    //   }
+    // }
+    // Protoc plugin will generate transformer that:
+    // * Connects to DaemonSetStore and NodeStore instances on the LEFT side (input).
+    // * Connects to PodSyncer instance on the RIGHT side (output).
+    // * Requires interface implemented by PodDesiredState on the right side.
+    //
+    // Code-gen cannot generate business logic on its own, therefore developer
+    // who defined skeleton in proto file, will have to provide customized
+    // implementation AND configuration objects.
+    //
+    // * Configuration contains DaemonSet_FieldMask and Node_FieldMask and
+    // Pod_FieldMask (used for updates, described later below)
+    // * Implementation is for executing business logic, it will look like this:
+    //
+    // struct PCPodsByDaemonSet {
+    //   Pods        []*pod.Pod
+    //   NodeCoOwner *node.Name
+    // }
+    //
+    // struct PCPodsByNode {
+    //   Pods             []*pod.Pod
+    //   DaemonSetCoOwner *daemon_set.Name
+    // }
+    //
+    // interface TransformerImpl {
+    //  CalculateByNode(node *node.Node) []*PCPodsByNode
+    //  CalculateByDaemonSet(daemonSet *daemon_set.DaemonSet) []*PCPodsByDaemonSet
+    // }
+    //
+    // CalculateByNode is called when:
+    // * New Node is received (it was created, or controller is starting
+    // up/recovering)
+    // * Node has been modified according to the Node_FieldMask passed in the
+    // config.
+    // CalculateByDaemonSet is called in similar fashion. Note: prefix "PC" comes
+    // from "PodsCreator" name.
+    //
+    // Note that CalculateByNode is returning not just the Pods associated with
+    // that Node. It will also tell all DaemonSets with which Node is connected
+    // and having common Pods. Basically, CalculateByNode and CalculateByDaemonSet
+    // are called on different axis of the same resource set.
+    //
+    // Same use case as above we can also be described in a little different way
+    // using same transformer type:
+    // {
+    //   name: "PodsCreator",
+    //   owner_ownee: {
+    //    owner_resources: [ "Node" ]
+    //    ownee_resource: "Pod"
+    //    additional_inputs: [ "DaemonSet" ]
+    //   }
+    // }
+    //
+    // Everything will be generally same, except required implementation:
+    //
+    // interface TransformerImpl {
+    //  CalculateByNode(node *node.Node) []*pod.Pod
+    //  OnDaemonSetSet(current, previous *daemon_set.DaemonSet) []*node.Node
+    //  OnDaemonSetDeleted(deleted *daemon_set.DaemonSet) []*node.Node
+    // }
+    //
+    // OnDaemonSetSet and OnDaemonSetDeleted will basically indicate for
+    // which Node instances CalculateByNode MUST to be recomputed!
+    //
+    // AdditionalInputs basically are used to describe resources, of which changes
+    // trigger recalculation of the desired ownee resources. Of course, usually
+    // its better to use AdditionalInputs for resources which are not part
+    // of the "ownership" management but take part in the business logic,
+    // but other notations can also be used for convenience.
+    message OwnerOwneeTransformer {
+      // List of the owner resource names.
+      repeated string owner_resources = 1;
+
+      // Name of the ownee resource name.
+      string ownee_resource = 2;
+
+      // List of the additional input resource names. Those resources are not
+      // considered as "owner" resources. But sometimes change of a "non-owner"
+      // resource may trigger recalculation of a desired state for some selected
+      // "owner" resources.
+      repeated string additional_inputs = 3;
+    }
+
+    // Decorator is another specialized transformer type: It focuses on just one
+    // resource set and decorates each of its members.
+    // Decorator should be used when input and output resource is actually same
+    // instance. Output instance is just the decorated version of the input. As in
+    // OwnerOwneeTransformer, we can also define additional input resources that
+    // can force decorator to recalculate desired state of a selected resources.
+    // For example, suppose we want to decorate each Pod with some custom labels.
+    // Those labels however also depend on Container resources which run on
+    // those pods. We can define following decorator:
+    // {
+    //   name: "PodLabelModifier",
+    //   decorator: {
+    //     resource: "Pod"
+    //     additional_inputs: [ "Container" ]
+    //   }
+    // }
+    //
+    // Protoc plugin will generate transformer structure that:
+    // * Connects to the PodStore and ContainerStore on the LEFT side (input).
+    // * Connects to the PodSyncer on the RIGHT side (output).
+    // * Write custom business logic (processor) and call transformer constructor
+    // using it.
+    //
+    // Code-gen cannot generate business logic on its own, therefore developer
+    // who defined skeleton in proto file, will have to provide customized
+    // implementation AND configuration objects.
+    //
+    // * Configuration contains Pod_FieldMask and Container_FieldMask (used for
+    // updates, described later below)
+    // * Implementation is for executing business logic, it will look like this:
+    //
+    // interface TransformerImpl {
+    //   DecoratePod(pod *pod.Pod)
+    //   OnContainerUpdated(current, previous *container.Container) []*pod.Pod
+    //   OnContainerDeleted(deleted *container.Container) []*pod.Pod
+    // }
+    // DecoratePod will be called when:
+    // * Pod is new (either it was really created or controller has just
+    // started/recovering).
+    // * Pod is modified according to the field mask passed in Config.
+    // * When Recalculation of a Pod is forced by OnContainerUpdated or
+    // OnContainerDeleted. Those two functions must always return list of pods
+    // which require recalculation due to Container changes. OnContainerUpdated
+    // will be called also when:
+    // * Container is new (newly created or controller is starting/recovering).
+    // "previous" is nil!
+    // * Container is modified according to the field mask passed in Config.
+    message DecoratorTransformer {
+      // Output resource name.
+      string resource = 1;
+
+      // List of additional input resource names.
+      repeated string additional_inputs = 2;
+    }
+  }
+
+  // Syncer describes an INSTANCE working within Processor. This should not be
+  // confused with Syncer in a TypeSet, which describes a TYPE. Syncer within
+  // Processor instructs compiler to generate an actual object, that will be
+  // connected with selected input/data source for an observed state and list
+  // of transformers for a desired state.
+  message Syncer {
+    // Name of the syncer instance.
+    string name = 1;
+
+    // Name of the observed resource that connects to this syncer. Compiler will
+    // iterate over all inputs/data sources to find matching instance.
+    string observed_input = 2;
+
+    // List of all transformer outputs supplying data to desired state of the syncer.
+    repeated DesiredSource desired_output = 3;
+
+    // DesiredSource informs which transformer should be supplying desired state
+    // of a syncer.
+    message DesiredSource {
+      // Name of a transformer connecting to Syncer.
+      string transformer_name = 1;
+
+      // Resource output name from transformer. This can be omitted and compiler
+      // will try to auto-detect after iterating over all transformer output types.
+      // It will fail if by any chance transformer provides multiple resource outputs
+      // with same underlying type.
+      string output_name = 2;
+    }
+  }
+}
+
+// Node is the highest-level code-generated object within controller framework.
+// Its tasks are:
+// * Collect data needed by Processor instances AND group it by a scope objects.
+// As was said in Processor doc, it is scoped and should receive data only about
+// its scope. Node is not scoped - it tries to optimize controller by utilizing
+// bulk watching (Watch requests for all scopes) and simply groups received
+// objects into scopes.
+// * Create/Delete Processor instance for every new/deleted scope object.
+// * Communicate with other Node instances of the same kind in order to split
+// the work. This prevents Node to be overwhelmed if there are simply too many
+// active Projects. Work is being divided using Sharding feature.
+//
+// Notes:
+// * Node can contain many Processor kinds, BUT they must use exactly same Scope.
+// It implies that Node should focus on
+// * Only one ntt.sharding.RingConfig can be assigned to a Node. It must be also
+// synchronized across all Nodes in order to make sure work is split correctly.
+// If developer needs to use multiple rings for different business logic tasks,
+// then what is needed is more Node definitions. Implication, is that Node is
+// focused on many business logic tasks, but they all must relate to one Scope.
+// * Node will iterate over all Processors and check all external inputs they
+// require - for each UNIQUE ControlledResource Node will have one Watcher
+// instance. If two or more Processors define ControlledResource of the same
+// name, then Node will forward data to them from one Watcher instance.
+// * Since Node iterates over all its Processors and inherits all ControlledResource
+// definitions, all resource names provided in Node annotation require the same
+// names.
+message Node {
+  // Name of the node
+  string name = 1;
+
+  // List of all Processor names used in this Node.
+  repeated string processors = 2;
+
+  // Sharding information attached to the Node.
+  Sharding sharding = 3;
+
+  // Dispatchment information attached to the Node.
+  Dispatchment dispatchment = 4;
+
+  // Sharding informs Node how to use ntt.sharding.RingConfig object it has in
+  // order to split the work with other Node instances of its kind.
+  // As pointed in RingConfig documentation, ring can contain many possible
+  // field paths (with different labels), because different resources on the
+  // same ring may simply have different field paths where shard indicator is
+  // located.
+  message Sharding {
+    // Default label informs which label in RingConfig points to a field path
+    // containing shard information for most (if not all) of resources.
+    string default_label = 1;
+
+    // Overrides per each ControlledResource.
+    repeated PerControlledResource overrides = 2;
+
+    // PerControlledResource is informing what label in RingConfig should be
+    // used for specific resource
+    message PerControlledResource {
+      // Name of the ControlledResource (as in Processor)
+      string resource = 1;
+
+      // Label value
+      string label = 2;
+    }
+  }
+
+  // Dispatchment informs Node how to group watched resources into their scopes
+  // before dispatching data to single-scope Processor instances.
+  message Dispatchment {
+    // Informs how to extract scope identifier from scope resource
+    ScopeGrouping scope_grouping = 1;
+
+    // Informs how to extract scope identifier from the inputs required by
+    // connected Processor instances.
+    repeated InputGrouping input_groupings = 2;
+
+    // ScopeGrouping determines how scope identifier is extracted from given
+    // Scope object. Usually it is name, but if relation between scope and
+    // associated resources is not trivial, other methods can be used.
+    message ScopeGrouping {
+      // Method by which scope identifier is extracted from scope object.
+      GroupingMethod method = 1;
+
+      // Field path where the scope identifier is located IF method is of FIELD type.
+      string field_path = 2;
+    }
+
+    // InputGrouping describes how to extract scope identifier from a resources of
+    // a single type.
+    message InputGrouping {
+      // Name of the resource (ControlledResource) this grouping is assigned to.
+      string resource = 1;
+
+      // Method by which scope identifier is extracted
+      GroupingMethod method = 2;
+
+      // Field path where the scope identifier is located IF method is of FIELD type.
+      string field_path = 3;
+    }
+
+    // Determining scope of a resource requires inspecting its body. Since its
+    // not always straightforward how to extract this scope, framework allows
+    // to pick correct option for given task only developer can know about.
+    enum GroupingMethod {
+      // NAME is the simplest and probably most used method to group resources
+      // into scopes. NAME simply tells to examine resource <name> field. For
+      // example, if we have Project resource and there are Device/Pod resources,
+      // which are kid of a Project, then NAME is perfect use - framework will
+      // simply extract project name from any Device/Pod resource using its name
+      // field.
+      NAME = 0;
+
+      // FIELD indicates that scope information is within resource: although not
+      // in the name field. If developer picks this option, then it will be
+      // mandatory to provide field path. However it should be noted that
+      // only reference, name and string field paths are supported.
+      FIELD = 1;
+
+      // CUSTOM gives most freedom to developer, but requires to provide a function
+      // that, for given resource requiring grouping, extracts string identifying
+      // scope. This string can be anything, as long as it returns same value for
+      // resources belonging to that scope.
+      CUSTOM = 2;
+    }
+  }
+}
+
+extend google.protobuf.FileOptions {
+  // Description of a TypeSet module attached to this file.
+  TypeSet type_set = 75000;
+
+  // Description of a processor module attached to the file.
+  Processor processor = 75001;
+
+  // Description of a node module attached to this file.
+  Node node = 75002;
+}

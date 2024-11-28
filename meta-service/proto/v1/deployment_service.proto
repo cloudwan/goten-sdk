@@ -140,7 +140,9 @@ message WatchDeploymentRequest {
 }
 
 // A response message of the WatchDeployment method.
-message WatchDeploymentResponse { DeploymentChange change = 1; }
+message WatchDeploymentResponse {
+  DeploymentChange change = 1;
+}
 
 // A request message of the WatchDeployments method.
 message WatchDeploymentsRequest {
@@ -364,106 +366,67 @@ service DeploymentService {
   option (google.api.oauth_scopes) = "";
 
   // GetDeployment
-  rpc GetDeployment(GetDeploymentRequest) returns (Deployment) {
-    option (google.api.http) = {
-      get : "/meta/v1/{name=services/*/deployments/*}"
-    };
+  rpc GetDeployment ( GetDeploymentRequest ) returns ( Deployment ) {
+    option (google.api.http) = { get:"/meta/v1/{name=services/*/deployments/*}"  };
   }
 
   // BatchGetDeployments
-  rpc BatchGetDeployments(BatchGetDeploymentsRequest)
-      returns (BatchGetDeploymentsResponse) {
-    option (google.api.http) = {
-      get : "/meta/v1/deployments:batchGet"
-    };
+  rpc BatchGetDeployments ( BatchGetDeploymentsRequest ) returns ( BatchGetDeploymentsResponse ) {
+    option (google.api.http) = { get:"/meta/v1/deployments:batchGet"  };
   }
 
   // ListDeployments
-  rpc ListDeployments(ListDeploymentsRequest)
-      returns (ListDeploymentsResponse) {
-    option (google.api.http) = {
-      get : "/meta/v1/{parent=services/*}/deployments"
-    };
+  rpc ListDeployments ( ListDeploymentsRequest ) returns ( ListDeploymentsResponse ) {
+    option (google.api.http) = { get:"/meta/v1/{parent=services/*}/deployments"  };
   }
 
   // WatchDeployment
-  rpc WatchDeployment(WatchDeploymentRequest)
-      returns (stream WatchDeploymentResponse) {
-    option (google.api.http) = {
-      post : "/meta/v1/{name=services/*/deployments/*}:watch"
-    };
+  rpc WatchDeployment ( WatchDeploymentRequest ) returns ( stream WatchDeploymentResponse ) {
+    option (google.api.http) = { post:"/meta/v1/{name=services/*/deployments/*}:watch"  };
   }
 
   // WatchDeployments
-  rpc WatchDeployments(WatchDeploymentsRequest)
-      returns (stream WatchDeploymentsResponse) {
-    option (google.api.http) = {
-      post : "/meta/v1/{parent=services/*}/deployments:watch"
-    };
+  rpc WatchDeployments ( WatchDeploymentsRequest ) returns ( stream WatchDeploymentsResponse ) {
+    option (google.api.http) = { post:"/meta/v1/{parent=services/*}/deployments:watch"  };
   }
 
   // CreateDeployment
-  rpc CreateDeployment(CreateDeploymentRequest) returns (Deployment) {
-    option (google.api.http) = {
-      post : "/meta/v1/{parent=services/*}/deployments"
-      body : "deployment"
-    };
+  rpc CreateDeployment ( CreateDeploymentRequest ) returns ( Deployment ) {
+    option (google.api.http) = { post:"/meta/v1/{parent=services/*}/deployments" body:"deployment"  };
   }
 
   // UpdateDeployment
-  rpc UpdateDeployment(UpdateDeploymentRequest) returns (Deployment) {
-    option (google.api.http) = {
-      put : "/meta/v1/{deployment.name=services/*/deployments/*}"
-      body : "deployment"
-    };
+  rpc UpdateDeployment ( UpdateDeploymentRequest ) returns ( Deployment ) {
+    option (google.api.http) = { put:"/meta/v1/{deployment.name=services/*/deployments/*}" body:"deployment"  };
   }
 
   // DeleteDeployment
-  rpc DeleteDeployment(DeleteDeploymentRequest)
-      returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      delete : "/meta/v1/{name=services/*/deployments/*}"
-    };
+  rpc DeleteDeployment ( DeleteDeploymentRequest ) returns ( google.protobuf.Empty ) {
+    option (google.api.http) = { delete:"/meta/v1/{name=services/*/deployments/*}"  };
   }
 
   // BeginUpgrade
-  rpc BeginUpgrade(BeginUpgradeRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      post : "/meta/v1/{name=services/*/deployments/*}:beginUpgrade"
-    };
+  rpc BeginUpgrade ( BeginUpgradeRequest ) returns ( google.protobuf.Empty ) {
+    option (google.api.http) = { post:"/meta/v1/{name=services/*/deployments/*}:beginUpgrade"  };
   }
 
   // SetAvailableUpgrade
-  rpc SetAvailableUpgrade(SetAvailableUpgradeRequest)
-      returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      post : "/meta/v1/{name=services/*/deployments/*}:setAvailableUpgrade"
-    };
+  rpc SetAvailableUpgrade ( SetAvailableUpgradeRequest ) returns ( google.protobuf.Empty ) {
+    option (google.api.http) = { post:"/meta/v1/{name=services/*/deployments/*}:setAvailableUpgrade"  };
   }
 
   // NotifyShardsUpgradeReadiness
-  rpc NotifyShardsUpgradeReadiness(NotifyShardsUpgradeReadinessRequest)
-      returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      post : "/meta/v1/{name=services/*/deployments/"
-             "*}:notifyShardsUpgradeReadiness"
-    };
+  rpc NotifyShardsUpgradeReadiness ( NotifyShardsUpgradeReadinessRequest ) returns ( google.protobuf.Empty ) {
+    option (google.api.http) = { post:"/meta/v1/{name=services/*/deployments/*}:notifyShardsUpgradeReadiness"  };
   }
 
   // GetOrRegisterDataUpdateTask
-  rpc GetOrRegisterDataUpdateTask(GetOrRegisterDataUpdateTaskRequest)
-      returns (GetOrRegisterDataUpdateTaskResponse) {
-    option (google.api.http) = {
-      post : "/meta/v1/{name=services/*/deployments/"
-             "*}:getOrRegisterDataUpdateTask"
-    };
+  rpc GetOrRegisterDataUpdateTask ( GetOrRegisterDataUpdateTaskRequest ) returns ( GetOrRegisterDataUpdateTaskResponse ) {
+    option (google.api.http) = { post:"/meta/v1/{name=services/*/deployments/*}:getOrRegisterDataUpdateTask"  };
   }
 
   // UpdateDataTaskUpdate
-  rpc UpdateDataTaskUpdate(UpdateDataTaskUpdateRequest)
-      returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      post : "/meta/v1/{name=services/*/deployments/*}:updateDataTaskUpdate"
-    };
+  rpc UpdateDataTaskUpdate ( UpdateDataTaskUpdateRequest ) returns ( google.protobuf.Empty ) {
+    option (google.api.http) = { post:"/meta/v1/{name=services/*/deployments/*}:updateDataTaskUpdate"  };
   }
 }

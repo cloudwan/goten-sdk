@@ -139,7 +139,9 @@ message WatchResourceRequest {
 }
 
 // A response message of the WatchResource method.
-message WatchResourceResponse { ResourceChange change = 1; }
+message WatchResourceResponse {
+  ResourceChange change = 1;
+}
 
 // A request message of the WatchResources method.
 message WatchResourcesRequest {
@@ -363,63 +365,42 @@ service ResourceService {
   option (google.api.oauth_scopes) = "";
 
   // GetResource
-  rpc GetResource(GetResourceRequest) returns (Resource) {
-    option (google.api.http) = {
-      get : "/meta/v1/{name=services/*/resources/*}"
-    };
+  rpc GetResource ( GetResourceRequest ) returns ( Resource ) {
+    option (google.api.http) = { get:"/meta/v1/{name=services/*/resources/*}"  };
   }
 
   // BatchGetResources
-  rpc BatchGetResources(BatchGetResourcesRequest)
-      returns (BatchGetResourcesResponse) {
-    option (google.api.http) = {
-      get : "/meta/v1/resources:batchGet"
-    };
+  rpc BatchGetResources ( BatchGetResourcesRequest ) returns ( BatchGetResourcesResponse ) {
+    option (google.api.http) = { get:"/meta/v1/resources:batchGet"  };
   }
 
   // ListResources
-  rpc ListResources(ListResourcesRequest) returns (ListResourcesResponse) {
-    option (google.api.http) = {
-      get : "/meta/v1/{parent=services/*}/resources"
-    };
+  rpc ListResources ( ListResourcesRequest ) returns ( ListResourcesResponse ) {
+    option (google.api.http) = { get:"/meta/v1/{parent=services/*}/resources"  };
   }
 
   // WatchResource
-  rpc WatchResource(WatchResourceRequest)
-      returns (stream WatchResourceResponse) {
-    option (google.api.http) = {
-      post : "/meta/v1/{name=services/*/resources/*}:watch"
-    };
+  rpc WatchResource ( WatchResourceRequest ) returns ( stream WatchResourceResponse ) {
+    option (google.api.http) = { post:"/meta/v1/{name=services/*/resources/*}:watch"  };
   }
 
   // WatchResources
-  rpc WatchResources(WatchResourcesRequest)
-      returns (stream WatchResourcesResponse) {
-    option (google.api.http) = {
-      post : "/meta/v1/{parent=services/*}/resources:watch"
-    };
+  rpc WatchResources ( WatchResourcesRequest ) returns ( stream WatchResourcesResponse ) {
+    option (google.api.http) = { post:"/meta/v1/{parent=services/*}/resources:watch"  };
   }
 
   // CreateResource
-  rpc CreateResource(CreateResourceRequest) returns (Resource) {
-    option (google.api.http) = {
-      post : "/meta/v1/{parent=services/*}/resources"
-      body : "resource"
-    };
+  rpc CreateResource ( CreateResourceRequest ) returns ( Resource ) {
+    option (google.api.http) = { post:"/meta/v1/{parent=services/*}/resources" body:"resource"  };
   }
 
   // UpdateResource
-  rpc UpdateResource(UpdateResourceRequest) returns (Resource) {
-    option (google.api.http) = {
-      put : "/meta/v1/{resource.name=services/*/resources/*}"
-      body : "resource"
-    };
+  rpc UpdateResource ( UpdateResourceRequest ) returns ( Resource ) {
+    option (google.api.http) = { put:"/meta/v1/{resource.name=services/*/resources/*}" body:"resource"  };
   }
 
   // DeleteResource
-  rpc DeleteResource(DeleteResourceRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      delete : "/meta/v1/{name=services/*/resources/*}"
-    };
+  rpc DeleteResource ( DeleteResourceRequest ) returns ( google.protobuf.Empty ) {
+    option (google.api.http) = { delete:"/meta/v1/{name=services/*/resources/*}"  };
   }
 }

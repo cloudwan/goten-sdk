@@ -12,10 +12,7 @@ option java_package = "com.goten.meta.pb.v1";
 
 // Resource Resource
 message Resource {
-  option (google.api.resource) = {
-    type : "meta.goten.com/Resource"
-    pattern : "services/{service}/resources/{resource}"
-  };
+  option (google.api.resource) = { type:"meta.goten.com/Resource" pattern:"services/{service}/resources/{resource}"  };
 
   // Name of Resource
   // When creating a new instance, this field is optional and if not provided,

@@ -136,7 +136,9 @@ message WatchRegionRequest {
 }
 
 // A response message of the WatchRegion method.
-message WatchRegionResponse { RegionChange change = 1; }
+message WatchRegionResponse {
+  RegionChange change = 1;
+}
 
 // A request message of the WatchRegions method.
 message WatchRegionsRequest {
@@ -354,61 +356,42 @@ service RegionService {
   option (google.api.oauth_scopes) = "";
 
   // GetRegion
-  rpc GetRegion(GetRegionRequest) returns (Region) {
-    option (google.api.http) = {
-      get : "/meta/v1/{name=regions/*}"
-    };
+  rpc GetRegion ( GetRegionRequest ) returns ( Region ) {
+    option (google.api.http) = { get:"/meta/v1/{name=regions/*}"  };
   }
 
   // BatchGetRegions
-  rpc BatchGetRegions(BatchGetRegionsRequest)
-      returns (BatchGetRegionsResponse) {
-    option (google.api.http) = {
-      get : "/meta/v1/regions:batchGet"
-    };
+  rpc BatchGetRegions ( BatchGetRegionsRequest ) returns ( BatchGetRegionsResponse ) {
+    option (google.api.http) = { get:"/meta/v1/regions:batchGet"  };
   }
 
   // ListRegions
-  rpc ListRegions(ListRegionsRequest) returns (ListRegionsResponse) {
-    option (google.api.http) = {
-      get : "/meta/v1/regions"
-    };
+  rpc ListRegions ( ListRegionsRequest ) returns ( ListRegionsResponse ) {
+    option (google.api.http) = { get:"/meta/v1/regions"  };
   }
 
   // WatchRegion
-  rpc WatchRegion(WatchRegionRequest) returns (stream WatchRegionResponse) {
-    option (google.api.http) = {
-      post : "/meta/v1/{name=regions/*}:watch"
-    };
+  rpc WatchRegion ( WatchRegionRequest ) returns ( stream WatchRegionResponse ) {
+    option (google.api.http) = { post:"/meta/v1/{name=regions/*}:watch"  };
   }
 
   // WatchRegions
-  rpc WatchRegions(WatchRegionsRequest) returns (stream WatchRegionsResponse) {
-    option (google.api.http) = {
-      post : "/meta/v1/regions:watch"
-    };
+  rpc WatchRegions ( WatchRegionsRequest ) returns ( stream WatchRegionsResponse ) {
+    option (google.api.http) = { post:"/meta/v1/regions:watch"  };
   }
 
   // CreateRegion
-  rpc CreateRegion(CreateRegionRequest) returns (Region) {
-    option (google.api.http) = {
-      post : "/meta/v1/regions"
-      body : "region"
-    };
+  rpc CreateRegion ( CreateRegionRequest ) returns ( Region ) {
+    option (google.api.http) = { post:"/meta/v1/regions" body:"region"  };
   }
 
   // UpdateRegion
-  rpc UpdateRegion(UpdateRegionRequest) returns (Region) {
-    option (google.api.http) = {
-      put : "/meta/v1/{region.name=regions/*}"
-      body : "region"
-    };
+  rpc UpdateRegion ( UpdateRegionRequest ) returns ( Region ) {
+    option (google.api.http) = { put:"/meta/v1/{region.name=regions/*}" body:"region"  };
   }
 
   // DeleteRegion
-  rpc DeleteRegion(DeleteRegionRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      delete : "/meta/v1/{name=regions/*}"
-    };
+  rpc DeleteRegion ( DeleteRegionRequest ) returns ( google.protobuf.Empty ) {
+    option (google.api.http) = { delete:"/meta/v1/{name=regions/*}"  };
   }
 }

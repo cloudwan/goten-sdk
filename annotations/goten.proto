@@ -1,0 +1,310 @@
+syntax = "proto3";
+
+package goten.annotations;
+
+import "google/protobuf/descriptor.proto";
+
+option go_package = "github.com/cloudwan/goten-sdk/annotations/goten";
+option java_multiple_files = true;
+option java_package = "com.ntt.goten.annotations.core";
+
+// Go package configuration
+message GoPackage {
+  // Name of the package
+  string name = 1;
+
+  // Path where generated files are stored
+  string path = 2;
+}
+
+message FieldType {
+  oneof type {
+    NameType name = 1;
+
+    ReferenceType reference = 2;
+
+    FilterType filter = 3;
+
+    PagerCursorType pager_cursor = 4;
+
+    OrderByType order_by = 5;
+
+    FieldMaskType field_mask = 6;
+
+    ParentNameType parent_name = 7;
+
+    ParentReferenceType parent_reference = 8;
+  }
+
+  // Name type pointing to resource.
+  // This type can only be used for fields in objects defined in proto package
+  // containing Goten service definition (ServicePackage - goten.annotations.service_pkg).
+  message NameType {
+    // resource name.
+    // It can have two possible format: either short version like "Shelf", or fully qualified
+    // like library.goten.com/Shelf - note the first part is not proto package, but service domain.
+    string resource = 1;
+  }
+
+  // Reference to another resource.
+  // This type can only be used for fields in objects defined in proto package
+  // containing Goten service definition (ServicePackage - goten.annotations.service_pkg).
+  // Unlike name type, Go object generated for reference also has reference to potentially
+  // resolved resource itself. This type should be used inside resources objects - reference
+  // types are picked by schema engine provided by Goten.
+  message ReferenceType {
+    // resource this string is referring to.
+    // It can have two possible format: either short version like "Shelf", or fully qualified
+    // like library.goten.com/Shelf - note the first part is not proto package, but service domain.
+    string resource = 1;
+
+    // Defined behaviour of the referencing resource if referenced is deleted.
+    OnReferencedObjectDeleted target_delete_behavior = 2;
+  }
+
+  // Filter to another resource.
+  // This type can only be used for fields in objects defined in proto package
+  // containing Goten service definition (ServicePackage - goten.annotations.service_pkg).
+  message FilterType {
+    // resource this string is referring to.
+    // It can have two possible format: either short version like "Shelf", or fully qualified
+    // like library.goten.com/Shelf - note the first part is not proto package, but service domain.
+    string resource = 1;
+  }
+
+  // PagerCursor for navigating paginated query results.
+  // This type can only be used for fields in objects defined in proto package
+  // containing Goten service definition (ServicePackage - goten.annotations.service_pkg).
+  message PagerCursorType {
+    // resource whose collections this cursor is able to navigate.
+    // It can have two possible format: either short version like "Shelf", or fully qualified
+    // like library.goten.com/Shelf - note the first part is not proto package, but service domain.
+    string resource = 1;
+  }
+
+  // OrderBy defines an ordering on resources fields.
+  // This type can only be used for fields in objects defined in proto package
+  // containing Goten service definition (ServicePackage - goten.annotations.service_pkg).
+  message OrderByType {
+    // resource on whose fields this OrderBy is able to define ordering.
+    // It can have two possible format: either short version like "Shelf", or fully qualified
+    // like library.goten.com/Shelf - note the first part is not proto package, but service domain.
+    string resource = 1;
+  }
+
+  // FieldMask for specifying a subset of fields to be fetched/updated.
+  // This type can only be used for fields in objects defined in proto package
+  // containing Goten service definition (ServicePackage - goten.annotations.service_pkg).
+  message FieldMaskType {
+    // resource whose fields this FieldMask refers to.
+    // It can have two possible format: either short version like "Shelf", or fully qualified
+    // like library.goten.com/Shelf - note the first part is not proto package, but service domain.
+    string resource = 1;
+  }
+
+  // ParentName points to parent name of given resource - in case of multiple possible parents
+  // it will contain internally oneof of all possible combinations.
+  // This type can only be used for fields in objects defined in proto package
+  // containing Goten service definition (ServicePackage - goten.annotations.service_pkg).
+  message ParentNameType {
+    // resource whose parent this field points to.
+    // It can only have short format - like "Shelf". It is not allowed to define parent to resource
+    // outside current service package.
+    string resource = 1;
+  }
+
+  // ParentReferenceType points to parent name of given resource - in case of multiple possible parents
+  // it will contain internally oneof of all possible combinations.
+  // Unlike name type, generated Go version will also contain reference to resolved object.
+  message ParentReferenceType {
+    // resource whose parent this field points to.
+    // It can only have short format - like "Shelf". It is not allowed to define parent to resource
+    // outside current service package.
+    string resource = 1;
+  }
+}
+
+// Describes how goten should merge given field
+// within a containing proto message. Merge is an
+// operation, where an "original object" is a message
+// to which we merge to, "source object" is a message
+// we merge from. In result, original object is modified
+// and contains all data from source object while
+// source object is left untouched.
+message MergeOpts {
+  oneof opts {
+    // Settings applicable for repeated fields
+    Repeated repeated = 1;
+
+    // Settings applicable for map fields
+    Map map = 2;
+  }
+
+  // Merge rules applicable to repeated fields.
+  // Repeated field can be classified as:
+  // * Primitive (string, integer, float, reference...)
+  // * Object (proto message) where each item has unique
+  //   identifier (repeated Container, where Container has
+  //   "string name" field inside). For short, we can call
+  //   this "identified object".
+  // * Object (proto message) where items dont have
+  //   unique identifiers. For short, we can call this
+  //   "plain object".
+  message Repeated {
+    // Unique identifiers of an array item.
+    // For example, for field "repeated Container containers"
+    // identifiers could be equal to ["name"]. Such an array
+    // would be then treated like map<string, Container>.
+    // Option valid only if array item is a message, not primitive.
+    repeated string identifiers = 1;
+
+    // Instructs goten how repeated field should be merged.
+    FieldBehavior behavior = 2;
+
+    // Instructs whether repeated field should be sorted after
+    // merge and how.
+    SortingOrder sorting = 3;
+
+    // Tells how repeated field should be sorted after merge.
+    enum SortingOrder {
+      // No sorting
+      NO_SORTING = 0;
+
+      // Ascending order.
+      // * For primitive fields, values are sorted
+      //   ascending by their value
+      // * For objects with identifiers, values
+      //   are sorted ascending by their identifiers
+      //   alphabetically.
+      // * Invalid (goten will raise an error) for
+      //   objects without specified identifiers.
+      ASCENDING = 1;
+
+      // Descending order.
+      // * For primitive fields, values are sorted
+      //   descending by their value
+      // * For objects with identifiers, values
+      //   are sorted descending by their identifiers
+      //   alphabetically.
+      // * Invalid (goten will raise an error) for
+      //   objects without specified identifiers.
+      DESCENDING = 2;
+    }
+  }
+
+  // Merge rules applicable for map fields.
+  message Map {
+    // Instructs goten how map field should be merged.
+    FieldBehavior behavior = 1;
+  }
+
+  // Points to a rules used during merging of a map or repeated field.
+  // Repeated field, however, is not that different from a map at all. Reasons:
+  // * If a developer specifies unique identifier from fields taken from array
+  // item, then it is effectively a map (See Repeated:identifiers field in this
+  // MergeOpts annotation).
+  // * If repeated field is a list of primitive elements like strings, ints, or
+  // even list of simple objects like timestamps (repeated int array_of_ints,
+  // repeated string array_of_ints, repeated google.protobuf.Timestamp
+  // array_of_timestamps), then it can be considered as a map again: map<int,
+  // dummy> former_array_of_ints, map<string, dummy> former_array_of_strings
+  // etc. In those cases, array fields should be considered as both key and
+  // values! All FieldBehavior options below should be treated having above in
+  // mind. When you see "container" in any description below, it should be
+  // considered as a map or repeated.
+  enum FieldBehavior {
+    // Fields by keys present in both containers are merged.
+    // Fields only in a source container are added, fields only in a destination
+    // container are retained.
+    DEFAULT = 0;
+
+    // Source container simply replaces destination without any merge operation.
+    REPLACE = 1;
+
+    // Fields by map keys present in both containers are merged.
+    // Fields only in a source are added, fields only in a destination are
+    // removed.
+    DISCARD_ONLY_IN_DEST = 2;
+
+    // Fields by map keys present in both objects are merged.
+    // Fields only in a source map are ignored, fields only in a destination map
+    // are retained.
+    DISCARD_ONLY_IN_SOURCE = 3;
+
+    // Fields present only in both source and destination containers are
+    // retained and values are merged. Otherwise discarded.
+    OPERATION_AND = 4;
+
+    // Fields present in both source and destination containers are discarded.
+    // Only unique keys present in one of the them are stored in final
+    // destination object.
+    OPERATION_XOR = 5;
+
+    // This behavior indicates no merging operation, elements from source list
+    // are simple appended. This rule cannot be used on repeated fields for
+    // which we specified unique identifier AND maps. This rule is only
+    // additional for repeated fields with primitive elements which can repeat
+    // many times.
+    APPEND = 6;
+  }
+}
+
+// Defines behaviour of reference holder when referenced object has been deleted
+enum OnReferencedObjectDeleted {
+  // Not allowed to be used.
+  UNDEFINED = 0;
+
+  // Blocks referenced object from being deleted
+  BLOCK = 1;
+
+  // Set reference to empty value if it belongs to same database, but in other cases it may be done
+  // in asynchronous manner (for example, if referenced resource belongs to different service).
+  UNSET = 2;
+
+  // Deletion of referenced object causes reference owner to be also deleted if they belong to
+  // same database, otherwise it may be done in asynchronous manner (for example, if referenced
+  // resource belongs to different service).
+  CASCADE_DELETE = 3;
+
+  // Deletion of referenced object causes reference to be set to empty value.
+  ASYNC_UNSET = 4;
+
+  // Deletion of referenced object causes reference owner to be also deleted by garbage collector
+  ASYNC_CASCADE_DELETE = 5;
+
+  // Reference holder does nothing - reference is kept dangling.
+  // This option allows custom code to be used for handling reference
+  // owners.
+  ALLOW_DANGLING = 6;
+}
+
+extend google.protobuf.FileOptions {
+  // Affects default behavior of object_ext_gen flag for every message in a
+  // File.
+  bool object_ext_gen_all = 69101;
+}
+
+extend google.protobuf.MessageOptions {
+  // Indicates if a Goten-owned proto message should be extended
+  // with extra functionalities (offered by protoc-goten-gen-object)
+  // plugin like strongly typed field paths & masks, customized merging,
+  // field mask projections.
+  bool object_ext_gen = 69101;
+}
+
+extend google.protobuf.FieldOptions {
+  FieldType type = 69030;
+
+  bool primary_id = 69021;
+
+  // when output only is set, all input (create/update) requests for this field
+  // *must* be ignored:
+  // https://cloud.google.com/apis/design/design_patterns#output_fields
+  // When Field is embedded, property is propagated to child messages.
+  // First occurrence of true value cuts-off whole field path subtree.
+  bool output_only = 69022;
+
+  // Describes what code should be generated for merging
+  // operation for a given field.
+  MergeOpts merge = 69101;
+}

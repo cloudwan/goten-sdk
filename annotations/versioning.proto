@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package goten.annotations;
+
+import "google/protobuf/descriptor.proto";
+
+option go_package = "github.com/cloudwan/goten-sdk/annotations/versioning";
+option java_multiple_files = true;
+option java_outer_classname = "GotenProtoVersioning";
+option java_package = "com.ntt.goten.annotations.versioning";
+
+// ServiceObjectsVersioning contains information about versioning of all
+// objects & methods defined in a service package.
+message ServiceObjectsVersioning {
+  // List of all method replacements.
+  repeated MethodReplacement methods = 1;
+
+  // List of all object replacements.
+  repeated ObjectVersioning objects = 2;
+
+  message MethodReplacement {
+    // Original method in current service
+    // Required format: ${API_NAME}/${METHOD_NAME}, for example:
+    // RoleBindingService/GetRoleBinding
+    string original_method = 1;
+
+    // Replacement method in next version service.
+    // Required format: ${API_NAME}/${METHOD_NAME}, for example:
+    // RoleBindingService/GetRoleBinding
+    string replacement = 2;
+  }
+
+  message ObjectVersioning {
+    // Object name, for example "RoleBinding", or request/response like,
+    // "CreateRoleBinding". It must exist within current proto package.
+    string object = 1;
+
+    // Name of the message in the next version.
+    // Ignored for a message that is part of an API without next version set.
+    // If not provided, then:
+    // - if message this spec describes is "top" message (with no parent message),
+    //   then no replacement is assumed.
+    // - if has parent message and that parent message has replacement,
+    //   then goten will attempt to find contained message with same name within
+    //   replacement for parent.
+    string replacement = 2;
+
+    // If true, for given message there won't be generated
+    // any transformers related to field paths or masks.
+    // Should be used mostly for request/response objects.
+    bool skip_field_path_transformers = 3;
+
+    // Informs, whether goten should provide transformer
+    // from old to new version only, from new to old version
+    // only, or for both directions. For example, requests
+    // need to be only "upgraded", responses need to be only
+    // "downgraded", resources should be transformable in both
+    // directions as they can be present in requests as responses.
+    // By default, bi directional conversion is required.
+    TransformationDirection transformation_direction = 4;
+
+    // Applicable for resource messages only.
+    // If set to true, goten will skip generation of
+    // transformed resource access based on replacement resource
+    bool skip_resource_access_transformer = 5;
+
+    enum TransformationDirection {
+      BIDIRECTIONAL = 0;
+
+      FROM_NEW_TO_OLD = 1;
+
+      FROM_OLD_TO_NEW = 2;
+
+      DISABLED = 3;
+    }
+  }
+}
+
+extend google.protobuf.FileOptions {
+  ServiceObjectsVersioning service_versioning = 69041;
+}

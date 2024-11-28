@@ -11,16 +11,13 @@ option java_package = "com.ntt.goten.types";
 
 // Metadata
 message Meta {
-  google.protobuf.Timestamp create_time = 1
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  google.protobuf.Timestamp create_time = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
 
-  google.protobuf.Timestamp update_time = 2
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  google.protobuf.Timestamp update_time = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
 
-  google.protobuf.Timestamp delete_time = 16
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  google.protobuf.Timestamp delete_time = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
 
-  string uuid = 3 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  string uuid = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
 
   repeated string tags = 4;
 
@@ -29,22 +26,19 @@ message Meta {
   map<string, string> annotations = 6;
 
   // generation is the version number of the spec of the resource.
-  // This number increments when the resource is updated with any changes of its
-  // spec.
+  // This number increments when the resource is updated with any changes of its spec.
   int64 generation = 7;
 
-  // An opaque value that represents the internal version of this object that
-  // can be used by clients to determine when objects have changed. May be used
-  // for optimistic concurrency, change detection, and the watch operation on a
-  // resource or set of resources. Clients must treat these values as opaque and
-  // passed unmodified back to the server. They may only be valid for a
-  // particular resource or set of resources.
-  string resource_version = 8 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // An opaque value that represents the internal version of this object that can
+  // be used by clients to determine when objects have changed. May be used for optimistic
+  // concurrency, change detection, and the watch operation on a resource or set of resources.
+  // Clients must treat these values as opaque and passed unmodified back to the server.
+  // They may only be valid for a particular resource or set of resources.
+  string resource_version = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
 
   // List of objects depended by this object. If ALL objects in the list have
-  // been deleted, this object will be garbage collected. If this object is
-  // managed by a controller, then an entry in this list will point to this
-  // controller, with the controller field set to true.
+  // been deleted, this object will be garbage collected. If this object is managed by a controller,
+  // then an entry in this list will point to this controller, with the controller field set to true.
   repeated OwnerReference owner_references = 13;
 
   // List of all shard indices by their keys
@@ -56,28 +50,26 @@ message Meta {
   // Current lifecycle information about resource.
   Lifecycle lifecycle = 17;
 
-  // Information about services access.ownership of given resource. Non
-  // populated value should be treated as unregulated access.
+  // Information about services access.ownership of given resource. Non populated
+  // value should be treated as unregulated access.
   ServicesInfo services = 18;
 }
 
-// A label selector is a label query over a set of resources. The result of
-// matchLabels and matchExpressions are ANDed. An empty label selector matches
-// all objects. A null label selector matches no objects.
+// A label selector is a label query over a set of resources. The result of matchLabels and
+// matchExpressions are ANDed. An empty label selector matches all objects. A null
+// label selector matches no objects.
 message LabelSelector {
-  // matchLabels is a map of {key,value} pairs. A single {key,value} in the
-  // matchLabels map is equivalent to an element of matchExpressions, whose key
-  // field is "key", the operator is "In", and the values array contains only
-  // "value". The requirements are ANDed.
+  // matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+  // map is equivalent to an element of matchExpressions, whose key field is "key", the
+  // operator is "In", and the values array contains only "value". The requirements are ANDed.
   map<string, string> match_labels = 1;
 
-  // matchExpressions is a list of label selector requirements. The requirements
-  // are ANDed.
+  // matchExpressions is a list of label selector requirements. The requirements are ANDed.
   repeated LabelSelectorRequirement match_expressions = 2;
 }
 
-// A label selector requirement is a selector that contains values, a key, and
-// an operator that relates the key and values.
+// A label selector requirement is a selector that contains values, a key, and an operator that
+// relates the key and values.
 message LabelSelectorRequirement {
   // key is the label key that the selector applies to.
   // +patchMergeKey=key
@@ -89,9 +81,10 @@ message LabelSelectorRequirement {
   string operator = 2;
 
   // values is an array of string values. If the operator is In or NotIn,
-  // the values array must be non-empty. If the operator is Exists or
-  // DoesNotExist, the values array must be empty. This array is replaced during
-  // a strategic merge patch. +optional
+  // the values array must be non-empty. If the operator is Exists or DoesNotExist,
+  // the values array must be empty. This array is replaced during a strategic
+  // merge patch.
+  // +optional
   repeated string values = 3;
 }
 
@@ -128,33 +121,29 @@ message OwnerReference {
   reserved 1, 4, 5, 7;
 }
 
-// SyncingMeta is a helper object associated with each resource that is either
-// regional or is governed by Policy object. This object is used for internal
-// purposes like Sync controller which ensures data synchronization of all
-// resources across multiple regions.
+// SyncingMeta is a helper object associated with each resource that is either regional or is governed by Policy object.
+// This object is used for internal purposes like Sync controller which ensures data synchronization of all resources
+// across multiple regions.
 message SyncingMeta {
-  // For regional resources (or their descendants) it is equal to the region ID
-  // (present in resource name). Otherwise it is equal to the region as defined
-  // in Policy object under default_control_region field.
+  // For regional resources (or their descendants) it is equal to the region ID (present in resource name). Otherwise
+  // it is equal to the region as defined in Policy object under default_control_region field.
   string owning_region = 1;
 
-  // List of regions where owning resource can be present. If can be present in
-  // all regions, will contain "*".
+  // List of regions where owning resource can be present. If can be present in all regions, will contain "*".
   repeated string regions = 2;
 }
 
 message Lifecycle {
   // Current resource state
-  State state = 1 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  State state = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
 
-  // Optional flag indicating that resource must not be deleted - at least yet.
-  // This flag is not accessible via API, it is expected developer will populate
-  // it if needed from custom server code. It should be used when some condition
-  // (other than blocking back reference) applies that server is not aware of.
-  // If flag is true, then constraint store will block resource deletion. GC
-  // will also defer from cleaning up, however developer should ensure that
-  // eventually deletion will be done.
-  bool block_deletion = 2 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // Optional flag indicating that resource must not be deleted - at least yet. This flag is
+  // not accessible via API, it is expected developer will populate it if needed from custom
+  // server code. It should be used when some condition (other than blocking back reference)
+  // applies that server is not aware of.
+  // If flag is true, then constraint store will block resource deletion. GC will also defer
+  // from cleaning up, however developer should ensure that eventually deletion will be done.
+  bool block_deletion = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
 
   // current resource state
   enum State {

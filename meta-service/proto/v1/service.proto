@@ -14,10 +14,7 @@ option java_package = "com.goten.meta.pb.v1";
 // Service Resource contains service description like domain under which it can
 // be accessed, versions, imported services and their versions.
 message Service {
-  option (google.api.resource) = {
-    type : "meta.goten.com/Service"
-    pattern : "services/{service}"
-  };
+  option (google.api.resource) = { type:"meta.goten.com/Service" pattern:"services/{service}"  };
 
   // Name of Service
   // When creating a new instance, this field is optional and if not provided,

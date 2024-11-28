@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package goten.annotations;
+
+import "google/protobuf/descriptor.proto";
+
+option go_package = "github.com/cloudwan/goten-sdk/annotations/goext";
+option java_multiple_files = true;
+option java_package = "com.ntt.goten.annotations.go";
+
+// Various modifiers to the generated proto file
+message Modifiers {
+  // Allows to override if the field should be accessible through a pointer.
+  // Works only on Goten fields, durations and timestamps.
+  bool pointer = 1;
+}
+
+message FieldGoextOpts {
+  // skips generating Get<Field>() method
+  bool no_getter = 1;
+
+  // skips generating Set<Field>() method
+  bool no_setter = 2;
+}
+
+extend google.protobuf.FieldOptions {
+  Modifiers modifiers = 80001;
+
+  FieldGoextOpts opts = 80002;
+}

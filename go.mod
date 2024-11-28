@@ -1,13 +1,12 @@
 module github.com/cloudwan/goten-sdk
 
-go 1.21
+go 1.22.9
 
 require (
 	github.com/alecthomas/participle v0.5.0
 	github.com/google/cel-go v0.20.1
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
-	github.com/iancoleman/strcase v0.0.0-20180726023541-3605ed457bf7
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/spf13/cobra v1.2.1
@@ -30,4 +29,4 @@ require (
 	golang.org/x/text v0.9.0 // indirect
 )
 
-replace google.golang.org/protobuf => github.com/cloudwan/goten-protobuf v1.26.0
+replace google.golang.org/protobuf => github.com/cloudwan/protobuf-go v1.34.2

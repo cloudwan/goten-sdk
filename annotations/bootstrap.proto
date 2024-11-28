@@ -1,0 +1,597 @@
+syntax = "proto3";
+
+package goten.bootstrap;
+
+import "google/api/client.proto";
+import "google/protobuf/struct.proto";
+
+option go_package = "github.com/cloudwan/goten-sdk/annotations/bootstrap";
+option java_multiple_files = true;
+option java_package = "com.ntt.goten.annotations.bootstrap";
+
+// Service package configuration - which is logically-bound set of resources and APIs forming coherent,
+// complete, reusable service.
+message Service {
+  // Service fully-qualified Service domain name, e.g. library.goten.com
+  // Used as a registry.
+  string name = 1;
+
+  // proto/grpc configuration
+  Proto proto = 2;
+
+  // List of imported services - each import must be
+  // fully-qualified Service domain name, e.g. book.registry.goten.com
+  repeated string imports = 3;
+
+  // List of resources. For each resource goten will append implicit Api
+  // with CRUD functionality with same name as resource.
+  repeated Resource resources = 4;
+
+  // List of custom API modules.
+  repeated Api apis = 5;
+
+  // List of scope attributes.
+  repeated ScopeAttribute scope_attributes = 6;
+
+  // Whether multi-region feature should be disabled.
+  bool disable_multi_region = 7;
+
+  // Proto configuration
+  message Proto {
+    // package configuration
+    Package package = 1;
+
+    // grpc service configuration
+    Service service = 2;
+
+    // message describing package-wide config
+    message Package {
+      // version-less package name, e.g. ntt.apis.iam
+      string name = 1;
+
+      // current package version, e.g. v1alpha, v1, v2
+      string current_version = 2;
+
+      // next package version if any
+      string next_version = 4;
+
+      // golang package location, e.g. github.com/ntt/iam
+      string go_package = 3;
+
+      // Path used for relative proto files imports, e.g.
+      // goten/example/library/proto
+      string proto_import_path_prefix = 7;
+    }
+
+    message Service {
+      // grpc service name, e.g. Metric, IAM
+      string name = 1;
+
+      // default endpoint for clients. Defaults to Service.name
+      string default_host = 2;
+
+      // comma-separated list of needed client oauth scopes, e.g.
+      // "https://apis.goten.com,https://api.goten.com"
+      string oauth_scopes = 3;
+
+      // Optional, additional HTTP prefix to be added for all actions
+      // defined within whole service for GRPC transcoding purpose.
+      // If not provided, then all HTTP paths will have standard format
+      // /${version}/${action-derived-suffix}. For example, action ListDevices
+      // in service with version v1 could have following format:
+      // /v1/{parent=projects/*}/devices (assuming resource Device is
+      // child of project). If namespace prefix is defined (for example
+      // "devices") then this value would be: /devices/v1/{parent=projects/*}/devices.
+      // This is useful if generated service is reused in multiple applications
+      // and needs additional namespace.
+      string http_namespace_prefix = 4;
+    }
+  }
+}
+
+// Resource is basically a protobuf message with additional resource annotation. This annotation gives unique
+// resource identifier "name" (includes parent scoping) and "metadata". Goten generates standard auxiliary
+// objects around Resource: Filter, Paging related (OrderBy, Cursor), Access (CRUD for both Storage and API).
+// Each resource also inherits by default Goten Object auxiliaries: Field paths and field mask, for fast
+// cloning, merging, assignments etc.
+message Resource {
+  // Resource Name
+  string name = 1;
+
+  // Plural form of name - defaults to Name+"s"
+  string plural = 2;
+
+  // List of possible parents resource can belong to.
+  // If one of the parents is empty string, then resource optionally may not
+  // have any parent
+  repeated string parents = 3;
+
+  // List of scope attributes attached to this resource. If attribute is defined by a service, then
+  // string should simply match field "name" in defined ScopeAttribute. Otherwise, it should contain
+  // fully qualified name: "${proto_package}/${name}" where name and proto_package are fields in
+  // ScopeAttribute.
+  repeated string scope_attributes = 4;
+
+  // ID pattern for validation, if not defined, [a-z][a-z0-9\\-]{0,28}[a-z0-9] is used.
+  // This only defines behavior of the last name segment of a resource.
+  string id_pattern = 5;
+
+  // List of additional custom actions that will belong to the primary Api
+  // created implicitly for this resource, along with CRUD.
+  repeated Action actions = 6;
+
+  // List of optional features to be added to resource
+  OptIns opt_ins = 7;
+
+  // List of standard resource features to be excluded from generation.
+  OptOuts opt_outs = 8;
+
+  // MultiRegion specification for this resource. Mandatory if multi-region feature is enabled.
+  MultiRegionSpec multi_region = 9;
+
+  // Information about resource replacement in new
+  // version. If not provided, default object is generated.
+  // See Versioning doc to see defaults.
+  Versioning versioning = 10;
+
+  // MultiRegionSpec defines how resource is modelled in a context of multi-region environment -
+  // informs how resource is synced or contains additional information about routing for basic actions.
+  message MultiRegionSpec {
+    // Sets syncing mode for this resource.
+    SyncType sync_type = 1;
+
+    // List of action patterns for which goten will not generate code responsible for request routing. Examples: "*"
+    // for all or "{List,Create}BookCopies".
+    // By default, goten will generate routing code for all basic actions like list, get, create, update etc. However,
+    // if developer wants, this can be disabled by providing patterns here.
+    // Disabling code-gen based routing does not mean request is not routable - developer can provide own implementation
+    // by adding method to routing middleware which is still generated (type and constructor). If developer disables
+    // code-gen based routing and does not provide own implementation, then no routing will be executed by server
+    // and execution will be passed to next middleware without failure.
+    repeated string skip_code_gen_based_routing_basic_actions = 2;
+
+    // Informs if this resource is a holder of a types.MultiRegionPolicy object, which defines syncing policy for all child
+    // resources. It also informs proto generation tool to include policy object in resource schema.
+    bool is_policy_holder = 3;
+
+    // SyncType defines how resource is synced across many regions. This information is passed to generated
+    // proto file for resource.
+    enum SyncType {
+      // If default option is set, then:
+      // * IF particular instance of the resource has ancestor that is holding multi-region policy, then
+      // resource is synced to regions as allowed by policy (ALWAYS_IN_SCOPE - unless resource is forbidden
+      // from being synced via disable criteria in MultiRegionPolicy.
+      // * IF particular instance of the resource does not have any ancestor holding multi-region policy,
+      // then resource is always synced - everywhere (ALWAYS_GLOBALLY)
+      DEFAULT = 0;
+
+      // Resource will be always synced within its scope. If it has no parent with MultiRegionPolicy,
+      // it is same as ALWAYS_GLOBALLY.
+      ALWAYS_IN_SCOPE = 1;
+
+      // Resource will never be synced.
+      NEVER = 2;
+
+      // Resource will be always synced across all regions according to the service.
+      ALWAYS_GLOBALLY = 3;
+    }
+  }
+
+  // Versioning information. Provides information which resource in the new version replaces this one and
+  // to what degree goten should automatically generate transformers (Transformer is an object transforming
+  // object in older version to newer version and vice versa - for example we need to translate Create<Res>
+  // object to similar object in newer version. Resource itself needs translation in both directions).
+  message Versioning {
+    // Name of the resource in the next version. If not provided, then:
+    // - if resource with same name is found in the next version, replacement is assumed automatically
+    // - if resource with same name is not found in the next version, it is assumed this resource is discontinued
+    //   and for custom, manual handler will have to be written to provide backward compatibility.
+    string replacement = 1;
+
+    // List of action patterns for which goten will not generate request/response transformers, e.g. "*" for all or
+    // "{List,Create}BookCopies".
+    // Goten won't generate transformers for any request/response and code-generated server middleware transformer
+    // will panic if called for those methods. Developer will need to provide handlers manually in the code.
+    // By default, goten will provide transformers for all actions.
+    repeated string skip_transformers_basic_actions = 2;
+
+    // If true, goten will not generate transformer for resource access (used to provide backward compatible Store,
+    // which transforms references/queries from older to newer version).
+    bool skip_access_transformer = 3;
+
+    // If true, goten will skip transformers for <Res>Change objects.
+    bool skip_resource_change_transformers = 4;
+  }
+
+  // OptOuts contains list of flags indicating Goten resource features that should be excluded
+  // when generating proto/Golang files. Using OptOuts is necessary when for example developer
+  // does not want to use standard CRUD, or wants to skip name or metadata fields because they
+  // are not relevant for given resource. Warning: Using OptOuts renders Resource not compatible
+  // with standard Resource interface in Go package runtime/resource. It should be used rarely in
+  // very specific use cases.
+  message OptOuts {
+    // If true, "name" field is excluded from resource. Due to the fundamental nature of this, it also
+    // disables paging and standard CRUD access.
+    bool name_field = 1;
+
+    // If true, skips metadata field. This disables sharding and multi-region layer of the resource.
+    bool metadata_field = 2;
+
+    // If true, skips pagination feature and object generation.
+    bool paging = 3;
+
+    // If true, disables <Resource>Change protobuf object generation and disables Watch feature from goten.
+    bool resource_change = 4;
+
+    // Skips standard CRUD and disables both API and Store access by being provided by goten.
+    bool standard_crud_access = 5;
+
+    // If true, Resource will not be taken into account by "constraints" layer of database. It means:
+    // * References to a resource of this kind (Blocking, Cascade delete...) will not apply.
+    //   Even if resource is referenced in blocking way, deletion will not cause database blockade.
+    // * Instances of this resource may declare references to other resources, but they will not be
+    //   actually checked.
+    // * Resources of given type will not be garbage-collected by db-controllers.
+    // ResourceShadow (schema-mixin service) instances for a given resource type WILL NOT be created.
+    // Note that setting this flag to true will make given resource type similar to resources brought
+    // by Mixins.
+    // This flag should be used for internal resource types, where users dont have write access to.
+    bool db_constraints = 7;
+
+    // list of glob patterns basic actions to skip generation, e.g. "*" for all or
+    // "{List,Create}BookCopies". Unlike "standard_crud_access", it does not disable entirely
+    // standard CRUD access for Store/API Access, even with "*". It also allows developer to
+    // redefine their own basic CRUD functions and standard CRUD will try to pick them up.
+    repeated string basic_actions = 6;
+  }
+
+  // OptIns adds non-standard features to Resource.
+  message OptIns {
+    // If true, then standard CRUD will have Search<ResourcePluralName> on top of List<ResourcePluralName>
+    // with additional "phrase" field.
+    bool searchable = 1;
+  }
+}
+
+// Set of logically associated actions. For an Api instance, goten bootstrap will generate GRPC service file
+// <api_name>_service.proto, plus <api_name>_custom.proto if Api contains developer-defined actions.
+message Api {
+  // Name of the service, for example "Authorization"
+  string name = 1;
+
+  // List of actions that belong to this Api.
+  repeated Action actions = 2;
+}
+
+// Action describes GRPC call. Based on its annotation, goten bootstrap will generate proto representation in
+// <api_name>_service.proto file. Also, for developer defined actions, bootstrap will provide skeleton request/response
+// objects in <api_name>_custom.proto (unless asked not to do so).
+message Action {
+  // Name, e.g. CreatePod
+  string name = 1;
+
+  // Verb indicates short abbreviation of action, like "create", "delete".
+  string verb = 2;
+
+  // Operated resource info defines on which resource action operates and how.
+  // Always present for Actions attached to resources (implicitly).
+  OperatedResource op_resource_info = 3;
+
+  // Request Message Name, by default its equal to <Action.Name>Request.
+  string request_name = 4;
+
+  // Whether to skip request message stub generation, e.g. when response
+  // originates in different file/package
+  bool skip_request_msg_gen = 5;
+
+  // Response Message Name, by default its equal to <Action.Name>Response.
+  string response_name = 6;
+
+  // Whether to skip response message stub generation, e.g. when response
+  // originates in different file/package
+  bool skip_response_msg_gen = 7;
+
+  // Whether request is streaming
+  bool streaming_request = 8;
+
+  // Whether response is streaming
+  bool streaming_response = 9;
+
+  // Customizations for grpc transcoding
+  GrpcTranscodingCustomizations grpc_transcoding = 10;
+
+  // Spec for store handle middleware (configures transaction)
+  StoreHandleSpec with_store_handle = 11;
+
+  // Specification describing routing for given action.
+  MultiRegionSpec multi_region_routing = 12;
+
+  // Information about action replacement in new
+  // version. If not provided, default object is generated.
+  // See Versioning description to see defaults.
+  Versioning versioning = 13;
+
+  // StoreHandleSpec defines how store is accessed by an owning method, like:
+  // * Whether this is read-only or not
+  // * Transaction isolation level
+  // It is mandatory to set.
+  message StoreHandleSpec {
+    // Should access to the store be read-only
+    bool readOnly = 1;
+
+    oneof transaction_present {
+      // Transaction level
+      Transaction transaction = 2;
+    }
+
+    // Transaction describes isolation level or describes the way t is set.
+    enum Transaction {
+      // NONE indicates that during method execution no transaction level is enforced
+      // and everything goes directly to database.
+      NONE = 0;
+
+      // SNAPSHOT indicates that transaction should be aborted and retried if any
+      // resource that was read was modified in the meantime by another call.
+      SNAPSHOT = 1;
+
+      // MANUAL instructs code-gen that developer wishes to set transaction
+      // in the code - manually. This may enable use cases if multiple transactions
+      // need to be set independently during one call. Any read/write call to the store
+      // without code setting a transaction will result in a failure.
+      MANUAL = 2;
+    }
+  }
+
+  // MultiRegionSpec defines routing of an action request if multi-region feature is used.
+  message MultiRegionSpec {
+    // Instructs goten to NOT to generate code responsible for routing of this particular action.
+    // By default, goten will try to deduce how action should be routed. For example, if it is marked as "plural"
+    // (for resource), request has parent and/or filter field and response has "list" field, then it will try to
+    // generate routing code similar to the one for "List<Res>" built-in requests. This is common pattern -> Many
+    // services may provide custom actions like ListMy<Res>. It can also detect if request provides paging fields too.
+    // If request is unary, concentrates on single resource (plural=false) and transaction level is snapshot, then
+    // it will generate code that routes object to the region owning resource. If transaction level is none, then
+    // it will optionally route to region which can read this resource (if current does not).
+    // Sometimes it may be desirable to disable this guessing work by setting this parameter to false. This does not
+    // mean action is not routable - developer may simply want to provide own implementation by simply adding a method
+    // handling this action to routing middleware. If code-gen based routing is disabled by developer and no custom
+    // implementation is provided, then no routing will be done by server and request will be passed to next middleware
+    // without raising any error.
+    // Its also possible to disable code-gen based routing for built-in actions, see ResourceParameters, field
+    // multi_region.skip_code_gen_based_routing_basic_actions.
+    bool skip_code_gen_based_routing = 1;
+
+    // Informs code-gen tools that this action can be executed only on a region owning resource.
+    // This field is applicable only to non-plural actions which operate on single resource only (and of course have
+    // resource spec specified).
+    // By default, transaction level is used to determine if this action should be executed on owning region. If it
+    // is SNAPSHOT or MANUAL, then execute_on_owning_region is assumed to be true, otherwise false.
+    bool execute_on_owning_region = 2;
+
+    // List of field paths in a request object containing resource name, used by a code-gen-based routing
+    // as a way to determine how to handle request - basically it determines what multi-region policy should be
+    // obtained for this request and which region is allowed to handle this action.
+    // Relevant only for actions operating on a single resource, otherwise ignored.
+    // If no field path is provided, then goten will get paths from resource.request_paths specification from Action object.
+    // If they are not provided, and default cannot be determined, and no alternative way of routing is defined, error
+    // will be raised. Developer can specify many potential field paths where resource is located - this could
+    // be for example useful if request uses oneof object.
+    repeated string resource_field_paths = 3;
+
+    // List of field paths in a request object containing scope associated with this action. This "scope" must
+    // be reference to a policy holder resource. "Parent" reference to a resource also will work (for example, if
+    // Device is a child of Project, then field "parent" in ListDevices request is fine, because it will contains
+    // reference to a Project). Based on scope field path, code-gen-based routing will determine which region will
+    // need to handle current request.
+    // This field is relevant for collection actions with resource defined.
+    // If no field path is provided, then goten will get paths from resource.request_paths specification from Action object.
+    // If they are not provided, and default cannot be determined, and no alternative way of routing is defined, error
+    // will be raised. Developer can specify many potential field paths where resource is located - this could
+    // be for example useful if request uses oneof object.
+    repeated string scope_field_paths = 4;
+
+    // List of field paths in a request object containing identifier of a region ID (just raw string) where the request
+    // must be routed. This is an alternative way of routing compared to resource_field_paths or
+    // scope_field_paths in this spec. Field path with region ID must not be a reference - just identifier of a
+    // string type, an example value could be "us-west2".
+    // If this annotation is specified, then execute_on_owning_region is irrelevant, as request explicitly says
+    // which region is desired. If region id field path is defined along with resource and scope, then
+    // scope/resource is used only to extract multi-region policy. Its not considered for routing.
+    // Developer can specify many potential field paths where region ID is located - this could be for example useful
+    // if requests uses oneof object.
+    repeated string region_id_field_paths = 5;
+  }
+
+  // Versioning information. Provides information which action in the new version replaces this one and to what
+  // degree goten should automatically generate transformers (Transformer is an object transforming object in older
+  // version to newer version and vice versa).
+  message Versioning {
+    // Name of the api with action from the next version. Full format is
+    // "${API_NAME}/${ACTION_NAME}", for example: Provisioning/ProvisionDevice.
+    // It is assumed that there is "Provisioning" Api with action
+    // "ProvisionDevice" in the newer version of the service.
+    // ${API_NAME} however can be omitted, if:
+    // * In the newer version of the service, replacing action exists within API
+    // that has same name as the Api in older version. For example, if Api name
+    // "Provisioning" is same in new and old version, it can be omitted.
+    // * If old and new action belongs to the main API for a resource, then
+    // goten will also append API_NAME implicitly. If not provided at all, then
+    // goten will try to find api+action with same names in the next version
+    // service. If they cannot be found, then it is assumed that either action
+    // is discontinued or developer will manually write handler for it.
+    string replacement = 1;
+  }
+
+  // OperatedResource provides information on which resource Action operates on and how.
+  // For example, it tells if action operates on single resource, many of them, or maybe on
+  // whole collection. It also specifies field paths in request/response object specific
+  // to the resource (like path to resource name field).
+  message OperatedResource {
+    // Name of a resource action operates on, e.g. "Device".
+    // This field is checked only for custom Apis. Actions defined under
+    // "resources" section will always have this field fixed on parent resource.
+    string name = 1;
+
+    // IsCollection flag informs if given action concerns whole resource collection
+    // or not. As a simple rule, action is of collection type is we cannot with 100%
+    // accuracy define resource "name" but we can define "parent". For example, actions
+    // like list or search are of collection type. "Create" operations are also of
+    // collection type, as they involve creation of "new entry" in "collection directory",
+    // and we dont necessarily know name of the created resource.
+    // Subsequent update/delete would not be of collection type.
+    // When this flag is set, generated HTTP Path (grpc transcoding) and Request will
+    // match collection. E.g., instead of '/v1/{name=shelves/*/books/*}', it will generate
+    // '/v1/{parent=shelves/*}/books'
+    bool is_collection = 2;
+
+    // IsPlural informs if given action operates on more than one resource. It must be set to true
+    // for actions like List, Search, BatchGet. Most of them are of "collection" type as well,
+    // however its not always the case. Note that in BatchGet we can define with 100% accuracy
+    // all resource names - we only have (typically) more than one instance. In this case,
+    // operation is of plural type, but not collection.
+    bool is_plural = 3;
+
+    // Tells whether request message should skip resource name, reference or body.
+    // Generated HTTP path will be different, for example, instead of
+    // /v1/{name=...} or /v1/{parent=...}, it will just generate /v1. In this way, action
+    // can be assigned to a resource without having explicit referencing field in
+    // in a request body.
+    // Setting this value to true will invalidate field request_paths. Developer still
+    // will be able to specify request_paths, but they will not be bound to any rules
+    // applying to this object.
+    // If resource is not specified, skip_resource_in_request is considered to
+    // be set to true.
+    bool skip_resource_in_request = 4;
+
+    // Set of important field paths within request object, like resource name
+    // or parent name. This object is "semi-mandatory" if skip_resource_in_request is not
+    // set to true. If request_paths is not provided, goten is populating
+    // this field with default values. However, if the defaults do not match real field paths in
+    // request body, compilation will fail at the further stage (protoc compilers). In the effect,
+    // developer will be forced to explicitly "agree" with default values or manually provide their own
+    // (hence semi-mandatory).
+    // Action fields is_collection and is_plural are critical in interpreting request_paths
+    // (and response_paths), as they influence what is allowed to be specified and what not.
+    //
+    // Rules:
+    // - resource_parent MUST be specified only and only if is_collection is set to true AND
+    // resource belongs to some parent at all. Otherwise, it MUST NOT be specified. If it is specified,
+    // it must contain parent name or reference to a resource.
+    // - If is_collection is set to false, then resource_name OR resource_body MUST
+    // be specified. Depending on is_plural value, it must be single resource name/reference/body
+    // or list of them.
+    // - If is_collection is set to true, resource_name and resource_body may be
+    // specified, but its not mandatory.
+    // - resource_body and resource_name cannot be both specified.
+    //
+    // Following is assumed as default:
+    // - If is_plural and is_collection are set to false, then resource_name will
+    // contain one field path - "name". It is assumed to contain single resource name (or reference).
+    // - If is_plural is set to true and is_collection is set to false, then
+    // resource_name will contain one field path - "names". This field is assumed to contain list
+    // of resource names (or references).
+    // - If is_collection is set to true (value of is_plural can be either), then
+    // resource_name will be left unpopulated, and resource_parent will contain single field
+    // path - "parent". It is assumed to contain parent name (or reference) of resource. Field
+    // is_plural however still will have an effect (for example on response field paths!).
+    //
+    // Paths used for built-in actions (parent is specified only if present for given resource):
+    // - Request for Get<Resource> contains "name" in resource_name field.
+    // - Request for BatchGet<Resources> contains "names" in resource_name field.
+    // - Request for Watch<Resource> contains "name" in resource_name field.
+    // - Request for Watch<Resources> contains "parent" in resource_parent field.
+    // - Request for List<Resources> contains "parent" in resource_parent field.
+    // - Request for Search<Resources> contains "parent" in resource_parent field.
+    // - Request for Create<Resource> contains "<resource_name>" in resource_body field AND
+    // "parent" in resource_parent field.
+    // - Request for Update<Resource> contains "<resource_name>" in resource_body field.
+    // - Request for Delete<Resource> contains "name" in resource_name field.
+    ObjectFieldPaths request_paths = 5;
+
+    // Set of important field paths within response object, like resource name.
+    // This object optional and can be specified to provide useful functionalities to handler
+    // extracting values of interest from responses.
+    // Goten provides default values only for built-in actions. However, if developer specifies
+    // this object, it must comply with all the rules determined by Action following fields: resource,
+    // is_plural and is_collection. Specified paths must also be valid.
+    // Rules:
+    // - resource_parent MAY be specified only and only if is_collection is set to true
+    // and resource may have some parent. Otherwise, it MUST NOT be specified. If it is specified,
+    // it must contain parent name or reference of a resource.
+    // - Fields resource_name OR resource_body MAY be specified if developer wants.
+    // If they are specified, they must however point to name/reference/body field path. If is_plural
+    // value is set to true, they must contain list of those values.
+    // - resource_body and resource_name cannot be both specified.
+    // - If response IS resource body, then developer must be just using resource_name and
+    // not resource_body (if they use at all of course).
+    // - In place of resource bodies it is allowed to use resource change objects (useful for watch
+    // methods).
+    //
+    // Paths used in built-in actions for goten resources:
+    // - Response for Get<Resource> contains "<resource_name_path>" in resource_name field
+    // - Response for BatchGet<Resources> contains "<resource_plural>" in resource_body field
+    // - Response for Watch<Resource> contains "change" in resource_body field.
+    // - Response for Watch<Resources> contains "<resource_name>_changes" in resource_body field.
+    // - Response for List<Resources> contains "<resource_plural>" in resource_body field.
+    // - Response for Search<Resources> contains "<resource_plural>" in resource_body field.
+    // - Response for Create<Resource> contains "<resource_name_path>" in resource_name field.
+    // - Response for Update<Resource> contains "<resource_name_path>" in resource_name field.
+    // - Response for Delete<Resource> does not specify anything.
+    ObjectFieldPaths response_paths = 6;
+
+    // ObjectFieldPaths describes set of important field paths within request or
+    // response bodies, like path to resource name(s), collection, or body/bodies.
+    // Since request/responses may have one-ofs, it is possible to provide multiple
+    // field paths, however it is assumed only one path will be valid at a time.
+    message ObjectFieldPaths {
+      // All field paths pointing to resource name (or names for plural resource actions).
+      repeated string resource_name = 1;
+
+      // All field paths pointing to resource body (or bodies for plural resource actions).
+      // In certain circumstances, it may contain resource change bodies.
+      repeated string resource_body = 2;
+
+      // All field paths pointing to resource collection. This field is valid only
+      // for collection actions only.
+      repeated string resource_parent = 3;
+    }
+  }
+
+  // GrpcTranscodingCustomizations customizes HTTP access by REST API.
+  // Normally it is generated by default, however developer may take control
+  // over some aspects.
+  message GrpcTranscodingCustomizations {
+    // HTTP method used for hinting HTTP transcoding, e.g. "post"
+    string http_method = 1;
+
+    // Controls whether :$verb is appended request path
+    bool is_basic = 2;
+
+    // Specifies api request body field path, set "*" to embed whole request message.
+    string http_body_field = 3;
+
+    // Full overrides for HTTP paths, for special use cases
+    repeated string http_path_overrides = 4;
+  }
+}
+
+// ScopeAttribute is used in the context of resource names. It describes additional extra information that needs to be
+// encoded into resource scope and therefore, next to the resource parents, it will de facto influence all name
+// patterns generated for a resource. One resource can have many scope attributes. Unlike resource parents, where only
+// one parent can be active at the moment, all scope attributes can be active - but some can be skipped (see field
+// is_optional). ScopeAttributes can be defined in api skeleton file.
+// Each scope attribute must be defined in proto file as a message and containing specification as required.
+// Fields name and proto_package must be matching.
+message ScopeAttribute {
+  // Name of an attribute.
+  string name = 1;
+
+  // Plural form of name - defaults to Name+"s"
+  string plural = 2;
+
+  // Proto package where message with description of this attribute is located.
+  string proto_package = 3;
+
+  // Whether this attribute is optional or not. If it is, it doubles number of possible name patterns.
+  bool is_optional = 4;
+}

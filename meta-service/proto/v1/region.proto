@@ -18,10 +18,7 @@ option java_package = "com.goten.meta.pb.v1";
 // in global scaling, but otherwise tries to abstract from running hardware
 // focusing on services instead.
 message Region {
-  option (google.api.resource) = {
-    type : "meta.goten.com/Region"
-    pattern : "regions/{region}"
-  };
+  option (google.api.resource) = { type:"meta.goten.com/Region" pattern:"regions/{region}"  };
 
   // Name of Region
   // When creating a new instance, this field is optional and if not provided,

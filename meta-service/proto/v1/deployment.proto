@@ -14,10 +14,7 @@ option java_package = "com.goten.meta.pb.v1";
 // Deployment Resource describes deployment of service in specific regional
 // cluster (may be multi-zonal). It contains accessibility details.
 message Deployment {
-  option (google.api.resource) = {
-    type : "meta.goten.com/Deployment"
-    pattern : "services/{service}/deployments/{deployment}"
-  };
+  option (google.api.resource) = { type:"meta.goten.com/Deployment" pattern:"services/{service}/deployments/{deployment}"  };
 
   // Name of Deployment
   // ID must be exactly same as region ID it belongs to - it is populated

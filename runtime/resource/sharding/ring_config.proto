@@ -6,47 +6,39 @@ import "google/protobuf/duration.proto";
 
 option go_package = "github.com/cloudwan/goten-sdk/runtime/resource/sharding";
 
-// RingConfig is an information about single shard range for one specific
-// purpose on a set of resources. Example:
+// RingConfig is an information about single shard range for one specific purpose on a set of resources.
+// Example:
 //  {
 //    size: 4096
 //    field_paths: [
 //     { path: "meta.shards.byProjectIdMod4096", label: "byProjectId" }
 //    ]
 //  }
-// In the example above, we indicate that some set of resources (in this case,
-// those that have project ID specified) are shardable and their respective
-// shard IDs are stored in the field path with label "byProjectId". Also, size
-// of the ring describing this shard range is equal to 4096. Labels are useful
-// when there is more than one field path for given ring. This can happen, if we
-// have two resources which must be within same ring, but have different paths.
-// Or another case, when one resource instance belongs to two different rings of
-// the same type -> for example, IAM/Group resources are bucketed into rings by
-// their identifiers and, if one group belongs to another, their retrospective
-// GroupMember resources are visible in two rings. In other words, resources
-// that form a graph and resources "on the borders" should be visible in both
-// groups. Notes:
-// * Path pointed by FieldPath must be of type int64. Also map<..., int64> is
-// also supported (meta.shards) can be a map. RingConfig in the controller
-// config must be in sync with at least one RingConfig in server side config.
-// Server side config can use multiple rings at once.
-// * While controller uses just one RingConfig at the time, server can use many
-// simultaneously. It is required that labelling across array of RingConfigs is
-// consistent.
-// * Common components for sharding offer ShardDecorator. It is a generic
-// component that decorates each relevant resource with shard ID. It handles
-// common logic. While developer is still responsible for providing algorithm to
-// it, calculation of the actual shard ID (combination of hash + ring size),
-// iterating over all ring configs to provide number for all the rings is done
-// there. This component however requires list of algorithms where each
-// algorithm must tell, via Label, which field path intends to write.
+// In the example above, we indicate that some set of resources (in this case, those that have project ID specified)
+// are shardable and their respective shard IDs are stored in the field path with label "byProjectId". Also, size of
+// the ring describing this shard range is equal to 4096.
+// Labels are useful when there is more than one field path for given ring. This can happen, if we have two resources
+// which must be within same ring, but have different paths. Or another case, when one resource instance belongs to two
+// different rings of the same type -> for example, IAM/Group resources are bucketed into rings by their identifiers
+// and, if one group belongs to another, their retrospective GroupMember resources are visible in two rings. In other
+// words, resources that form a graph and resources "on the borders" should be visible in both groups.
+// Notes:
+// * Path pointed by FieldPath must be of type int64. Also map<..., int64> is also supported (meta.shards) can be a map.
+// RingConfig in the controller config must be in sync with at least one RingConfig in server side config. Server side
+// config can use multiple rings at once.
+// * While controller uses just one RingConfig at the time, server can use many simultaneously. It is required that
+// labelling across array of RingConfigs is consistent.
+// * Common components for sharding offer ShardDecorator. It is a generic component that decorates each relevant
+// resource with shard ID. It handles common logic. While developer is still responsible for providing algorithm to it,
+// calculation of the actual shard ID (combination of hash + ring size), iterating over all ring configs to provide
+// number for all the rings is done there. This component however requires list of algorithms where each algorithm
+// must tell, via Label, which field path intends to write.
 message RingConfig {
-  // Ring size. It affects possible shard numbers assigned to all relevant
-  // resources, which are in range: [0:size).
+  // Ring size. It affects possible shard numbers assigned to all relevant resources, which are in range: [0:size).
   uint64 size = 1;
 
-  // Field path in the resource where shard number is stored, for example
-  // "meta.shards.byProjectIdMod4096". Expected underlying type is int64.
+  // Field path in the resource where shard number is stored, for example "meta.shards.byProjectIdMod4096". Expected
+  // underlying type is int64.
   repeated FieldPath field_paths = 2;
 
   message FieldPath {

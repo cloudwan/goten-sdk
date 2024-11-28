@@ -1,0 +1,386 @@
+syntax = "proto3";
+
+package goten.annotations;
+
+import "google/protobuf/descriptor.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+option go_package = "github.com/cloudwan/goten-sdk/annotations/validate";
+option java_multiple_files = true;
+option java_package = "com.ntt.goten.annotations.validate";
+
+message Validation {
+  oneof rules {
+    DecimalRules decimal = 1;
+
+    SignedRules signed = 2;
+
+    UnsignedRules unsigned = 3;
+
+    BoolRules bool = 4;
+
+    StringRules string = 5;
+
+    BytesRules bytes = 6;
+
+    EnumRules enum = 7;
+
+    RepeatedRules repeated = 8;
+
+    MapRules map = 9;
+
+    TimestampRules timestamp = 10;
+
+    DurationRules duration = 11;
+
+    FilterRules filter = 20;
+  }
+
+  ObjectRules object = 12;
+}
+
+message FilterRules {
+  // Required ensures filter is non-empty
+  bool required = 1;
+}
+
+message DecimalRules {
+  // Const specifies the exact value this field needs to have.
+  google.protobuf.DoubleValue const = 1;
+
+  // Lt specifies that the field value must be less than the specified value.
+  google.protobuf.DoubleValue lt = 2;
+
+  // Lte specifies that the field value must be less than or equal to the
+  // specified value.
+  google.protobuf.DoubleValue lte = 3;
+
+  // Gt specifies that the field value must be greater than the specified value.
+  google.protobuf.DoubleValue gt = 4;
+
+  // Gte specifies that the field value must be greater than or equal to the
+  // specified value.
+  google.protobuf.DoubleValue gte = 5;
+
+  // AnyOf specifies that the field value MUST be equal to one of provided
+  // values
+  repeated double any_of = 6;
+
+  // NoneOf specifies that the field value MUST NOT be equal to one of provided
+  // values
+  repeated double none_of = 7;
+}
+
+message SignedRules {
+  // Const specifies the exact value this field needs to have.
+  google.protobuf.Int64Value const = 1;
+
+  // Lt specifies that the field value must be less than the specified value.
+  google.protobuf.Int64Value lt = 2;
+
+  // Lte specifies that the field value must be less than or equal to the
+  // specified value.
+  google.protobuf.Int64Value lte = 3;
+
+  // Gt specifies that the field value must be greater than the specified value.
+  google.protobuf.Int64Value gt = 4;
+
+  // Gte specifies that the field value must be greater than or equal to the
+  // specified value.
+  google.protobuf.Int64Value gte = 5;
+
+  // AnyOf specifies that the field value MUST be equal to one of provided
+  // values
+  repeated int64 any_of = 6;
+
+  // NoneOf specifies that the field value MUST NOT be equal to one of provided
+  // values
+  repeated int64 none_of = 7;
+}
+
+message UnsignedRules {
+  // Const specifies the exact value this field needs to have.
+  google.protobuf.UInt64Value const = 1;
+
+  // Lt specifies that the field value must be less than the specified value.
+  google.protobuf.UInt64Value lt = 2;
+
+  // Lte specifies that the field value must be less than or equal to the
+  // specified value.
+  google.protobuf.UInt64Value lte = 3;
+
+  // Gt specifies that the field value must be greater than the specified value.
+  google.protobuf.UInt64Value gt = 4;
+
+  // Gte specifies that the field value must be greater than or equal to the
+  // specified value.
+  google.protobuf.UInt64Value gte = 5;
+
+  // AnyOf specifies that the field value MUST be equal to one of provided
+  // values
+  repeated uint64 any_of = 6;
+
+  // NoneOf specifies that the field value MUST NOT be equal to one of provided
+  // values
+  repeated uint64 none_of = 7;
+}
+
+message BoolRules {
+  // Const specifies the exact value this field needs to have.
+  bool const = 1;
+}
+
+message StringRules {
+  // Const specifies the exact value this field needs to have.
+  string const = 1;
+
+  // Len specifies the exact number of Unicode code point that this field must
+  // have. Note that this does not have to be equal to the number of bytes in
+  // the string.
+  google.protobuf.UInt64Value len = 2;
+
+  // MinLen specifies the lower bound on number of Unicode code point that this
+  // field must have. Note that this does not have to be equal to the number of
+  // bytes in the string.
+  google.protobuf.UInt64Value min_len = 3;
+
+  // MaxLen specifies the upper bound on number of Unicode code point that this
+  // field must have. Note that this does not have to be equal to the number of
+  // bytes in the string.
+  google.protobuf.UInt64Value max_len = 4;
+
+  // BytesLen specifies the exact number of bytes this field must have.
+  google.protobuf.UInt64Value bytes_len = 5;
+
+  // MinBytesLen specifies the lower bound on number of bytes this field must
+  // have.
+  google.protobuf.UInt64Value min_bytes_len = 6;
+
+  // MaxBytesLen specifies the upper bound on number of bytes this field must
+  // have.
+  google.protobuf.UInt64Value max_bytes_len = 7;
+
+  // Prefix requires that the field must start with given string
+  string prefix = 8;
+
+  // Prefix requires that the field must end with given string
+  string suffix = 9;
+
+  // Format specifies a specific format that the field should be validated
+  // against
+  Format format = 10;
+
+  // AnyOf specifies that the field value MUST be equal to one of provided
+  // values
+  repeated string any_of = 11;
+
+  // NoneOf specifies that the field value MUST NOT be equal to one of provided
+  // values
+  repeated string none_of = 12;
+
+  // ensures string value is non-empty. Equivalent to `min_len: 1`, but
+  // generates different error message.
+  bool required = 13;
+}
+
+message BytesRules {
+  // Const specifies the exact value this field needs to have.
+  bytes const = 1;
+
+  // BytesLen specifies the exact number of bytes this field must have.
+  google.protobuf.UInt64Value len = 2;
+
+  // MinLen specifies the lower bound on number of bytes this field must have.
+  google.protobuf.UInt64Value min_len = 3;
+
+  // MaxLen specifies the upper bound on number of bytes this field must have.
+  google.protobuf.UInt64Value max_len = 4;
+
+  // Prefix requires that the field must start with given string
+  string prefix = 5;
+
+  // Prefix requires that the field must end with given string
+  string suffix = 6;
+
+  // Format specifies a specific format that the field should be validated
+  // against
+  Format format = 7;
+
+  // AnyOf specifies that the field value MUST be equal to one of provided
+  // values
+  repeated bytes any_of = 8;
+
+  // NoneOf specifies that the field value MUST NOT be equal to one of provided
+  // values
+  repeated bytes none_of = 9;
+}
+
+message Format {
+  // Pattern specifies a regex in RE2 syntax that whole field must match
+  // against.
+  string regex = 8;
+
+  // Specifies that the field must contain a valid email address
+  bool email = 11;
+
+  // Specifies that the field must be a valid address (IP or Hostname)
+  bool address = 12;
+
+  // Specifies that the field must be a valid hostname (RFC 1034)
+  bool hostname = 13;
+
+  // Specifies that the field must be a valid IPv4 or IPV6 address
+  bool ip = 14;
+
+  // Specifies that the field must be a valid IPv4 address
+  bool ipv4 = 15;
+
+  // Specifies that the field must be a valid IPv6 address
+  bool ipv6 = 16;
+
+  // Specifies that the field must be a valid absolute URI (RFC 3986)
+  bool uri = 17;
+
+  // Specifies that the field must be a valid URI reference (either absolute or
+  // relative)
+  bool uri_ref = 18;
+
+  // Specifies that the field must be a valid UUID (RFC 4122)
+  bool uuid = 19;
+
+  // Specifies that the field must contain a valid PEM encoded crypto primitive
+  bool pem = 20;
+}
+
+message EnumRules {
+  // Const specifies the exact value this field needs to have.
+  google.protobuf.Int64Value const = 1;
+
+  // DefinedOnly specifies that this field must be only one of the defined
+  // values for this enum, failing on any undefined value.
+  bool defined_only = 2;
+
+  // AnyOf specifies that the field value MUST be equal to one of provided
+  // values
+  repeated int32 any_of = 3;
+
+  // NoneOf specifies that the field value MUST NOT be equal to one of provided
+  // values
+  repeated int32 none_of = 4;
+}
+
+message ObjectRules {
+  // Required ensures that the subobject is set. It does nothing in case the
+  // object is not embedded through a pointer.
+  bool required = 1;
+
+  // Skip disables validation of the subobject.
+  bool skip = 2;
+}
+
+message RepeatedRules {
+  // MinItems specifies the allowed count of items in this collection.
+  google.protobuf.UInt64Value min_items = 1;
+
+  // MinItems specifies the allowed count of items in this collection.
+  google.protobuf.UInt64Value max_items = 2;
+
+  // Unique requires that all items in the collection are unique. This rule
+  // cannot be applied to a collection of messages.
+  bool unique = 3;
+
+  // Items specifies rules to be applied to each item of the collection. By
+  // default, all objects in collections are validated unless they are
+  // explicitly marked by "skip" rule.
+  Validation items = 4;
+}
+
+message MapRules {
+  // MinItems specifies the minimum allowed count of pairs in this map.
+  google.protobuf.UInt64Value min_pairs = 1;
+
+  // MinItems specifies the maximum allowed count of pairs in this map.
+  google.protobuf.UInt64Value max_pairs = 2;
+
+  // Keys specifies validations to apply to keys of this map.
+  Validation keys = 3;
+
+  // Values specifies validations to apply to values of this map. By default,
+  // all objects in maps are validated unless they are explicitly marked by
+  // "skip" rule.
+  Validation values = 4;
+}
+
+message TimestampRules {
+  // Required ensures that the timestamp is set. It does nothing in case the
+  // timestamp is not embedded through a pointer.
+  bool required = 1;
+
+  // Const specifies the exact value this field needs to have.
+  google.protobuf.Timestamp const = 2;
+
+  // Lt specifies that the field value must be less than the specified value.
+  google.protobuf.Timestamp lt = 3;
+
+  // Lte specifies that the field value must be less than or equal to the
+  // specified value.
+  google.protobuf.Timestamp lte = 4;
+
+  // Gt specifies that the field value must be greater than the specified value.
+  google.protobuf.Timestamp gt = 5;
+
+  // Gte specifies that the field value must be greater than or equal to the
+  // specified value.
+  google.protobuf.Timestamp gte = 6;
+
+  // LtNow specifies that the timestamp must be before current timestamp
+  bool lt_now = 8;
+
+  // GtNow specifies that the timestamp must be after current timestamp
+  bool gt_now = 9;
+
+  // Within specifies that the timestamp must be within this duration relative
+  // to current timestamp
+  google.protobuf.Duration within = 10;
+}
+
+message DurationRules {
+  // Required ensures that the duration is set. It does nothing in case the
+  // duration is not embedded through a pointer.
+  bool required = 1;
+
+  // Const specifies the exact value this field needs to have.
+  google.protobuf.Duration const = 2;
+
+  // Lt specifies that the field value must be less than the specified value.
+  google.protobuf.Duration lt = 3;
+
+  // Lte specifies that the field value must be less than or equal to the
+  // specified value.
+  google.protobuf.Duration lte = 4;
+
+  // Gt specifies that the field value must be greater than the specified value.
+  google.protobuf.Duration gt = 5;
+
+  // Gte specifies that the field value must be greater than or equal to the
+  // specified value.
+  google.protobuf.Duration gte = 6;
+
+  // AnyOf specifies that the field value MUST be equal to one of provided
+  // values
+  repeated google.protobuf.Duration any_of = 7;
+
+  // NoneOf specifies that the field value MUST NOT be equal to one of provided
+  // values
+  repeated google.protobuf.Duration none_of = 8;
+}
+
+extend google.protobuf.FieldOptions {
+  Validation validation_rules = 81001;
+}
+
+extend google.protobuf.OneofOptions {
+  bool required = 81001;
+}

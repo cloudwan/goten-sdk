@@ -1,0 +1,187 @@
+syntax = "proto3";
+
+package goten.annotations;
+
+import "google/protobuf/descriptor.proto";
+import "goten-sdk/types/view.proto";
+import "goten/annotations/goten.proto";
+
+option go_package = "github.com/cloudwan/goten-sdk/annotations/resource";
+option java_multiple_files = true;
+option java_outer_classname = "GotenProtoResource";
+option java_package = "com.ntt.goten.annotations.resource";
+
+// ViewSpec associates View with list of fields available
+// in resource obtained from server.
+message ViewSpec {
+  // Type of view
+  goten.types.View view = 1;
+
+  // List of fields associated with view type
+  repeated Field fields = 2;
+
+  // Field describes single field - path to the field
+  // and (optional!) display name (usable for clients)
+  message Field {
+    string path = 1;
+
+    string display_name = 2;
+  }
+}
+
+message PagerSpec {
+  // whether to skip default pager implementation
+  bool is_disabled = 1;
+
+  int32 default_page_size = 2;
+
+  int32 max_page_size = 3;
+}
+
+// ScopeAttributeSpec describes optional attribute (variable) that can be attached to resource name as part of the
+// scope. This allows injecting important information into resource name that is neither name of the parent resource
+// (if any) or ID of the resource itself. Goten comes with one spec attribute: Region. During code generation,
+// goten will insert given attributes into resource name patterns.
+message ScopeAttributeSpec {
+  // plural noun for this attribute.
+  string plural = 1;
+
+  // scope attribute id pattern. If not present, [a-z][a-z0-9\-]{0,28}[a-z0-9] is assumed.
+  string id_pattern = 2;
+
+  // Information whether this attribute is optional or not. If optional, then number of name patters for
+  // given resource is doubled.
+  bool optional = 3;
+}
+
+// Description of Resource that is served through REST
+message ResourceSpec {
+  // plural form of resource noun, e.g. shelf -> shelves. Defaults to resource
+  // name + "s"
+  string plural = 1;
+
+  // database table or collection used for storing DB records. Defaults to
+  // plural form.
+  string collection = 2;
+
+  // List of possible parent resource names, e.g. "Shelf". If no parents are given, then resource
+  // cannot have any parents. If one of the parents is "goten.ntt.com/None", then resource may or
+  // may not have a parent. Parents are forming initial part of the resource name pattern -
+  // each parent is adding patters in parallel - one of them is active at the moment.
+  // If resource parent is in foreign proto package, then proto package should be followed by
+  // slash and resource name, for example: ntt.iam.v1alpha/Project
+  repeated string parents = 3;
+
+  // Additional, optional attributes injected into resource name and which form "parent name" after name derived from
+  // ancestral resource (if is present). Resource name can have many attributes and they are connected in series, in the
+  // order defined in resource schema. For example, suppose we defined following attribute:
+  // {
+  //   plural: "Regions"
+  //   optional: false
+  // }
+  //
+  // Then if we define following spec for resource "Invitation":
+  // {
+  //   plural: "Invitations"
+  //   parents: "Project"
+  //   parents: "Organization"
+  //   scope_attributes: "Region"
+  // }
+  // then following name patterns will be generated:
+  // * projects/{project_id}/regions/{region_id}/invitations/{invitation_id}
+  // * organizations/{organization_id}/regions/{region_id}/invitations/{invitation_id}
+  //
+  // For given example, there must be defined "message Region" with defined option
+  // ScopeAttributeSpec. Just like in case of resource parents, messages from foreign proto
+  // packages must be prepended with proto package name and slash.
+  repeated string scope_attributes = 4;
+
+  // name segment id pattern. If not present,
+  // [a-zA-Z0-9_.-]{1,128} is assumed (migrating to creation_id_pattern)
+  string id_pattern = 5;
+
+  // Name segment ID pattern used when validating creation of new resource.
+  // It is supposed to replace id_pattern in the future.
+  // If not present and id_pattern is not default one, then its same as id_pattern.
+  // Otherwise, [a-z][a-z0-9\-]{0,28}[a-z0-9] is assumed.
+  // It is important that id_pattern with backward compatibility also conforms
+  // to this new creation_id_pattern. If necessary, then you should modify
+  // id_pattern so it can match old and new names.
+  string creation_id_pattern = 6;
+
+  // Defines behaviour of resource when parent is deleted
+  // UNSET in this field is not allowed.
+  OnReferencedObjectDeleted on_parent_deleted_behavior = 7;
+
+  // List of defined views for the resource - you can define views
+  // for BASIC, DETAIL and NAME - however NAME also is provided by
+  // goten automatically if you dont provide yours. Automatic NAME
+  // view contains name field (see name_field) and display_name (if
+  // present in the list of fields).
+  repeated ViewSpec views = 8;
+
+  // If true, it means standard Access (Store and API) are not used
+  // for this resource.
+  bool disable_standard_access = 9;
+
+  // Pager spec for List/Watch collection methods
+  PagerSpec pager = 10;
+
+  // If true, then deletion of this resource is not a single event, but
+  // a process involving special cleanup process - usually asynchronous
+  // set cascade deletion / unset operations for all referencing resources.
+  // User will be still able to see resource with GET/LIST/WATCH operations
+  // after sending DELETE. Only once all triggered functions are complete,
+  // resource will be truly deleted in asynchronous manner.
+  //
+  // This option must not be used if resource has references with cascade
+  // deletion handler!
+  //
+  // Deletion process is implemented on store, (not server) layer:
+  // * Store.Delete(ctx, reference) causes resource to be moved to deleting
+  // state - and all store plugins will be notified via OnUpdate handler.
+  // * Despite deletion being de facto update, system will pick up deleting
+  // status and start cleaning up all dependencies. Once done, it will
+  // delete the resource and all store plugins will be notified via
+  // OnDeleted handler.
+  bool async_deletion = 11;
+
+  // If true, resource type will not be subject to database constraints:
+  // * References FROM this resource will not be actually checked for existence.
+  //   Nor their effects (Blocking, cascade delete...) will work.
+  // * References TO this resource type will also not block, cascade delete etc.
+  // * Resources of this type will not be garbage-collected by db-controller.
+  // Resource shadow instances (from schema-mixin service) will not be created.
+  // This flag should be used only for resources that are not accessible to users
+  // (in writing mode at least). Suitable for some internal types.
+  bool disable_db_constraints = 12;
+}
+
+// SearchSpec describes Resource annotations for Search engine, which can be optionally configured along Store.
+message SearchSpec {
+  // List of field paths (object or strings) by which resources should be searchable.
+  // By putting fields here we are also instructing search engine that fields should
+  // be filterable.
+  repeated string fully_searchable = 1;
+
+  // List of field paths which should be filterable by search engine.
+  repeated string filterable_only = 2;
+
+  // List of field paths by which sorting should be possible (for both directions).
+  repeated string sortable = 3;
+}
+
+// Marks resource change type used in Watch implementation
+message ResourceChange {
+  string resource = 1;
+}
+
+extend google.protobuf.MessageOptions {
+  ResourceSpec resource = 69010;
+
+  ResourceChange resource_change = 69011;
+
+  ScopeAttributeSpec scope_attribute = 69012;
+
+  SearchSpec search = 69013;
+}

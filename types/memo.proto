@@ -11,11 +11,9 @@ option java_package = "com.ntt.goten.types";
 
 // Memo
 message Memo {
-  google.protobuf.Timestamp create_time = 1
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  google.protobuf.Timestamp create_time = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
 
-  google.protobuf.Timestamp update_time = 2
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  google.protobuf.Timestamp update_time = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
 
   string message = 3;
 
