@@ -5,13 +5,13 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/iancoleman/strcase"
 	"github.com/spf13/pflag"
 	"google.golang.org/protobuf/proto"
 	preflect "google.golang.org/protobuf/reflect/protoreflect"
 
 	"github.com/cloudwan/goten-sdk/runtime/clipb/flag_types"
 	"github.com/cloudwan/goten-sdk/runtime/goten"
+	"github.com/cloudwan/goten-sdk/runtime/strcase"
 	"github.com/cloudwan/goten-sdk/runtime/utils"
 )
 

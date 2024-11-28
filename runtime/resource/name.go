@@ -6,9 +6,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/iancoleman/strcase"
-
 	preflect "google.golang.org/protobuf/reflect/protoreflect"
+
+	"github.com/cloudwan/goten-sdk/runtime/strcase"
 )
 
 const (

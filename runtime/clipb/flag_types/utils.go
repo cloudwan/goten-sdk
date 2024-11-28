@@ -3,9 +3,10 @@ package flag_types
 import (
 	"reflect"
 
-	"github.com/iancoleman/strcase"
 	"google.golang.org/protobuf/proto"
 	preflect "google.golang.org/protobuf/reflect/protoreflect"
+
+	"github.com/cloudwan/goten-sdk/runtime/strcase"
 )
 
 func stripPathToLast(defaults []interface{}, fds []preflect.FieldDescriptor) ([]interface{}, []preflect.FieldDescriptor) {

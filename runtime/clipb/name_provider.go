@@ -5,12 +5,12 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/iancoleman/strcase"
 	"github.com/spf13/pflag"
 	"google.golang.org/protobuf/proto"
 	preflect "google.golang.org/protobuf/reflect/protoreflect"
 
 	"github.com/cloudwan/goten-sdk/runtime/resource"
+	"github.com/cloudwan/goten-sdk/runtime/strcase"
 	"github.com/cloudwan/goten-sdk/runtime/utils"
 )
 
@@ -145,8 +145,7 @@ func (p *NameProvider) FillName(name resource.Name) {
 				}
 			}
 		}
-		if bestPath == nil || bestPath.specifiedByFlags < path.specifiedByFlags || (bestPath.specifiedByFlags == path.specifiedByFlags && (
-				bestPath.specifiedByCtx < path.specifiedByCtx || bestPath.specifiedByCtx == path.specifiedByCtx && len(bestPath.segments) > len(path.segments))) {
+		if bestPath == nil || bestPath.specifiedByFlags < path.specifiedByFlags || (bestPath.specifiedByFlags == path.specifiedByFlags && (bestPath.specifiedByCtx < path.specifiedByCtx || bestPath.specifiedByCtx == path.specifiedByCtx && len(bestPath.segments) > len(path.segments))) {
 			bestPath = path
 		}
 	}

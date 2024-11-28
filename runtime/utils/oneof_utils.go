@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/iancoleman/strcase"
 	"google.golang.org/protobuf/proto"
 	preflect "google.golang.org/protobuf/reflect/protoreflect"
+
+	"github.com/cloudwan/goten-sdk/runtime/strcase"
 )
 
 func GetFieldTypeForOneOf(protoMsg proto.Message, fieldDesc preflect.FieldDescriptor) (reflect.StructField, bool) {

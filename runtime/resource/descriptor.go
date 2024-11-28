@@ -3,9 +3,8 @@ package resource
 import (
 	"sort"
 
-	"github.com/iancoleman/strcase"
-
 	"github.com/cloudwan/goten-sdk/runtime/object"
+	"github.com/cloudwan/goten-sdk/runtime/strcase"
 )
 
 // Descriptor allows writing code operating on resources without knowing exact type.

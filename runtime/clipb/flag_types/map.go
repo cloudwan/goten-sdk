@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"reflect"
 
-	"github.com/iancoleman/strcase"
 	"github.com/spf13/pflag"
 	"google.golang.org/protobuf/proto"
 	preflect "google.golang.org/protobuf/reflect/protoreflect"
+
+	"github.com/cloudwan/goten-sdk/runtime/strcase"
 )
 
 type MapVar struct {

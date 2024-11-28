@@ -5,9 +5,10 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/iancoleman/strcase"
 	"google.golang.org/protobuf/proto"
 	preflect "google.golang.org/protobuf/reflect/protoreflect"
+
+	"github.com/cloudwan/goten-sdk/runtime/strcase"
 )
 
 // ToProtoCase Converts name to proto convention (replacing capital
