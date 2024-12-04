@@ -5,16 +5,14 @@ import (
 )
 
 type saveOptions struct {
-	previousResource Resource
-	forceUpdate      bool
-	forceCreate      bool
-	updateMask       object.FieldMask
-	compareMask      object.FieldMask
-	compareRes       Resource
+	updateOnly  bool
+	createOnly  bool
+	updateMask  object.FieldMask
+	compareMask object.FieldMask
+	compareRes  Resource
 }
 
 type deleteOptions struct {
-	currentResource Resource
 }
 
 type getOptions struct {
@@ -34,12 +32,14 @@ type queryOptions struct {
 type SaveOptions interface {
 	OnlyCreate() bool
 	OnlyUpdate() bool
+	// DEPRECATED, returns always nil
 	GetPreviousResource() Resource
 	GetUpdateMask() object.FieldMask
 	GetCAS() (object.FieldMask, Resource)
 }
 
 type DeleteOptions interface {
+	// DEPRECATED, returns always nil
 	GetDeletedResource() Resource
 }
 
@@ -59,15 +59,15 @@ type QueryOptions interface {
 }
 
 func (so *saveOptions) GetPreviousResource() Resource {
-	return so.previousResource
+	return nil
 }
 
 func (so *saveOptions) OnlyCreate() bool {
-	return so.forceCreate
+	return so.createOnly
 }
 
 func (so *saveOptions) OnlyUpdate() bool {
-	return so.forceUpdate
+	return so.updateOnly
 }
 
 func (so *saveOptions) GetUpdateMask() object.FieldMask {
@@ -78,8 +78,9 @@ func (so *saveOptions) GetCAS() (object.FieldMask, Resource) {
 	return so.compareMask, so.compareRes
 }
 
+// DEPRECATED, always returns nil
 func (do *deleteOptions) GetDeletedResource() Resource {
-	return do.currentResource
+	return nil
 }
 
 func (opt *getOptions) GetSkipCache() bool {
@@ -156,15 +157,15 @@ func MakeQueryOptions(opts []QueryOption) QueryOptions {
 	return &dOpts
 }
 
-func WithPreviousResource(previous Resource) SaveOption {
+// DEPRECATED, has no effect
+func WithPreviousResource(_ Resource) SaveOption {
 	return func(o *saveOptions) {
-		o.previousResource = previous
 	}
 }
 
-func WithCurrentResource(current Resource) DeleteOption {
+// DEPRECATED, has no effect
+func WithCurrentResource(_ Resource) DeleteOption {
 	return func(o *deleteOptions) {
-		o.currentResource = current
 	}
 }
 
@@ -203,38 +204,37 @@ func WithQuerySkipCache() QueryOption {
 
 func WithCreateModeOnly() SaveOption {
 	return func(o *saveOptions) {
-		if o.forceUpdate {
+		if o.updateOnly {
 			panic("WithCreateModeOnly called after WithUpdateModeOnly")
 		}
-		o.forceCreate = true
+		o.createOnly = true
 	}
 }
 
 func WithUpdateModeOnly() SaveOption {
 	return func(o *saveOptions) {
-		if o.forceCreate {
+		if o.createOnly {
 			panic("WithUpdateModeOnly called after WithCreateModeOnly")
 		}
-		o.forceUpdate = true
+		o.updateOnly = true
 	}
 }
 
 func WithUpdateMask(mask object.FieldMask) SaveOption {
 	return func(o *saveOptions) {
-		if o.forceCreate {
+		if o.createOnly {
 			panic("WithUpdateMask called after WithCreateModeOnly")
 		}
-		o.forceUpdate = true
 		o.updateMask = mask
 	}
 }
 
 func WithCompareAndSwap(state Resource, mask object.FieldMask) SaveOption {
 	return func(o *saveOptions) {
-		if o.forceCreate {
+		if o.createOnly {
 			panic("WithCompareAndSwap called after WithCreateModeOnly")
 		}
-		o.forceUpdate = true
+		o.updateOnly = true
 		o.compareMask = mask
 		o.compareRes = state
 	}

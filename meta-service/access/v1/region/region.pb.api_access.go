@@ -6,7 +6,6 @@ package region_access
 
 import (
 	"context"
-	"fmt"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -24,7 +23,6 @@ import (
 
 var (
 	_ = new(context.Context)
-	_ = new(fmt.GoStringer)
 
 	_ = metadata.MD{}
 	_ = new(grpc.ClientConnInterface)
@@ -165,7 +163,7 @@ func (a *apiRegionAccess) WatchRegion(ctx context.Context, query *region.GetQuer
 	for {
 		resp, err := changesStream.Recv()
 		if err != nil {
-			return fmt.Errorf("watch recv error: %w", err)
+			return status.Errorf(status.Code(err), "watch recv error: %s", err)
 		}
 		change := resp.GetChange()
 		if err := observerCb(change); err != nil {
@@ -198,7 +196,7 @@ func (a *apiRegionAccess) WatchRegions(ctx context.Context, query *region.WatchQ
 	for {
 		respChange, err := changesStream.Recv()
 		if err != nil {
-			return fmt.Errorf("watch recv error: %w", err)
+			return status.Errorf(status.Code(err), "watch recv error: %s", err)
 		}
 		changesWithPaging := &region.QueryResultChange{
 			Changes:      respChange.RegionChanges,
@@ -220,22 +218,12 @@ func (a *apiRegionAccess) WatchRegions(ctx context.Context, query *region.WatchQ
 
 func (a *apiRegionAccess) SaveRegion(ctx context.Context, res *region.Region, opts ...gotenresource.SaveOption) error {
 	saveOpts := gotenresource.MakeSaveOptions(opts)
-	previousRes := saveOpts.GetPreviousResource()
-
-	if previousRes == nil && !saveOpts.OnlyUpdate() && !saveOpts.OnlyCreate() {
-		var err error
-		previousRes, err = a.GetRegion(ctx, &region.GetQuery{Reference: res.Name.AsReference()})
-		if err != nil {
-			if statusErr, ok := status.FromError(err); !ok || statusErr.Code() != codes.NotFound {
-				return err
-			}
-		}
-	}
 	var resp *region.Region
 	var err error
-	if saveOpts.OnlyUpdate() || previousRes != nil {
+	if !saveOpts.OnlyCreate() {
 		updateRequest := &region_client.UpdateRegionRequest{
-			Region: res,
+			Region:       res,
+			AllowMissing: !saveOpts.OnlyUpdate(),
 		}
 		if updateMask := saveOpts.GetUpdateMask(); updateMask != nil {
 			updateRequest.UpdateMask = updateMask.(*region.Region_FieldMask)
@@ -264,7 +252,7 @@ func (a *apiRegionAccess) SaveRegion(ctx context.Context, res *region.Region, op
 	return nil
 }
 
-func (a *apiRegionAccess) DeleteRegion(ctx context.Context, ref *region.Reference, opts ...gotenresource.DeleteOption) error {
+func (a *apiRegionAccess) DeleteRegion(ctx context.Context, ref *region.Reference, _ ...gotenresource.DeleteOption) error {
 	if !ref.IsFullyQualified() {
 		return status.Errorf(codes.InvalidArgument, "Reference %s is not fully specified", ref)
 	}

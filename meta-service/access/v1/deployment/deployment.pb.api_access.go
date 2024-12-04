@@ -6,7 +6,6 @@ package deployment_access
 
 import (
 	"context"
-	"fmt"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -24,7 +23,6 @@ import (
 
 var (
 	_ = new(context.Context)
-	_ = new(fmt.GoStringer)
 
 	_ = metadata.MD{}
 	_ = new(grpc.ClientConnInterface)
@@ -168,7 +166,7 @@ func (a *apiDeploymentAccess) WatchDeployment(ctx context.Context, query *deploy
 	for {
 		resp, err := changesStream.Recv()
 		if err != nil {
-			return fmt.Errorf("watch recv error: %w", err)
+			return status.Errorf(status.Code(err), "watch recv error: %s", err)
 		}
 		change := resp.GetChange()
 		if err := observerCb(change); err != nil {
@@ -204,7 +202,7 @@ func (a *apiDeploymentAccess) WatchDeployments(ctx context.Context, query *deplo
 	for {
 		respChange, err := changesStream.Recv()
 		if err != nil {
-			return fmt.Errorf("watch recv error: %w", err)
+			return status.Errorf(status.Code(err), "watch recv error: %s", err)
 		}
 		changesWithPaging := &deployment.QueryResultChange{
 			Changes:      respChange.DeploymentChanges,
@@ -226,22 +224,12 @@ func (a *apiDeploymentAccess) WatchDeployments(ctx context.Context, query *deplo
 
 func (a *apiDeploymentAccess) SaveDeployment(ctx context.Context, res *deployment.Deployment, opts ...gotenresource.SaveOption) error {
 	saveOpts := gotenresource.MakeSaveOptions(opts)
-	previousRes := saveOpts.GetPreviousResource()
-
-	if previousRes == nil && !saveOpts.OnlyUpdate() && !saveOpts.OnlyCreate() {
-		var err error
-		previousRes, err = a.GetDeployment(ctx, &deployment.GetQuery{Reference: res.Name.AsReference()})
-		if err != nil {
-			if statusErr, ok := status.FromError(err); !ok || statusErr.Code() != codes.NotFound {
-				return err
-			}
-		}
-	}
 	var resp *deployment.Deployment
 	var err error
-	if saveOpts.OnlyUpdate() || previousRes != nil {
+	if !saveOpts.OnlyCreate() {
 		updateRequest := &deployment_client.UpdateDeploymentRequest{
-			Deployment: res,
+			Deployment:   res,
+			AllowMissing: !saveOpts.OnlyUpdate(),
 		}
 		if updateMask := saveOpts.GetUpdateMask(); updateMask != nil {
 			updateRequest.UpdateMask = updateMask.(*deployment.Deployment_FieldMask)
@@ -270,7 +258,7 @@ func (a *apiDeploymentAccess) SaveDeployment(ctx context.Context, res *deploymen
 	return nil
 }
 
-func (a *apiDeploymentAccess) DeleteDeployment(ctx context.Context, ref *deployment.Reference, opts ...gotenresource.DeleteOption) error {
+func (a *apiDeploymentAccess) DeleteDeployment(ctx context.Context, ref *deployment.Reference, _ ...gotenresource.DeleteOption) error {
 	if !ref.IsFullyQualified() {
 		return status.Errorf(codes.InvalidArgument, "Reference %s is not fully specified", ref)
 	}

@@ -6,7 +6,6 @@ package service_access
 
 import (
 	"context"
-	"fmt"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -24,7 +23,6 @@ import (
 
 var (
 	_ = new(context.Context)
-	_ = new(fmt.GoStringer)
 
 	_ = metadata.MD{}
 	_ = new(grpc.ClientConnInterface)
@@ -165,7 +163,7 @@ func (a *apiServiceAccess) WatchService(ctx context.Context, query *service.GetQ
 	for {
 		resp, err := changesStream.Recv()
 		if err != nil {
-			return fmt.Errorf("watch recv error: %w", err)
+			return status.Errorf(status.Code(err), "watch recv error: %s", err)
 		}
 		change := resp.GetChange()
 		if err := observerCb(change); err != nil {
@@ -198,7 +196,7 @@ func (a *apiServiceAccess) WatchServices(ctx context.Context, query *service.Wat
 	for {
 		respChange, err := changesStream.Recv()
 		if err != nil {
-			return fmt.Errorf("watch recv error: %w", err)
+			return status.Errorf(status.Code(err), "watch recv error: %s", err)
 		}
 		changesWithPaging := &service.QueryResultChange{
 			Changes:      respChange.ServiceChanges,
@@ -220,22 +218,12 @@ func (a *apiServiceAccess) WatchServices(ctx context.Context, query *service.Wat
 
 func (a *apiServiceAccess) SaveService(ctx context.Context, res *service.Service, opts ...gotenresource.SaveOption) error {
 	saveOpts := gotenresource.MakeSaveOptions(opts)
-	previousRes := saveOpts.GetPreviousResource()
-
-	if previousRes == nil && !saveOpts.OnlyUpdate() && !saveOpts.OnlyCreate() {
-		var err error
-		previousRes, err = a.GetService(ctx, &service.GetQuery{Reference: res.Name.AsReference()})
-		if err != nil {
-			if statusErr, ok := status.FromError(err); !ok || statusErr.Code() != codes.NotFound {
-				return err
-			}
-		}
-	}
 	var resp *service.Service
 	var err error
-	if saveOpts.OnlyUpdate() || previousRes != nil {
+	if !saveOpts.OnlyCreate() {
 		updateRequest := &service_client.UpdateServiceRequest{
-			Service: res,
+			Service:      res,
+			AllowMissing: !saveOpts.OnlyUpdate(),
 		}
 		if updateMask := saveOpts.GetUpdateMask(); updateMask != nil {
 			updateRequest.UpdateMask = updateMask.(*service.Service_FieldMask)
@@ -264,7 +252,7 @@ func (a *apiServiceAccess) SaveService(ctx context.Context, res *service.Service
 	return nil
 }
 
-func (a *apiServiceAccess) DeleteService(ctx context.Context, ref *service.Reference, opts ...gotenresource.DeleteOption) error {
+func (a *apiServiceAccess) DeleteService(ctx context.Context, ref *service.Reference, _ ...gotenresource.DeleteOption) error {
 	if !ref.IsFullyQualified() {
 		return status.Errorf(codes.InvalidArgument, "Reference %s is not fully specified", ref)
 	}

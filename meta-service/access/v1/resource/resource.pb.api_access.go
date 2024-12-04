@@ -6,7 +6,6 @@ package resource_access
 
 import (
 	"context"
-	"fmt"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -24,7 +23,6 @@ import (
 
 var (
 	_ = new(context.Context)
-	_ = new(fmt.GoStringer)
 
 	_ = metadata.MD{}
 	_ = new(grpc.ClientConnInterface)
@@ -168,7 +166,7 @@ func (a *apiResourceAccess) WatchResource(ctx context.Context, query *resource.G
 	for {
 		resp, err := changesStream.Recv()
 		if err != nil {
-			return fmt.Errorf("watch recv error: %w", err)
+			return status.Errorf(status.Code(err), "watch recv error: %s", err)
 		}
 		change := resp.GetChange()
 		if err := observerCb(change); err != nil {
@@ -204,7 +202,7 @@ func (a *apiResourceAccess) WatchResources(ctx context.Context, query *resource.
 	for {
 		respChange, err := changesStream.Recv()
 		if err != nil {
-			return fmt.Errorf("watch recv error: %w", err)
+			return status.Errorf(status.Code(err), "watch recv error: %s", err)
 		}
 		changesWithPaging := &resource.QueryResultChange{
 			Changes:      respChange.ResourceChanges,
@@ -226,22 +224,12 @@ func (a *apiResourceAccess) WatchResources(ctx context.Context, query *resource.
 
 func (a *apiResourceAccess) SaveResource(ctx context.Context, res *resource.Resource, opts ...gotenresource.SaveOption) error {
 	saveOpts := gotenresource.MakeSaveOptions(opts)
-	previousRes := saveOpts.GetPreviousResource()
-
-	if previousRes == nil && !saveOpts.OnlyUpdate() && !saveOpts.OnlyCreate() {
-		var err error
-		previousRes, err = a.GetResource(ctx, &resource.GetQuery{Reference: res.Name.AsReference()})
-		if err != nil {
-			if statusErr, ok := status.FromError(err); !ok || statusErr.Code() != codes.NotFound {
-				return err
-			}
-		}
-	}
 	var resp *resource.Resource
 	var err error
-	if saveOpts.OnlyUpdate() || previousRes != nil {
+	if !saveOpts.OnlyCreate() {
 		updateRequest := &resource_client.UpdateResourceRequest{
-			Resource: res,
+			Resource:     res,
+			AllowMissing: !saveOpts.OnlyUpdate(),
 		}
 		if updateMask := saveOpts.GetUpdateMask(); updateMask != nil {
 			updateRequest.UpdateMask = updateMask.(*resource.Resource_FieldMask)
@@ -270,7 +258,7 @@ func (a *apiResourceAccess) SaveResource(ctx context.Context, res *resource.Reso
 	return nil
 }
 
-func (a *apiResourceAccess) DeleteResource(ctx context.Context, ref *resource.Reference, opts ...gotenresource.DeleteOption) error {
+func (a *apiResourceAccess) DeleteResource(ctx context.Context, ref *resource.Reference, _ ...gotenresource.DeleteOption) error {
 	if !ref.IsFullyQualified() {
 		return status.Errorf(codes.InvalidArgument, "Reference %s is not fully specified", ref)
 	}
