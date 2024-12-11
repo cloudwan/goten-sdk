@@ -42,9 +42,11 @@ message Meta {
   string resource_version = 8 [ (google.api.field_behavior) = OUTPUT_ONLY ];
 
   // List of objects depended by this object. If ALL objects in the list have
-  // been deleted, this object will be garbage collected. If this object is
-  // managed by a controller, then an entry in this list will point to this
-  // controller, with the controller field set to true.
+  // been deleted, this object will be garbage collected, unless, the last owner
+  // reference had the unset_on_delete flag set to true - in this case the
+  // object won't be garbage collected, just the owner reference will be unset.
+  // If this object is managed by a controller, then an entry in this list will
+  // point to this controller, with the controller field set to true.
   repeated OwnerReference owner_references = 13;
 
   // List of all shard indices by their keys
@@ -124,6 +126,11 @@ message OwnerReference {
   // This flag is useful if higher-level service creates some resource in
   // lower level service and assigns via schema reference.
   bool requires_owner_reference = 10;
+
+  // This flag indicates if the reference should be unset on the owner deletion.
+  // If set, owner's deletion will not cause the resource deletion, but rather
+  // only the owner reference will be unset
+  bool unset_on_delete = 11;
 
   reserved 1, 4, 5, 7;
 }

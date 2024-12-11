@@ -1058,6 +1058,7 @@ func FullOwnerReference_FieldMask() *OwnerReference_FieldMask {
 	res.Paths = append(res.Paths, &OwnerReference_FieldTerminalPath{selector: OwnerReference_FieldPathSelectorRegion})
 	res.Paths = append(res.Paths, &OwnerReference_FieldTerminalPath{selector: OwnerReference_FieldPathSelectorController})
 	res.Paths = append(res.Paths, &OwnerReference_FieldTerminalPath{selector: OwnerReference_FieldPathSelectorRequiresOwnerReference})
+	res.Paths = append(res.Paths, &OwnerReference_FieldTerminalPath{selector: OwnerReference_FieldPathSelectorUnsetOnDelete})
 	return res
 }
 
@@ -1101,7 +1102,7 @@ func (fieldMask *OwnerReference_FieldMask) IsFull() bool {
 	if fieldMask == nil {
 		return false
 	}
-	presentSelectors := make([]bool, 6)
+	presentSelectors := make([]bool, 7)
 	for _, path := range fieldMask.Paths {
 		if asFinal, ok := path.(*OwnerReference_FieldTerminalPath); ok {
 			presentSelectors[int(asFinal.selector)] = true
@@ -1131,7 +1132,7 @@ func (fieldMask *OwnerReference_FieldMask) Reset() {
 
 func (fieldMask *OwnerReference_FieldMask) Subtract(other *OwnerReference_FieldMask) *OwnerReference_FieldMask {
 	result := &OwnerReference_FieldMask{}
-	removedSelectors := make([]bool, 6)
+	removedSelectors := make([]bool, 7)
 
 	for _, path := range other.GetPaths() {
 		switch tp := path.(type) {
@@ -1297,6 +1298,8 @@ func (fieldMask *OwnerReference_FieldMask) Project(source *OwnerReference) *Owne
 				result.Controller = source.Controller
 			case OwnerReference_FieldPathSelectorRequiresOwnerReference:
 				result.RequiresOwnerReference = source.RequiresOwnerReference
+			case OwnerReference_FieldPathSelectorUnsetOnDelete:
+				result.UnsetOnDelete = source.UnsetOnDelete
 			}
 		}
 	}

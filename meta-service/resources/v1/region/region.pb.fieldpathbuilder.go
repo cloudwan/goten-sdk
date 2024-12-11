@@ -379,6 +379,10 @@ func (RegionPathSelectorMetadataOwnerReferences) RequiresOwnerReference() Region
 	return RegionPathSelectorMetadataOwnerReferencesRequiresOwnerReference{}
 }
 
+func (RegionPathSelectorMetadataOwnerReferences) UnsetOnDelete() RegionPathSelectorMetadataOwnerReferencesUnsetOnDelete {
+	return RegionPathSelectorMetadataOwnerReferencesUnsetOnDelete{}
+}
+
 type RegionPathSelectorMetadataOwnerReferencesKind struct{}
 
 func (RegionPathSelectorMetadataOwnerReferencesKind) FieldPath() *Region_FieldSubPath {
@@ -478,6 +482,23 @@ func (s RegionPathSelectorMetadataOwnerReferencesRequiresOwnerReference) WithVal
 }
 
 func (s RegionPathSelectorMetadataOwnerReferencesRequiresOwnerReference) WithArrayOfValues(values []bool) *Region_FieldSubPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*Region_FieldSubPathArrayOfValues)
+}
+
+type RegionPathSelectorMetadataOwnerReferencesUnsetOnDelete struct{}
+
+func (RegionPathSelectorMetadataOwnerReferencesUnsetOnDelete) FieldPath() *Region_FieldSubPath {
+	return &Region_FieldSubPath{
+		selector: Region_FieldPathSelectorMetadata,
+		subPath:  meta.NewMetaFieldPathBuilder().OwnerReferences().UnsetOnDelete().FieldPath(),
+	}
+}
+
+func (s RegionPathSelectorMetadataOwnerReferencesUnsetOnDelete) WithValue(value bool) *Region_FieldSubPathValue {
+	return s.FieldPath().WithIValue(value).(*Region_FieldSubPathValue)
+}
+
+func (s RegionPathSelectorMetadataOwnerReferencesUnsetOnDelete) WithArrayOfValues(values []bool) *Region_FieldSubPathArrayOfValues {
 	return s.FieldPath().WithIArrayOfValues(values).(*Region_FieldSubPathArrayOfValues)
 }
 

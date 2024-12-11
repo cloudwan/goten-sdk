@@ -545,6 +545,9 @@ func (o *OwnerReference) MakeDiffFieldMask(other *OwnerReference) *OwnerReferenc
 	if o.GetRequiresOwnerReference() != other.GetRequiresOwnerReference() {
 		res.Paths = append(res.Paths, &OwnerReference_FieldTerminalPath{selector: OwnerReference_FieldPathSelectorRequiresOwnerReference})
 	}
+	if o.GetUnsetOnDelete() != other.GetUnsetOnDelete() {
+		res.Paths = append(res.Paths, &OwnerReference_FieldTerminalPath{selector: OwnerReference_FieldPathSelectorUnsetOnDelete})
+	}
 	return res
 }
 
@@ -563,6 +566,7 @@ func (o *OwnerReference) Clone() *OwnerReference {
 	result.Region = o.Region
 	result.Controller = o.Controller
 	result.RequiresOwnerReference = o.RequiresOwnerReference
+	result.UnsetOnDelete = o.UnsetOnDelete
 	return result
 }
 
@@ -577,6 +581,7 @@ func (o *OwnerReference) Merge(source *OwnerReference) {
 	o.Region = source.GetRegion()
 	o.Controller = source.GetController()
 	o.RequiresOwnerReference = source.GetRequiresOwnerReference()
+	o.UnsetOnDelete = source.GetUnsetOnDelete()
 }
 
 func (o *OwnerReference) MergeRaw(source gotenobject.GotenObjectExt) {
