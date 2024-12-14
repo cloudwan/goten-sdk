@@ -2940,7 +2940,6 @@ const (
 	OwnerReference_FieldPathSelectorRegion                 OwnerReference_FieldPathSelector = 3
 	OwnerReference_FieldPathSelectorController             OwnerReference_FieldPathSelector = 4
 	OwnerReference_FieldPathSelectorRequiresOwnerReference OwnerReference_FieldPathSelector = 5
-	OwnerReference_FieldPathSelectorUnsetOnDelete          OwnerReference_FieldPathSelector = 6
 )
 
 func (s OwnerReference_FieldPathSelector) String() string {
@@ -2957,8 +2956,6 @@ func (s OwnerReference_FieldPathSelector) String() string {
 		return "controller"
 	case OwnerReference_FieldPathSelectorRequiresOwnerReference:
 		return "requires_owner_reference"
-	case OwnerReference_FieldPathSelectorUnsetOnDelete:
-		return "unset_on_delete"
 	default:
 		panic(fmt.Sprintf("Invalid selector for OwnerReference: %d", s))
 	}
@@ -2982,8 +2979,6 @@ func BuildOwnerReference_FieldPath(fp gotenobject.RawFieldPath) (OwnerReference_
 			return &OwnerReference_FieldTerminalPath{selector: OwnerReference_FieldPathSelectorController}, nil
 		case "requires_owner_reference", "requiresOwnerReference", "requires-owner-reference":
 			return &OwnerReference_FieldTerminalPath{selector: OwnerReference_FieldPathSelectorRequiresOwnerReference}, nil
-		case "unset_on_delete", "unsetOnDelete", "unset-on-delete":
-			return &OwnerReference_FieldTerminalPath{selector: OwnerReference_FieldPathSelectorUnsetOnDelete}, nil
 		}
 	}
 	return nil, status.Errorf(codes.InvalidArgument, "unknown field path '%s' for object OwnerReference", fp)
@@ -3041,8 +3036,6 @@ func (fp *OwnerReference_FieldTerminalPath) Get(source *OwnerReference) (values 
 			values = append(values, source.Controller)
 		case OwnerReference_FieldPathSelectorRequiresOwnerReference:
 			values = append(values, source.RequiresOwnerReference)
-		case OwnerReference_FieldPathSelectorUnsetOnDelete:
-			values = append(values, source.UnsetOnDelete)
 		default:
 			panic(fmt.Sprintf("Invalid selector for OwnerReference: %d", fp.selector))
 		}
@@ -3069,8 +3062,6 @@ func (fp *OwnerReference_FieldTerminalPath) GetSingle(source *OwnerReference) (i
 		return source.GetController(), source != nil
 	case OwnerReference_FieldPathSelectorRequiresOwnerReference:
 		return source.GetRequiresOwnerReference(), source != nil
-	case OwnerReference_FieldPathSelectorUnsetOnDelete:
-		return source.GetUnsetOnDelete(), source != nil
 	default:
 		panic(fmt.Sprintf("Invalid selector for OwnerReference: %d", fp.selector))
 	}
@@ -3095,8 +3086,6 @@ func (fp *OwnerReference_FieldTerminalPath) GetDefault() interface{} {
 		return false
 	case OwnerReference_FieldPathSelectorRequiresOwnerReference:
 		return false
-	case OwnerReference_FieldPathSelectorUnsetOnDelete:
-		return false
 	default:
 		panic(fmt.Sprintf("Invalid selector for OwnerReference: %d", fp.selector))
 	}
@@ -3117,8 +3106,6 @@ func (fp *OwnerReference_FieldTerminalPath) ClearValue(item *OwnerReference) {
 			item.Controller = false
 		case OwnerReference_FieldPathSelectorRequiresOwnerReference:
 			item.RequiresOwnerReference = false
-		case OwnerReference_FieldPathSelectorUnsetOnDelete:
-			item.UnsetOnDelete = false
 		default:
 			panic(fmt.Sprintf("Invalid selector for OwnerReference: %d", fp.selector))
 		}
@@ -3136,8 +3123,7 @@ func (fp *OwnerReference_FieldTerminalPath) IsLeaf() bool {
 		fp.selector == OwnerReference_FieldPathSelectorName ||
 		fp.selector == OwnerReference_FieldPathSelectorRegion ||
 		fp.selector == OwnerReference_FieldPathSelectorController ||
-		fp.selector == OwnerReference_FieldPathSelectorRequiresOwnerReference ||
-		fp.selector == OwnerReference_FieldPathSelectorUnsetOnDelete
+		fp.selector == OwnerReference_FieldPathSelectorRequiresOwnerReference
 }
 
 func (fp *OwnerReference_FieldTerminalPath) SplitIntoTerminalIPaths() []gotenobject.FieldPath {
@@ -3157,8 +3143,6 @@ func (fp *OwnerReference_FieldTerminalPath) WithIValue(value interface{}) OwnerR
 	case OwnerReference_FieldPathSelectorController:
 		return &OwnerReference_FieldTerminalPathValue{OwnerReference_FieldTerminalPath: *fp, value: value.(bool)}
 	case OwnerReference_FieldPathSelectorRequiresOwnerReference:
-		return &OwnerReference_FieldTerminalPathValue{OwnerReference_FieldTerminalPath: *fp, value: value.(bool)}
-	case OwnerReference_FieldPathSelectorUnsetOnDelete:
 		return &OwnerReference_FieldTerminalPathValue{OwnerReference_FieldTerminalPath: *fp, value: value.(bool)}
 	default:
 		panic(fmt.Sprintf("Invalid selector for OwnerReference: %d", fp.selector))
@@ -3183,8 +3167,6 @@ func (fp *OwnerReference_FieldTerminalPath) WithIArrayOfValues(values interface{
 	case OwnerReference_FieldPathSelectorController:
 		return &OwnerReference_FieldTerminalPathArrayOfValues{OwnerReference_FieldTerminalPath: *fp, values: values.([]bool)}
 	case OwnerReference_FieldPathSelectorRequiresOwnerReference:
-		return &OwnerReference_FieldTerminalPathArrayOfValues{OwnerReference_FieldTerminalPath: *fp, values: values.([]bool)}
-	case OwnerReference_FieldPathSelectorUnsetOnDelete:
 		return &OwnerReference_FieldTerminalPathArrayOfValues{OwnerReference_FieldTerminalPath: *fp, values: values.([]bool)}
 	default:
 		panic(fmt.Sprintf("Invalid selector for OwnerReference: %d", fp.selector))
@@ -3270,10 +3252,6 @@ func (fpv *OwnerReference_FieldTerminalPathValue) AsRequiresOwnerReferenceValue(
 	res, ok := fpv.value.(bool)
 	return res, ok
 }
-func (fpv *OwnerReference_FieldTerminalPathValue) AsUnsetOnDeleteValue() (bool, bool) {
-	res, ok := fpv.value.(bool)
-	return res, ok
-}
 
 // SetTo stores value for selected field for object OwnerReference
 func (fpv *OwnerReference_FieldTerminalPathValue) SetTo(target **OwnerReference) {
@@ -3293,8 +3271,6 @@ func (fpv *OwnerReference_FieldTerminalPathValue) SetTo(target **OwnerReference)
 		(*target).Controller = fpv.value.(bool)
 	case OwnerReference_FieldPathSelectorRequiresOwnerReference:
 		(*target).RequiresOwnerReference = fpv.value.(bool)
-	case OwnerReference_FieldPathSelectorUnsetOnDelete:
-		(*target).UnsetOnDelete = fpv.value.(bool)
 	default:
 		panic(fmt.Sprintf("Invalid selector for OwnerReference: %d", fpv.selector))
 	}
@@ -3361,16 +3337,6 @@ func (fpv *OwnerReference_FieldTerminalPathValue) CompareWith(source *OwnerRefer
 	case OwnerReference_FieldPathSelectorRequiresOwnerReference:
 		leftValue := fpv.value.(bool)
 		rightValue := source.GetRequiresOwnerReference()
-		if (leftValue) == (rightValue) {
-			return 0, true
-		} else if !(leftValue) && (rightValue) {
-			return -1, true
-		} else {
-			return 1, true
-		}
-	case OwnerReference_FieldPathSelectorUnsetOnDelete:
-		leftValue := fpv.value.(bool)
-		rightValue := source.GetUnsetOnDelete()
 		if (leftValue) == (rightValue) {
 			return 0, true
 		} else if !(leftValue) && (rightValue) {
@@ -3510,10 +3476,6 @@ func (fpaov *OwnerReference_FieldTerminalPathArrayOfValues) GetRawValues() (valu
 		for _, v := range fpaov.values.([]bool) {
 			values = append(values, v)
 		}
-	case OwnerReference_FieldPathSelectorUnsetOnDelete:
-		for _, v := range fpaov.values.([]bool) {
-			values = append(values, v)
-		}
 	}
 	return
 }
@@ -3538,10 +3500,6 @@ func (fpaov *OwnerReference_FieldTerminalPathArrayOfValues) AsControllerArrayOfV
 	return res, ok
 }
 func (fpaov *OwnerReference_FieldTerminalPathArrayOfValues) AsRequiresOwnerReferenceArrayOfValues() ([]bool, bool) {
-	res, ok := fpaov.values.([]bool)
-	return res, ok
-}
-func (fpaov *OwnerReference_FieldTerminalPathArrayOfValues) AsUnsetOnDeleteArrayOfValues() ([]bool, bool) {
 	res, ok := fpaov.values.([]bool)
 	return res, ok
 }

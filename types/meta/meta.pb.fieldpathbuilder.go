@@ -289,10 +289,6 @@ func (MetaPathSelectorOwnerReferences) RequiresOwnerReference() MetaPathSelector
 	return MetaPathSelectorOwnerReferencesRequiresOwnerReference{}
 }
 
-func (MetaPathSelectorOwnerReferences) UnsetOnDelete() MetaPathSelectorOwnerReferencesUnsetOnDelete {
-	return MetaPathSelectorOwnerReferencesUnsetOnDelete{}
-}
-
 type MetaPathSelectorOwnerReferencesKind struct{}
 
 func (MetaPathSelectorOwnerReferencesKind) FieldPath() *Meta_FieldSubPath {
@@ -392,23 +388,6 @@ func (s MetaPathSelectorOwnerReferencesRequiresOwnerReference) WithValue(value b
 }
 
 func (s MetaPathSelectorOwnerReferencesRequiresOwnerReference) WithArrayOfValues(values []bool) *Meta_FieldSubPathArrayOfValues {
-	return s.FieldPath().WithIArrayOfValues(values).(*Meta_FieldSubPathArrayOfValues)
-}
-
-type MetaPathSelectorOwnerReferencesUnsetOnDelete struct{}
-
-func (MetaPathSelectorOwnerReferencesUnsetOnDelete) FieldPath() *Meta_FieldSubPath {
-	return &Meta_FieldSubPath{
-		selector: Meta_FieldPathSelectorOwnerReferences,
-		subPath:  NewOwnerReferenceFieldPathBuilder().UnsetOnDelete().FieldPath(),
-	}
-}
-
-func (s MetaPathSelectorOwnerReferencesUnsetOnDelete) WithValue(value bool) *Meta_FieldSubPathValue {
-	return s.FieldPath().WithIValue(value).(*Meta_FieldSubPathValue)
-}
-
-func (s MetaPathSelectorOwnerReferencesUnsetOnDelete) WithArrayOfValues(values []bool) *Meta_FieldSubPathArrayOfValues {
 	return s.FieldPath().WithIArrayOfValues(values).(*Meta_FieldSubPathArrayOfValues)
 }
 
@@ -900,9 +879,6 @@ func (OwnerReferenceFieldPathBuilder) Controller() OwnerReferencePathSelectorCon
 func (OwnerReferenceFieldPathBuilder) RequiresOwnerReference() OwnerReferencePathSelectorRequiresOwnerReference {
 	return OwnerReferencePathSelectorRequiresOwnerReference{}
 }
-func (OwnerReferenceFieldPathBuilder) UnsetOnDelete() OwnerReferencePathSelectorUnsetOnDelete {
-	return OwnerReferencePathSelectorUnsetOnDelete{}
-}
 
 type OwnerReferencePathSelectorKind struct{}
 
@@ -985,20 +961,6 @@ func (s OwnerReferencePathSelectorRequiresOwnerReference) WithValue(value bool) 
 }
 
 func (s OwnerReferencePathSelectorRequiresOwnerReference) WithArrayOfValues(values []bool) *OwnerReference_FieldTerminalPathArrayOfValues {
-	return s.FieldPath().WithIArrayOfValues(values).(*OwnerReference_FieldTerminalPathArrayOfValues)
-}
-
-type OwnerReferencePathSelectorUnsetOnDelete struct{}
-
-func (OwnerReferencePathSelectorUnsetOnDelete) FieldPath() *OwnerReference_FieldTerminalPath {
-	return &OwnerReference_FieldTerminalPath{selector: OwnerReference_FieldPathSelectorUnsetOnDelete}
-}
-
-func (s OwnerReferencePathSelectorUnsetOnDelete) WithValue(value bool) *OwnerReference_FieldTerminalPathValue {
-	return s.FieldPath().WithIValue(value).(*OwnerReference_FieldTerminalPathValue)
-}
-
-func (s OwnerReferencePathSelectorUnsetOnDelete) WithArrayOfValues(values []bool) *OwnerReference_FieldTerminalPathArrayOfValues {
 	return s.FieldPath().WithIArrayOfValues(values).(*OwnerReference_FieldTerminalPathArrayOfValues)
 }
 
