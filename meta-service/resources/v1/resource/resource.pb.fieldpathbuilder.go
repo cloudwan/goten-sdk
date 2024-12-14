@@ -392,10 +392,6 @@ func (ResourcePathSelectorMetadataOwnerReferences) RequiresOwnerReference() Reso
 	return ResourcePathSelectorMetadataOwnerReferencesRequiresOwnerReference{}
 }
 
-func (ResourcePathSelectorMetadataOwnerReferences) UnsetOnDelete() ResourcePathSelectorMetadataOwnerReferencesUnsetOnDelete {
-	return ResourcePathSelectorMetadataOwnerReferencesUnsetOnDelete{}
-}
-
 type ResourcePathSelectorMetadataOwnerReferencesKind struct{}
 
 func (ResourcePathSelectorMetadataOwnerReferencesKind) FieldPath() *Resource_FieldSubPath {
@@ -495,23 +491,6 @@ func (s ResourcePathSelectorMetadataOwnerReferencesRequiresOwnerReference) WithV
 }
 
 func (s ResourcePathSelectorMetadataOwnerReferencesRequiresOwnerReference) WithArrayOfValues(values []bool) *Resource_FieldSubPathArrayOfValues {
-	return s.FieldPath().WithIArrayOfValues(values).(*Resource_FieldSubPathArrayOfValues)
-}
-
-type ResourcePathSelectorMetadataOwnerReferencesUnsetOnDelete struct{}
-
-func (ResourcePathSelectorMetadataOwnerReferencesUnsetOnDelete) FieldPath() *Resource_FieldSubPath {
-	return &Resource_FieldSubPath{
-		selector: Resource_FieldPathSelectorMetadata,
-		subPath:  meta.NewMetaFieldPathBuilder().OwnerReferences().UnsetOnDelete().FieldPath(),
-	}
-}
-
-func (s ResourcePathSelectorMetadataOwnerReferencesUnsetOnDelete) WithValue(value bool) *Resource_FieldSubPathValue {
-	return s.FieldPath().WithIValue(value).(*Resource_FieldSubPathValue)
-}
-
-func (s ResourcePathSelectorMetadataOwnerReferencesUnsetOnDelete) WithArrayOfValues(values []bool) *Resource_FieldSubPathArrayOfValues {
 	return s.FieldPath().WithIArrayOfValues(values).(*Resource_FieldSubPathArrayOfValues)
 }
 

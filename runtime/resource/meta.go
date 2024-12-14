@@ -26,12 +26,6 @@ func WithController() OwnerRefFlag {
 	}
 }
 
-func WithUnsetOnDelete() OwnerRefFlag {
-	return func(o *meta.OwnerReference) {
-		o.UnsetOnDelete = true
-	}
-}
-
 // TODO: Unsupported
 /*
 func WithBlockDeletion() OwnerRefFlag {
