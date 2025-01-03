@@ -57,7 +57,7 @@ func MakeMetaOwnerReference(owner Resource, flags ...OwnerRefFlag) *meta.OwnerRe
 	}
 	if ownerRef.GetRegion() == "" {
 		if IsRegionalResource(ownerDescriptor) {
-			ownerRef.Region = owner.GetRawName().GetIdParts()["region_id"]
+			ownerRef.Region = owner.GetRawName().GetIdParts()["regionId"]
 		}
 	}
 	if ownerRef.GetRegion() == "" {
