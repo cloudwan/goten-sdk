@@ -23,6 +23,7 @@ import (
 
 // proto imports
 import (
+	common "github.com/cloudwan/goten-sdk/meta-service/resources/v1/common"
 	meta "github.com/cloudwan/goten-sdk/types/meta"
 	multi_region_policy "github.com/cloudwan/goten-sdk/types/multi_region_policy"
 )
@@ -47,6 +48,7 @@ var (
 
 // make sure we're using proto imports
 var (
+	_ = &common.LabelledDomain{}
 	_ = &meta.Meta{}
 	_ = &multi_region_policy.MultiRegionPolicy{}
 )
@@ -76,11 +78,13 @@ const (
 	Service_FieldPathSelectorDisplayName            Service_FieldPathSelector = 3
 	Service_FieldPathSelectorAllVersions            Service_FieldPathSelector = 4
 	Service_FieldPathSelectorGlobalDomain           Service_FieldPathSelector = 5
-	Service_FieldPathSelectorImportedServices       Service_FieldPathSelector = 6
-	Service_FieldPathSelectorUsedServices           Service_FieldPathSelector = 7
-	Service_FieldPathSelectorImportedVersions       Service_FieldPathSelector = 8
-	Service_FieldPathSelectorEnvRegistryGeneration  Service_FieldPathSelector = 9
-	Service_FieldPathSelectorAutomaticVersionSwitch Service_FieldPathSelector = 10
+	Service_FieldPathSelectorLabelledDomains        Service_FieldPathSelector = 6
+	Service_FieldPathSelectorLeadingService         Service_FieldPathSelector = 7
+	Service_FieldPathSelectorImportedServices       Service_FieldPathSelector = 8
+	Service_FieldPathSelectorUsedServices           Service_FieldPathSelector = 9
+	Service_FieldPathSelectorImportedVersions       Service_FieldPathSelector = 10
+	Service_FieldPathSelectorEnvRegistryGeneration  Service_FieldPathSelector = 11
+	Service_FieldPathSelectorAutomaticVersionSwitch Service_FieldPathSelector = 12
 )
 
 func (s Service_FieldPathSelector) String() string {
@@ -97,6 +101,10 @@ func (s Service_FieldPathSelector) String() string {
 		return "all_versions"
 	case Service_FieldPathSelectorGlobalDomain:
 		return "global_domain"
+	case Service_FieldPathSelectorLabelledDomains:
+		return "labelled_domains"
+	case Service_FieldPathSelectorLeadingService:
+		return "leading_service"
 	case Service_FieldPathSelectorImportedServices:
 		return "imported_services"
 	case Service_FieldPathSelectorUsedServices:
@@ -130,6 +138,10 @@ func BuildService_FieldPath(fp gotenobject.RawFieldPath) (Service_FieldPath, err
 			return &Service_FieldTerminalPath{selector: Service_FieldPathSelectorAllVersions}, nil
 		case "global_domain", "globalDomain", "global-domain":
 			return &Service_FieldTerminalPath{selector: Service_FieldPathSelectorGlobalDomain}, nil
+		case "labelled_domains", "labelledDomains", "labelled-domains":
+			return &Service_FieldTerminalPath{selector: Service_FieldPathSelectorLabelledDomains}, nil
+		case "leading_service", "leadingService", "leading-service":
+			return &Service_FieldTerminalPath{selector: Service_FieldPathSelectorLeadingService}, nil
 		case "imported_services", "importedServices", "imported-services":
 			return &Service_FieldTerminalPath{selector: Service_FieldPathSelectorImportedServices}, nil
 		case "used_services", "usedServices", "used-services":
@@ -154,6 +166,12 @@ func BuildService_FieldPath(fp gotenobject.RawFieldPath) (Service_FieldPath, err
 				return nil, err
 			} else {
 				return &Service_FieldSubPath{selector: Service_FieldPathSelectorMultiRegionPolicy, subPath: subpath}, nil
+			}
+		case "labelled_domains", "labelledDomains", "labelled-domains":
+			if subpath, err := common.BuildLabelledDomain_FieldPath(fp[1:]); err != nil {
+				return nil, err
+			} else {
+				return &Service_FieldSubPath{selector: Service_FieldPathSelectorLabelledDomains, subPath: subpath}, nil
 			}
 		case "imported_versions", "importedVersions", "imported-versions":
 			if subpath, err := BuildServiceImportedVersions_FieldPath(fp[1:]); err != nil {
@@ -226,6 +244,14 @@ func (fp *Service_FieldTerminalPath) Get(source *Service) (values []interface{})
 			}
 		case Service_FieldPathSelectorGlobalDomain:
 			values = append(values, source.GlobalDomain)
+		case Service_FieldPathSelectorLabelledDomains:
+			for _, value := range source.GetLabelledDomains() {
+				values = append(values, value)
+			}
+		case Service_FieldPathSelectorLeadingService:
+			if source.LeadingService != nil {
+				values = append(values, source.LeadingService)
+			}
 		case Service_FieldPathSelectorImportedServices:
 			for _, value := range source.GetImportedServices() {
 				values = append(values, value)
@@ -272,6 +298,12 @@ func (fp *Service_FieldTerminalPath) GetSingle(source *Service) (interface{}, bo
 		return res, res != nil
 	case Service_FieldPathSelectorGlobalDomain:
 		return source.GetGlobalDomain(), source != nil
+	case Service_FieldPathSelectorLabelledDomains:
+		res := source.GetLabelledDomains()
+		return res, res != nil
+	case Service_FieldPathSelectorLeadingService:
+		res := source.GetLeadingService()
+		return res, res != nil
 	case Service_FieldPathSelectorImportedServices:
 		res := source.GetImportedServices()
 		return res, res != nil
@@ -309,6 +341,10 @@ func (fp *Service_FieldTerminalPath) GetDefault() interface{} {
 		return ([]string)(nil)
 	case Service_FieldPathSelectorGlobalDomain:
 		return ""
+	case Service_FieldPathSelectorLabelledDomains:
+		return ([]*common.LabelledDomain)(nil)
+	case Service_FieldPathSelectorLeadingService:
+		return (*Name)(nil)
 	case Service_FieldPathSelectorImportedServices:
 		return ([]*Reference)(nil)
 	case Service_FieldPathSelectorUsedServices:
@@ -339,6 +375,10 @@ func (fp *Service_FieldTerminalPath) ClearValue(item *Service) {
 			item.AllVersions = nil
 		case Service_FieldPathSelectorGlobalDomain:
 			item.GlobalDomain = ""
+		case Service_FieldPathSelectorLabelledDomains:
+			item.LabelledDomains = nil
+		case Service_FieldPathSelectorLeadingService:
+			item.LeadingService = nil
 		case Service_FieldPathSelectorImportedServices:
 			item.ImportedServices = nil
 		case Service_FieldPathSelectorUsedServices:
@@ -365,6 +405,7 @@ func (fp *Service_FieldTerminalPath) IsLeaf() bool {
 		fp.selector == Service_FieldPathSelectorDisplayName ||
 		fp.selector == Service_FieldPathSelectorAllVersions ||
 		fp.selector == Service_FieldPathSelectorGlobalDomain ||
+		fp.selector == Service_FieldPathSelectorLeadingService ||
 		fp.selector == Service_FieldPathSelectorImportedServices ||
 		fp.selector == Service_FieldPathSelectorUsedServices ||
 		fp.selector == Service_FieldPathSelectorEnvRegistryGeneration ||
@@ -389,6 +430,10 @@ func (fp *Service_FieldTerminalPath) WithIValue(value interface{}) Service_Field
 		return &Service_FieldTerminalPathValue{Service_FieldTerminalPath: *fp, value: value.([]string)}
 	case Service_FieldPathSelectorGlobalDomain:
 		return &Service_FieldTerminalPathValue{Service_FieldTerminalPath: *fp, value: value.(string)}
+	case Service_FieldPathSelectorLabelledDomains:
+		return &Service_FieldTerminalPathValue{Service_FieldTerminalPath: *fp, value: value.([]*common.LabelledDomain)}
+	case Service_FieldPathSelectorLeadingService:
+		return &Service_FieldTerminalPathValue{Service_FieldTerminalPath: *fp, value: value.(*Name)}
 	case Service_FieldPathSelectorImportedServices:
 		return &Service_FieldTerminalPathValue{Service_FieldTerminalPath: *fp, value: value.([]*Reference)}
 	case Service_FieldPathSelectorUsedServices:
@@ -423,6 +468,10 @@ func (fp *Service_FieldTerminalPath) WithIArrayOfValues(values interface{}) Serv
 		return &Service_FieldTerminalPathArrayOfValues{Service_FieldTerminalPath: *fp, values: values.([][]string)}
 	case Service_FieldPathSelectorGlobalDomain:
 		return &Service_FieldTerminalPathArrayOfValues{Service_FieldTerminalPath: *fp, values: values.([]string)}
+	case Service_FieldPathSelectorLabelledDomains:
+		return &Service_FieldTerminalPathArrayOfValues{Service_FieldTerminalPath: *fp, values: values.([][]*common.LabelledDomain)}
+	case Service_FieldPathSelectorLeadingService:
+		return &Service_FieldTerminalPathArrayOfValues{Service_FieldTerminalPath: *fp, values: values.([]*Name)}
 	case Service_FieldPathSelectorImportedServices:
 		return &Service_FieldTerminalPathArrayOfValues{Service_FieldTerminalPath: *fp, values: values.([][]*Reference)}
 	case Service_FieldPathSelectorUsedServices:
@@ -447,6 +496,8 @@ func (fp *Service_FieldTerminalPath) WithIArrayItemValue(value interface{}) Serv
 	switch fp.selector {
 	case Service_FieldPathSelectorAllVersions:
 		return &Service_FieldTerminalPathArrayItemValue{Service_FieldTerminalPath: *fp, value: value.(string)}
+	case Service_FieldPathSelectorLabelledDomains:
+		return &Service_FieldTerminalPathArrayItemValue{Service_FieldTerminalPath: *fp, value: value.(*common.LabelledDomain)}
 	case Service_FieldPathSelectorImportedServices:
 		return &Service_FieldTerminalPathArrayItemValue{Service_FieldTerminalPath: *fp, value: value.(*Reference)}
 	case Service_FieldPathSelectorUsedServices:
@@ -480,6 +531,10 @@ func (fps *Service_FieldSubPath) AsMultiRegionPolicySubPath() (multi_region_poli
 	res, ok := fps.subPath.(multi_region_policy.MultiRegionPolicy_FieldPath)
 	return res, ok
 }
+func (fps *Service_FieldSubPath) AsLabelledDomainsSubPath() (common.LabelledDomain_FieldPath, bool) {
+	res, ok := fps.subPath.(common.LabelledDomain_FieldPath)
+	return res, ok
+}
 func (fps *Service_FieldSubPath) AsImportedVersionsSubPath() (ServiceImportedVersions_FieldPath, bool) {
 	res, ok := fps.subPath.(ServiceImportedVersions_FieldPath)
 	return res, ok
@@ -502,6 +557,10 @@ func (fps *Service_FieldSubPath) Get(source *Service) (values []interface{}) {
 		values = append(values, fps.subPath.GetRaw(source.GetMetadata())...)
 	case Service_FieldPathSelectorMultiRegionPolicy:
 		values = append(values, fps.subPath.GetRaw(source.GetMultiRegionPolicy())...)
+	case Service_FieldPathSelectorLabelledDomains:
+		for _, item := range source.GetLabelledDomains() {
+			values = append(values, fps.subPath.GetRaw(item)...)
+		}
 	case Service_FieldPathSelectorImportedVersions:
 		for _, item := range source.GetImportedVersions() {
 			values = append(values, fps.subPath.GetRaw(item)...)
@@ -529,6 +588,11 @@ func (fps *Service_FieldSubPath) GetSingle(source *Service) (interface{}, bool) 
 			return nil, false
 		}
 		return fps.subPath.GetSingleRaw(source.GetMultiRegionPolicy())
+	case Service_FieldPathSelectorLabelledDomains:
+		if len(source.GetLabelledDomains()) == 0 {
+			return nil, false
+		}
+		return fps.subPath.GetSingleRaw(source.GetLabelledDomains()[0])
 	case Service_FieldPathSelectorImportedVersions:
 		if len(source.GetImportedVersions()) == 0 {
 			return nil, false
@@ -555,6 +619,10 @@ func (fps *Service_FieldSubPath) ClearValue(item *Service) {
 			fps.subPath.ClearValueRaw(item.Metadata)
 		case Service_FieldPathSelectorMultiRegionPolicy:
 			fps.subPath.ClearValueRaw(item.MultiRegionPolicy)
+		case Service_FieldPathSelectorLabelledDomains:
+			for _, subItem := range item.LabelledDomains {
+				fps.subPath.ClearValueRaw(subItem)
+			}
 		case Service_FieldPathSelectorImportedVersions:
 			for _, subItem := range item.ImportedVersions {
 				fps.subPath.ClearValueRaw(subItem)
@@ -667,6 +735,14 @@ func (fpv *Service_FieldTerminalPathValue) AsGlobalDomainValue() (string, bool) 
 	res, ok := fpv.value.(string)
 	return res, ok
 }
+func (fpv *Service_FieldTerminalPathValue) AsLabelledDomainsValue() ([]*common.LabelledDomain, bool) {
+	res, ok := fpv.value.([]*common.LabelledDomain)
+	return res, ok
+}
+func (fpv *Service_FieldTerminalPathValue) AsLeadingServiceValue() (*Name, bool) {
+	res, ok := fpv.value.(*Name)
+	return res, ok
+}
 func (fpv *Service_FieldTerminalPathValue) AsImportedServicesValue() ([]*Reference, bool) {
 	res, ok := fpv.value.([]*Reference)
 	return res, ok
@@ -706,6 +782,10 @@ func (fpv *Service_FieldTerminalPathValue) SetTo(target **Service) {
 		(*target).AllVersions = fpv.value.([]string)
 	case Service_FieldPathSelectorGlobalDomain:
 		(*target).GlobalDomain = fpv.value.(string)
+	case Service_FieldPathSelectorLabelledDomains:
+		(*target).LabelledDomains = fpv.value.([]*common.LabelledDomain)
+	case Service_FieldPathSelectorLeadingService:
+		(*target).LeadingService = fpv.value.(*Name)
 	case Service_FieldPathSelectorImportedServices:
 		(*target).ImportedServices = fpv.value.([]*Reference)
 	case Service_FieldPathSelectorUsedServices:
@@ -774,6 +854,27 @@ func (fpv *Service_FieldTerminalPathValue) CompareWith(source *Service) (int, bo
 		} else {
 			return 1, true
 		}
+	case Service_FieldPathSelectorLabelledDomains:
+		return 0, false
+	case Service_FieldPathSelectorLeadingService:
+		leftValue := fpv.value.(*Name)
+		rightValue := source.GetLeadingService()
+		if leftValue == nil {
+			if rightValue != nil {
+				return -1, true
+			}
+			return 0, true
+		}
+		if rightValue == nil {
+			return 1, true
+		}
+		if leftValue.String() == rightValue.String() {
+			return 0, true
+		} else if leftValue.String() < rightValue.String() {
+			return -1, true
+		} else {
+			return 1, true
+		}
 	case Service_FieldPathSelectorImportedServices:
 		return 0, false
 	case Service_FieldPathSelectorUsedServices:
@@ -824,6 +925,10 @@ func (fpvs *Service_FieldSubPathValue) AsMultiRegionPolicyPathValue() (multi_reg
 	res, ok := fpvs.subPathValue.(multi_region_policy.MultiRegionPolicy_FieldPathValue)
 	return res, ok
 }
+func (fpvs *Service_FieldSubPathValue) AsLabelledDomainsPathValue() (common.LabelledDomain_FieldPathValue, bool) {
+	res, ok := fpvs.subPathValue.(common.LabelledDomain_FieldPathValue)
+	return res, ok
+}
 func (fpvs *Service_FieldSubPathValue) AsImportedVersionsPathValue() (ServiceImportedVersions_FieldPathValue, bool) {
 	res, ok := fpvs.subPathValue.(ServiceImportedVersions_FieldPathValue)
 	return res, ok
@@ -838,6 +943,8 @@ func (fpvs *Service_FieldSubPathValue) SetTo(target **Service) {
 		fpvs.subPathValue.(meta.Meta_FieldPathValue).SetTo(&(*target).Metadata)
 	case Service_FieldPathSelectorMultiRegionPolicy:
 		fpvs.subPathValue.(multi_region_policy.MultiRegionPolicy_FieldPathValue).SetTo(&(*target).MultiRegionPolicy)
+	case Service_FieldPathSelectorLabelledDomains:
+		panic("FieldPath setter is unsupported for array subpaths")
 	case Service_FieldPathSelectorImportedVersions:
 		panic("FieldPath setter is unsupported for array subpaths")
 	default:
@@ -860,6 +967,8 @@ func (fpvs *Service_FieldSubPathValue) CompareWith(source *Service) (int, bool) 
 		return fpvs.subPathValue.(meta.Meta_FieldPathValue).CompareWith(source.GetMetadata())
 	case Service_FieldPathSelectorMultiRegionPolicy:
 		return fpvs.subPathValue.(multi_region_policy.MultiRegionPolicy_FieldPathValue).CompareWith(source.GetMultiRegionPolicy())
+	case Service_FieldPathSelectorLabelledDomains:
+		return 0, false // repeated field
 	case Service_FieldPathSelectorImportedVersions:
 		return 0, false // repeated field
 	default:
@@ -915,6 +1024,10 @@ func (fpaiv *Service_FieldTerminalPathArrayItemValue) AsAllVersionsItemValue() (
 	res, ok := fpaiv.value.(string)
 	return res, ok
 }
+func (fpaiv *Service_FieldTerminalPathArrayItemValue) AsLabelledDomainsItemValue() (*common.LabelledDomain, bool) {
+	res, ok := fpaiv.value.(*common.LabelledDomain)
+	return res, ok
+}
 func (fpaiv *Service_FieldTerminalPathArrayItemValue) AsImportedServicesItemValue() (*Reference, bool) {
 	res, ok := fpaiv.value.(*Reference)
 	return res, ok
@@ -968,6 +1081,10 @@ func (fpaivs *Service_FieldSubPathArrayItemValue) AsMultiRegionPolicyPathItemVal
 	res, ok := fpaivs.subPathItemValue.(multi_region_policy.MultiRegionPolicy_FieldPathArrayItemValue)
 	return res, ok
 }
+func (fpaivs *Service_FieldSubPathArrayItemValue) AsLabelledDomainsPathItemValue() (common.LabelledDomain_FieldPathArrayItemValue, bool) {
+	res, ok := fpaivs.subPathItemValue.(common.LabelledDomain_FieldPathArrayItemValue)
+	return res, ok
+}
 func (fpaivs *Service_FieldSubPathArrayItemValue) AsImportedVersionsPathItemValue() (ServiceImportedVersions_FieldPathArrayItemValue, bool) {
 	res, ok := fpaivs.subPathItemValue.(ServiceImportedVersions_FieldPathArrayItemValue)
 	return res, ok
@@ -980,6 +1097,8 @@ func (fpaivs *Service_FieldSubPathArrayItemValue) ContainsValue(source *Service)
 		return fpaivs.subPathItemValue.(meta.Meta_FieldPathArrayItemValue).ContainsValue(source.GetMetadata())
 	case Service_FieldPathSelectorMultiRegionPolicy:
 		return fpaivs.subPathItemValue.(multi_region_policy.MultiRegionPolicy_FieldPathArrayItemValue).ContainsValue(source.GetMultiRegionPolicy())
+	case Service_FieldPathSelectorLabelledDomains:
+		return false // repeated/map field
 	case Service_FieldPathSelectorImportedVersions:
 		return false // repeated/map field
 	default:
@@ -1046,6 +1165,14 @@ func (fpaov *Service_FieldTerminalPathArrayOfValues) GetRawValues() (values []in
 		for _, v := range fpaov.values.([]string) {
 			values = append(values, v)
 		}
+	case Service_FieldPathSelectorLabelledDomains:
+		for _, v := range fpaov.values.([][]*common.LabelledDomain) {
+			values = append(values, v)
+		}
+	case Service_FieldPathSelectorLeadingService:
+		for _, v := range fpaov.values.([]*Name) {
+			values = append(values, v)
+		}
 	case Service_FieldPathSelectorImportedServices:
 		for _, v := range fpaov.values.([][]*Reference) {
 			values = append(values, v)
@@ -1093,6 +1220,14 @@ func (fpaov *Service_FieldTerminalPathArrayOfValues) AsGlobalDomainArrayOfValues
 	res, ok := fpaov.values.([]string)
 	return res, ok
 }
+func (fpaov *Service_FieldTerminalPathArrayOfValues) AsLabelledDomainsArrayOfValues() ([][]*common.LabelledDomain, bool) {
+	res, ok := fpaov.values.([][]*common.LabelledDomain)
+	return res, ok
+}
+func (fpaov *Service_FieldTerminalPathArrayOfValues) AsLeadingServiceArrayOfValues() ([]*Name, bool) {
+	res, ok := fpaov.values.([]*Name)
+	return res, ok
+}
 func (fpaov *Service_FieldTerminalPathArrayOfValues) AsImportedServicesArrayOfValues() ([][]*Reference, bool) {
 	res, ok := fpaov.values.([][]*Reference)
 	return res, ok
@@ -1130,6 +1265,10 @@ func (fpsaov *Service_FieldSubPathArrayOfValues) AsMetadataPathArrayOfValues() (
 }
 func (fpsaov *Service_FieldSubPathArrayOfValues) AsMultiRegionPolicyPathArrayOfValues() (multi_region_policy.MultiRegionPolicy_FieldPathArrayOfValues, bool) {
 	res, ok := fpsaov.subPathArrayOfValues.(multi_region_policy.MultiRegionPolicy_FieldPathArrayOfValues)
+	return res, ok
+}
+func (fpsaov *Service_FieldSubPathArrayOfValues) AsLabelledDomainsPathArrayOfValues() (common.LabelledDomain_FieldPathArrayOfValues, bool) {
+	res, ok := fpsaov.subPathArrayOfValues.(common.LabelledDomain_FieldPathArrayOfValues)
 	return res, ok
 }
 func (fpsaov *Service_FieldSubPathArrayOfValues) AsImportedVersionsPathArrayOfValues() (ServiceImportedVersions_FieldPathArrayOfValues, bool) {

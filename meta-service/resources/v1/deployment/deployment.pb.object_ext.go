@@ -16,6 +16,7 @@ import (
 
 // proto imports
 import (
+	common "github.com/cloudwan/goten-sdk/meta-service/resources/v1/common"
 	region "github.com/cloudwan/goten-sdk/meta-service/resources/v1/region"
 	service "github.com/cloudwan/goten-sdk/meta-service/resources/v1/service"
 	meta "github.com/cloudwan/goten-sdk/types/meta"
@@ -36,6 +37,7 @@ var (
 // make sure we're using proto imports
 var (
 	_ = &structpb.Struct{}
+	_ = &common.LabelledDomain{}
 	_ = &region.Region{}
 	_ = &service.Service{}
 	_ = &meta.Meta{}
@@ -84,6 +86,18 @@ func (o *Deployment) MakeDiffFieldMask(other *Deployment) *Deployment_FieldMask 
 	}
 	if o.GetPrivateDomain() != other.GetPrivateDomain() {
 		res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorPrivateDomain})
+	}
+
+	if len(o.GetLabelledDomains()) == len(other.GetLabelledDomains()) {
+		for i, lValue := range o.GetLabelledDomains() {
+			rValue := other.GetLabelledDomains()[i]
+			if len(lValue.MakeDiffFieldMask(rValue).Paths) > 0 {
+				res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorLabelledDomains})
+				break
+			}
+		}
+	} else {
+		res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorLabelledDomains})
 	}
 	if o.GetLocalNetworkId() != other.GetLocalNetworkId() {
 		res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorLocalNetworkId})
@@ -184,6 +198,10 @@ func (o *Deployment) Clone() *Deployment {
 	}
 	result.PublicDomain = o.PublicDomain
 	result.PrivateDomain = o.PrivateDomain
+	result.LabelledDomains = make([]*common.LabelledDomain, len(o.LabelledDomains))
+	for i, sourceValue := range o.LabelledDomains {
+		result.LabelledDomains[i] = sourceValue.Clone()
+	}
 	result.LocalNetworkId = o.LocalNetworkId
 	result.Location = o.Location.Clone()
 	result.IsDisabled = o.IsDisabled
@@ -239,6 +257,24 @@ func (o *Deployment) Merge(source *Deployment) {
 	}
 	o.PublicDomain = source.GetPublicDomain()
 	o.PrivateDomain = source.GetPrivateDomain()
+	for _, sourceValue := range source.GetLabelledDomains() {
+		exists := false
+		for _, currentValue := range o.LabelledDomains {
+			if proto.Equal(sourceValue, currentValue) {
+				exists = true
+				break
+			}
+		}
+		if !exists {
+			var newDstElement *common.LabelledDomain
+			if sourceValue != nil {
+				newDstElement = new(common.LabelledDomain)
+				newDstElement.Merge(sourceValue)
+			}
+			o.LabelledDomains = append(o.LabelledDomains, newDstElement)
+		}
+	}
+
 	o.LocalNetworkId = source.GetLocalNetworkId()
 	if source.GetLocation() != nil {
 		if o.Location == nil {

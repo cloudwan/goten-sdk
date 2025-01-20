@@ -6,6 +6,7 @@ package service
 
 // proto imports
 import (
+	common "github.com/cloudwan/goten-sdk/meta-service/resources/v1/common"
 	meta "github.com/cloudwan/goten-sdk/types/meta"
 	multi_region_policy "github.com/cloudwan/goten-sdk/types/multi_region_policy"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -14,6 +15,7 @@ import (
 // make sure we're using proto imports
 var (
 	_ = &timestamppb.Timestamp{}
+	_ = &common.LabelledDomain{}
 	_ = &meta.Meta{}
 	_ = &multi_region_policy.MultiRegionPolicy{}
 )
@@ -40,6 +42,12 @@ func (ServiceFieldPathBuilder) AllVersions() ServicePathSelectorAllVersions {
 }
 func (ServiceFieldPathBuilder) GlobalDomain() ServicePathSelectorGlobalDomain {
 	return ServicePathSelectorGlobalDomain{}
+}
+func (ServiceFieldPathBuilder) LabelledDomains() ServicePathSelectorLabelledDomains {
+	return ServicePathSelectorLabelledDomains{}
+}
+func (ServiceFieldPathBuilder) LeadingService() ServicePathSelectorLeadingService {
+	return ServicePathSelectorLeadingService{}
 }
 func (ServiceFieldPathBuilder) ImportedServices() ServicePathSelectorImportedServices {
 	return ServicePathSelectorImportedServices{}
@@ -960,6 +968,183 @@ func (s ServicePathSelectorGlobalDomain) WithValue(value string) *Service_FieldT
 }
 
 func (s ServicePathSelectorGlobalDomain) WithArrayOfValues(values []string) *Service_FieldTerminalPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*Service_FieldTerminalPathArrayOfValues)
+}
+
+type ServicePathSelectorLabelledDomains struct{}
+
+func (ServicePathSelectorLabelledDomains) FieldPath() *Service_FieldTerminalPath {
+	return &Service_FieldTerminalPath{selector: Service_FieldPathSelectorLabelledDomains}
+}
+
+func (s ServicePathSelectorLabelledDomains) WithValue(value []*common.LabelledDomain) *Service_FieldTerminalPathValue {
+	return s.FieldPath().WithIValue(value).(*Service_FieldTerminalPathValue)
+}
+
+func (s ServicePathSelectorLabelledDomains) WithArrayOfValues(values [][]*common.LabelledDomain) *Service_FieldTerminalPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*Service_FieldTerminalPathArrayOfValues)
+}
+
+func (s ServicePathSelectorLabelledDomains) WithItemValue(value *common.LabelledDomain) *Service_FieldTerminalPathArrayItemValue {
+	return s.FieldPath().WithIArrayItemValue(value).(*Service_FieldTerminalPathArrayItemValue)
+}
+func (ServicePathSelectorLabelledDomains) WithSubPath(subPath common.LabelledDomain_FieldPath) *Service_FieldSubPath {
+	return &Service_FieldSubPath{selector: Service_FieldPathSelectorLabelledDomains, subPath: subPath}
+}
+
+func (s ServicePathSelectorLabelledDomains) WithSubValue(subPathValue common.LabelledDomain_FieldPathValue) *Service_FieldSubPathValue {
+	return &Service_FieldSubPathValue{Service_FieldPath: s.WithSubPath(subPathValue), subPathValue: subPathValue}
+}
+
+func (s ServicePathSelectorLabelledDomains) WithSubArrayOfValues(subPathArrayOfValues common.LabelledDomain_FieldPathArrayOfValues) *Service_FieldSubPathArrayOfValues {
+	return &Service_FieldSubPathArrayOfValues{Service_FieldPath: s.WithSubPath(subPathArrayOfValues), subPathArrayOfValues: subPathArrayOfValues}
+}
+
+func (s ServicePathSelectorLabelledDomains) WithSubArrayItemValue(subPathArrayItemValue common.LabelledDomain_FieldPathArrayItemValue) *Service_FieldSubPathArrayItemValue {
+	return &Service_FieldSubPathArrayItemValue{Service_FieldPath: s.WithSubPath(subPathArrayItemValue), subPathItemValue: subPathArrayItemValue}
+}
+
+func (ServicePathSelectorLabelledDomains) Label() ServicePathSelectorLabelledDomainsLabel {
+	return ServicePathSelectorLabelledDomainsLabel{}
+}
+
+func (ServicePathSelectorLabelledDomains) Domain() ServicePathSelectorLabelledDomainsDomain {
+	return ServicePathSelectorLabelledDomainsDomain{}
+}
+
+func (ServicePathSelectorLabelledDomains) AvailableMixins() ServicePathSelectorLabelledDomainsAvailableMixins {
+	return ServicePathSelectorLabelledDomainsAvailableMixins{}
+}
+
+func (ServicePathSelectorLabelledDomains) WebGrpcAvailable() ServicePathSelectorLabelledDomainsWebGrpcAvailable {
+	return ServicePathSelectorLabelledDomainsWebGrpcAvailable{}
+}
+
+func (ServicePathSelectorLabelledDomains) RestApiAvailable() ServicePathSelectorLabelledDomainsRestApiAvailable {
+	return ServicePathSelectorLabelledDomainsRestApiAvailable{}
+}
+
+func (ServicePathSelectorLabelledDomains) IsPrivate() ServicePathSelectorLabelledDomainsIsPrivate {
+	return ServicePathSelectorLabelledDomainsIsPrivate{}
+}
+
+type ServicePathSelectorLabelledDomainsLabel struct{}
+
+func (ServicePathSelectorLabelledDomainsLabel) FieldPath() *Service_FieldSubPath {
+	return &Service_FieldSubPath{
+		selector: Service_FieldPathSelectorLabelledDomains,
+		subPath:  common.NewLabelledDomainFieldPathBuilder().Label().FieldPath(),
+	}
+}
+
+func (s ServicePathSelectorLabelledDomainsLabel) WithValue(value string) *Service_FieldSubPathValue {
+	return s.FieldPath().WithIValue(value).(*Service_FieldSubPathValue)
+}
+
+func (s ServicePathSelectorLabelledDomainsLabel) WithArrayOfValues(values []string) *Service_FieldSubPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*Service_FieldSubPathArrayOfValues)
+}
+
+type ServicePathSelectorLabelledDomainsDomain struct{}
+
+func (ServicePathSelectorLabelledDomainsDomain) FieldPath() *Service_FieldSubPath {
+	return &Service_FieldSubPath{
+		selector: Service_FieldPathSelectorLabelledDomains,
+		subPath:  common.NewLabelledDomainFieldPathBuilder().Domain().FieldPath(),
+	}
+}
+
+func (s ServicePathSelectorLabelledDomainsDomain) WithValue(value string) *Service_FieldSubPathValue {
+	return s.FieldPath().WithIValue(value).(*Service_FieldSubPathValue)
+}
+
+func (s ServicePathSelectorLabelledDomainsDomain) WithArrayOfValues(values []string) *Service_FieldSubPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*Service_FieldSubPathArrayOfValues)
+}
+
+type ServicePathSelectorLabelledDomainsAvailableMixins struct{}
+
+func (ServicePathSelectorLabelledDomainsAvailableMixins) FieldPath() *Service_FieldSubPath {
+	return &Service_FieldSubPath{
+		selector: Service_FieldPathSelectorLabelledDomains,
+		subPath:  common.NewLabelledDomainFieldPathBuilder().AvailableMixins().FieldPath(),
+	}
+}
+
+func (s ServicePathSelectorLabelledDomainsAvailableMixins) WithValue(value []string) *Service_FieldSubPathValue {
+	return s.FieldPath().WithIValue(value).(*Service_FieldSubPathValue)
+}
+
+func (s ServicePathSelectorLabelledDomainsAvailableMixins) WithArrayOfValues(values [][]string) *Service_FieldSubPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*Service_FieldSubPathArrayOfValues)
+}
+
+func (s ServicePathSelectorLabelledDomainsAvailableMixins) WithItemValue(value string) *Service_FieldSubPathArrayItemValue {
+	return s.FieldPath().WithIArrayItemValue(value).(*Service_FieldSubPathArrayItemValue)
+}
+
+type ServicePathSelectorLabelledDomainsWebGrpcAvailable struct{}
+
+func (ServicePathSelectorLabelledDomainsWebGrpcAvailable) FieldPath() *Service_FieldSubPath {
+	return &Service_FieldSubPath{
+		selector: Service_FieldPathSelectorLabelledDomains,
+		subPath:  common.NewLabelledDomainFieldPathBuilder().WebGrpcAvailable().FieldPath(),
+	}
+}
+
+func (s ServicePathSelectorLabelledDomainsWebGrpcAvailable) WithValue(value bool) *Service_FieldSubPathValue {
+	return s.FieldPath().WithIValue(value).(*Service_FieldSubPathValue)
+}
+
+func (s ServicePathSelectorLabelledDomainsWebGrpcAvailable) WithArrayOfValues(values []bool) *Service_FieldSubPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*Service_FieldSubPathArrayOfValues)
+}
+
+type ServicePathSelectorLabelledDomainsRestApiAvailable struct{}
+
+func (ServicePathSelectorLabelledDomainsRestApiAvailable) FieldPath() *Service_FieldSubPath {
+	return &Service_FieldSubPath{
+		selector: Service_FieldPathSelectorLabelledDomains,
+		subPath:  common.NewLabelledDomainFieldPathBuilder().RestApiAvailable().FieldPath(),
+	}
+}
+
+func (s ServicePathSelectorLabelledDomainsRestApiAvailable) WithValue(value bool) *Service_FieldSubPathValue {
+	return s.FieldPath().WithIValue(value).(*Service_FieldSubPathValue)
+}
+
+func (s ServicePathSelectorLabelledDomainsRestApiAvailable) WithArrayOfValues(values []bool) *Service_FieldSubPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*Service_FieldSubPathArrayOfValues)
+}
+
+type ServicePathSelectorLabelledDomainsIsPrivate struct{}
+
+func (ServicePathSelectorLabelledDomainsIsPrivate) FieldPath() *Service_FieldSubPath {
+	return &Service_FieldSubPath{
+		selector: Service_FieldPathSelectorLabelledDomains,
+		subPath:  common.NewLabelledDomainFieldPathBuilder().IsPrivate().FieldPath(),
+	}
+}
+
+func (s ServicePathSelectorLabelledDomainsIsPrivate) WithValue(value bool) *Service_FieldSubPathValue {
+	return s.FieldPath().WithIValue(value).(*Service_FieldSubPathValue)
+}
+
+func (s ServicePathSelectorLabelledDomainsIsPrivate) WithArrayOfValues(values []bool) *Service_FieldSubPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*Service_FieldSubPathArrayOfValues)
+}
+
+type ServicePathSelectorLeadingService struct{}
+
+func (ServicePathSelectorLeadingService) FieldPath() *Service_FieldTerminalPath {
+	return &Service_FieldTerminalPath{selector: Service_FieldPathSelectorLeadingService}
+}
+
+func (s ServicePathSelectorLeadingService) WithValue(value *Name) *Service_FieldTerminalPathValue {
+	return s.FieldPath().WithIValue(value).(*Service_FieldTerminalPathValue)
+}
+
+func (s ServicePathSelectorLeadingService) WithArrayOfValues(values []*Name) *Service_FieldTerminalPathArrayOfValues {
 	return s.FieldPath().WithIArrayOfValues(values).(*Service_FieldTerminalPathArrayOfValues)
 }
 

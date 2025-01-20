@@ -3,6 +3,7 @@ syntax = "proto3";
 package goten.meta.v1;
 
 import "google/api/resource.proto";
+import "goten-sdk/meta-service/proto/v1/common.proto";
 import "goten-sdk/types/meta.proto";
 import "goten-sdk/types/multi_region_policy.proto";
 
@@ -49,6 +50,13 @@ message Service {
   // direct to most suitable (usually the nearest/healthy/most performant)
   // region.
   string global_domain = 6;
+
+  // Additional global domains with labels.
+  repeated LabelledDomain labelled_domains = 14;
+
+  // If given service is part of service group, this value points to the leading
+  // service.
+  string leading_service = 13;
 
   // All imported on schema-level services. This list declares that resources in
   // those services can be referenced by this service.

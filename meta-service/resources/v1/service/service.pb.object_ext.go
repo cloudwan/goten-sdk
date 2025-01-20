@@ -16,6 +16,7 @@ import (
 
 // proto imports
 import (
+	common "github.com/cloudwan/goten-sdk/meta-service/resources/v1/common"
 	meta "github.com/cloudwan/goten-sdk/types/meta"
 	multi_region_policy "github.com/cloudwan/goten-sdk/types/multi_region_policy"
 )
@@ -33,6 +34,7 @@ var (
 
 // make sure we're using proto imports
 var (
+	_ = &common.LabelledDomain{}
 	_ = &meta.Meta{}
 	_ = &multi_region_policy.MultiRegionPolicy{}
 )
@@ -96,6 +98,21 @@ func (o *Service) MakeDiffFieldMask(other *Service) *Service_FieldMask {
 	}
 	if o.GetGlobalDomain() != other.GetGlobalDomain() {
 		res.Paths = append(res.Paths, &Service_FieldTerminalPath{selector: Service_FieldPathSelectorGlobalDomain})
+	}
+
+	if len(o.GetLabelledDomains()) == len(other.GetLabelledDomains()) {
+		for i, lValue := range o.GetLabelledDomains() {
+			rValue := other.GetLabelledDomains()[i]
+			if len(lValue.MakeDiffFieldMask(rValue).Paths) > 0 {
+				res.Paths = append(res.Paths, &Service_FieldTerminalPath{selector: Service_FieldPathSelectorLabelledDomains})
+				break
+			}
+		}
+	} else {
+		res.Paths = append(res.Paths, &Service_FieldTerminalPath{selector: Service_FieldPathSelectorLabelledDomains})
+	}
+	if o.GetLeadingService().String() != other.GetLeadingService().String() {
+		res.Paths = append(res.Paths, &Service_FieldTerminalPath{selector: Service_FieldPathSelectorLeadingService})
 	}
 
 	if len(o.GetImportedServices()) == len(other.GetImportedServices()) {
@@ -169,6 +186,20 @@ func (o *Service) Clone() *Service {
 		result.AllVersions[i] = sourceValue
 	}
 	result.GlobalDomain = o.GlobalDomain
+	result.LabelledDomains = make([]*common.LabelledDomain, len(o.LabelledDomains))
+	for i, sourceValue := range o.LabelledDomains {
+		result.LabelledDomains[i] = sourceValue.Clone()
+	}
+	if o.LeadingService == nil {
+		result.LeadingService = nil
+	} else if data, err := o.LeadingService.ProtoString(); err != nil {
+		panic(err)
+	} else {
+		result.LeadingService = &Name{}
+		if err := result.LeadingService.ParseProtoString(data); err != nil {
+			panic(err)
+		}
+	}
 	result.ImportedServices = make([]*Reference, len(o.ImportedServices))
 	for i, sourceValue := range o.ImportedServices {
 		if sourceValue == nil {
@@ -250,6 +281,36 @@ func (o *Service) Merge(source *Service) {
 	}
 
 	o.GlobalDomain = source.GetGlobalDomain()
+	for _, sourceValue := range source.GetLabelledDomains() {
+		exists := false
+		for _, currentValue := range o.LabelledDomains {
+			if proto.Equal(sourceValue, currentValue) {
+				exists = true
+				break
+			}
+		}
+		if !exists {
+			var newDstElement *common.LabelledDomain
+			if sourceValue != nil {
+				newDstElement = new(common.LabelledDomain)
+				newDstElement.Merge(sourceValue)
+			}
+			o.LabelledDomains = append(o.LabelledDomains, newDstElement)
+		}
+	}
+
+	if source.GetLeadingService() != nil {
+		if data, err := source.GetLeadingService().ProtoString(); err != nil {
+			panic(err)
+		} else {
+			o.LeadingService = &Name{}
+			if err := o.LeadingService.ParseProtoString(data); err != nil {
+				panic(err)
+			}
+		}
+	} else {
+		o.LeadingService = nil
+	}
 	for _, sourceValue := range source.GetImportedServices() {
 		exists := false
 		for _, currentValue := range o.ImportedServices {

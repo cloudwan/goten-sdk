@@ -20,6 +20,7 @@ import (
 
 // proto imports
 import (
+	common "github.com/cloudwan/goten-sdk/meta-service/resources/v1/common"
 	meta "github.com/cloudwan/goten-sdk/types/meta"
 	multi_region_policy "github.com/cloudwan/goten-sdk/types/multi_region_policy"
 )
@@ -41,6 +42,7 @@ var (
 
 // make sure we're using proto imports
 var (
+	_ = &common.LabelledDomain{}
 	_ = &meta.Meta{}
 	_ = &multi_region_policy.MultiRegionPolicy{}
 )
@@ -57,6 +59,8 @@ func FullService_FieldMask() *Service_FieldMask {
 	res.Paths = append(res.Paths, &Service_FieldTerminalPath{selector: Service_FieldPathSelectorDisplayName})
 	res.Paths = append(res.Paths, &Service_FieldTerminalPath{selector: Service_FieldPathSelectorAllVersions})
 	res.Paths = append(res.Paths, &Service_FieldTerminalPath{selector: Service_FieldPathSelectorGlobalDomain})
+	res.Paths = append(res.Paths, &Service_FieldTerminalPath{selector: Service_FieldPathSelectorLabelledDomains})
+	res.Paths = append(res.Paths, &Service_FieldTerminalPath{selector: Service_FieldPathSelectorLeadingService})
 	res.Paths = append(res.Paths, &Service_FieldTerminalPath{selector: Service_FieldPathSelectorImportedServices})
 	res.Paths = append(res.Paths, &Service_FieldTerminalPath{selector: Service_FieldPathSelectorUsedServices})
 	res.Paths = append(res.Paths, &Service_FieldTerminalPath{selector: Service_FieldPathSelectorImportedVersions})
@@ -105,7 +109,7 @@ func (fieldMask *Service_FieldMask) IsFull() bool {
 	if fieldMask == nil {
 		return false
 	}
-	presentSelectors := make([]bool, 11)
+	presentSelectors := make([]bool, 13)
 	for _, path := range fieldMask.Paths {
 		if asFinal, ok := path.(*Service_FieldTerminalPath); ok {
 			presentSelectors[int(asFinal.selector)] = true
@@ -135,15 +139,17 @@ func (fieldMask *Service_FieldMask) Reset() {
 
 func (fieldMask *Service_FieldMask) Subtract(other *Service_FieldMask) *Service_FieldMask {
 	result := &Service_FieldMask{}
-	removedSelectors := make([]bool, 11)
+	removedSelectors := make([]bool, 13)
 	otherSubMasks := map[Service_FieldPathSelector]gotenobject.FieldMask{
 		Service_FieldPathSelectorMetadata:          &meta.Meta_FieldMask{},
 		Service_FieldPathSelectorMultiRegionPolicy: &multi_region_policy.MultiRegionPolicy_FieldMask{},
+		Service_FieldPathSelectorLabelledDomains:   &common.LabelledDomain_FieldMask{},
 		Service_FieldPathSelectorImportedVersions:  &Service_ImportedVersions_FieldMask{},
 	}
 	mySubMasks := map[Service_FieldPathSelector]gotenobject.FieldMask{
 		Service_FieldPathSelectorMetadata:          &meta.Meta_FieldMask{},
 		Service_FieldPathSelectorMultiRegionPolicy: &multi_region_policy.MultiRegionPolicy_FieldMask{},
+		Service_FieldPathSelectorLabelledDomains:   &common.LabelledDomain_FieldMask{},
 		Service_FieldPathSelectorImportedVersions:  &Service_ImportedVersions_FieldMask{},
 	}
 
@@ -164,6 +170,8 @@ func (fieldMask *Service_FieldMask) Subtract(other *Service_FieldMask) *Service_
 						mySubMasks[Service_FieldPathSelectorMetadata] = meta.FullMeta_FieldMask()
 					case Service_FieldPathSelectorMultiRegionPolicy:
 						mySubMasks[Service_FieldPathSelectorMultiRegionPolicy] = multi_region_policy.FullMultiRegionPolicy_FieldMask()
+					case Service_FieldPathSelectorLabelledDomains:
+						mySubMasks[Service_FieldPathSelectorLabelledDomains] = common.FullLabelledDomain_FieldMask()
 					case Service_FieldPathSelectorImportedVersions:
 						mySubMasks[Service_FieldPathSelectorImportedVersions] = FullService_ImportedVersions_FieldMask()
 					}
@@ -340,6 +348,8 @@ func (fieldMask *Service_FieldMask) Project(source *Service) *Service {
 	wholeMetadataAccepted := false
 	multiRegionPolicyMask := &multi_region_policy.MultiRegionPolicy_FieldMask{}
 	wholeMultiRegionPolicyAccepted := false
+	labelledDomainsMask := &common.LabelledDomain_FieldMask{}
+	wholeLabelledDomainsAccepted := false
 	importedVersionsMask := &Service_ImportedVersions_FieldMask{}
 	wholeImportedVersionsAccepted := false
 
@@ -361,6 +371,11 @@ func (fieldMask *Service_FieldMask) Project(source *Service) *Service {
 				result.AllVersions = source.AllVersions
 			case Service_FieldPathSelectorGlobalDomain:
 				result.GlobalDomain = source.GlobalDomain
+			case Service_FieldPathSelectorLabelledDomains:
+				result.LabelledDomains = source.LabelledDomains
+				wholeLabelledDomainsAccepted = true
+			case Service_FieldPathSelectorLeadingService:
+				result.LeadingService = source.LeadingService
 			case Service_FieldPathSelectorImportedServices:
 				result.ImportedServices = source.ImportedServices
 			case Service_FieldPathSelectorUsedServices:
@@ -379,6 +394,8 @@ func (fieldMask *Service_FieldMask) Project(source *Service) *Service {
 				metadataMask.AppendPath(tp.subPath.(meta.Meta_FieldPath))
 			case Service_FieldPathSelectorMultiRegionPolicy:
 				multiRegionPolicyMask.AppendPath(tp.subPath.(multi_region_policy.MultiRegionPolicy_FieldPath))
+			case Service_FieldPathSelectorLabelledDomains:
+				labelledDomainsMask.AppendPath(tp.subPath.(common.LabelledDomain_FieldPath))
 			case Service_FieldPathSelectorImportedVersions:
 				importedVersionsMask.AppendPath(tp.subPath.(ServiceImportedVersions_FieldPath))
 			}
@@ -389,6 +406,11 @@ func (fieldMask *Service_FieldMask) Project(source *Service) *Service {
 	}
 	if wholeMultiRegionPolicyAccepted == false && len(multiRegionPolicyMask.Paths) > 0 {
 		result.MultiRegionPolicy = multiRegionPolicyMask.Project(source.GetMultiRegionPolicy())
+	}
+	if wholeLabelledDomainsAccepted == false && len(labelledDomainsMask.Paths) > 0 {
+		for _, sourceItem := range source.GetLabelledDomains() {
+			result.LabelledDomains = append(result.LabelledDomains, labelledDomainsMask.Project(sourceItem))
+		}
 	}
 	if wholeImportedVersionsAccepted == false && len(importedVersionsMask.Paths) > 0 {
 		for _, sourceItem := range source.GetImportedVersions() {

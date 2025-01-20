@@ -20,6 +20,7 @@ import (
 
 // proto imports
 import (
+	common "github.com/cloudwan/goten-sdk/meta-service/resources/v1/common"
 	region "github.com/cloudwan/goten-sdk/meta-service/resources/v1/region"
 	service "github.com/cloudwan/goten-sdk/meta-service/resources/v1/service"
 	meta "github.com/cloudwan/goten-sdk/types/meta"
@@ -44,6 +45,7 @@ var (
 // make sure we're using proto imports
 var (
 	_ = &structpb.Struct{}
+	_ = &common.LabelledDomain{}
 	_ = &region.Region{}
 	_ = &service.Service{}
 	_ = &meta.Meta{}
@@ -61,6 +63,7 @@ func FullDeployment_FieldMask() *Deployment_FieldMask {
 	res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorRegion})
 	res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorPublicDomain})
 	res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorPrivateDomain})
+	res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorLabelledDomains})
 	res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorLocalNetworkId})
 	res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorLocation})
 	res.Paths = append(res.Paths, &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorIsDisabled})
@@ -115,7 +118,7 @@ func (fieldMask *Deployment_FieldMask) IsFull() bool {
 	if fieldMask == nil {
 		return false
 	}
-	presentSelectors := make([]bool, 17)
+	presentSelectors := make([]bool, 18)
 	for _, path := range fieldMask.Paths {
 		if asFinal, ok := path.(*Deployment_FieldTerminalPath); ok {
 			presentSelectors[int(asFinal.selector)] = true
@@ -145,9 +148,10 @@ func (fieldMask *Deployment_FieldMask) Reset() {
 
 func (fieldMask *Deployment_FieldMask) Subtract(other *Deployment_FieldMask) *Deployment_FieldMask {
 	result := &Deployment_FieldMask{}
-	removedSelectors := make([]bool, 17)
+	removedSelectors := make([]bool, 18)
 	otherSubMasks := map[Deployment_FieldPathSelector]gotenobject.FieldMask{
 		Deployment_FieldPathSelectorMetadata:           &meta.Meta_FieldMask{},
+		Deployment_FieldPathSelectorLabelledDomains:    &common.LabelledDomain_FieldMask{},
 		Deployment_FieldPathSelectorLocation:           &Deployment_Location_FieldMask{},
 		Deployment_FieldPathSelectorAvailableUpgrade:   &Deployment_AvailableUpgrade_FieldMask{},
 		Deployment_FieldPathSelectorUpgradeState:       &Deployment_UpgradeState_FieldMask{},
@@ -155,6 +159,7 @@ func (fieldMask *Deployment_FieldMask) Subtract(other *Deployment_FieldMask) *De
 	}
 	mySubMasks := map[Deployment_FieldPathSelector]gotenobject.FieldMask{
 		Deployment_FieldPathSelectorMetadata:           &meta.Meta_FieldMask{},
+		Deployment_FieldPathSelectorLabelledDomains:    &common.LabelledDomain_FieldMask{},
 		Deployment_FieldPathSelectorLocation:           &Deployment_Location_FieldMask{},
 		Deployment_FieldPathSelectorAvailableUpgrade:   &Deployment_AvailableUpgrade_FieldMask{},
 		Deployment_FieldPathSelectorUpgradeState:       &Deployment_UpgradeState_FieldMask{},
@@ -176,6 +181,8 @@ func (fieldMask *Deployment_FieldMask) Subtract(other *Deployment_FieldMask) *De
 					switch tp.selector {
 					case Deployment_FieldPathSelectorMetadata:
 						mySubMasks[Deployment_FieldPathSelectorMetadata] = meta.FullMeta_FieldMask()
+					case Deployment_FieldPathSelectorLabelledDomains:
+						mySubMasks[Deployment_FieldPathSelectorLabelledDomains] = common.FullLabelledDomain_FieldMask()
 					case Deployment_FieldPathSelectorLocation:
 						mySubMasks[Deployment_FieldPathSelectorLocation] = FullDeployment_Location_FieldMask()
 					case Deployment_FieldPathSelectorAvailableUpgrade:
@@ -359,6 +366,8 @@ func (fieldMask *Deployment_FieldMask) Project(source *Deployment) *Deployment {
 	result := &Deployment{}
 	metadataMask := &meta.Meta_FieldMask{}
 	wholeMetadataAccepted := false
+	labelledDomainsMask := &common.LabelledDomain_FieldMask{}
+	wholeLabelledDomainsAccepted := false
 	locationMask := &Deployment_Location_FieldMask{}
 	wholeLocationAccepted := false
 	availableUpgradeMask := &Deployment_AvailableUpgrade_FieldMask{}
@@ -385,6 +394,9 @@ func (fieldMask *Deployment_FieldMask) Project(source *Deployment) *Deployment {
 				result.PublicDomain = source.PublicDomain
 			case Deployment_FieldPathSelectorPrivateDomain:
 				result.PrivateDomain = source.PrivateDomain
+			case Deployment_FieldPathSelectorLabelledDomains:
+				result.LabelledDomains = source.LabelledDomains
+				wholeLabelledDomainsAccepted = true
 			case Deployment_FieldPathSelectorLocalNetworkId:
 				result.LocalNetworkId = source.LocalNetworkId
 			case Deployment_FieldPathSelectorLocation:
@@ -416,6 +428,8 @@ func (fieldMask *Deployment_FieldMask) Project(source *Deployment) *Deployment {
 			switch tp.selector {
 			case Deployment_FieldPathSelectorMetadata:
 				metadataMask.AppendPath(tp.subPath.(meta.Meta_FieldPath))
+			case Deployment_FieldPathSelectorLabelledDomains:
+				labelledDomainsMask.AppendPath(tp.subPath.(common.LabelledDomain_FieldPath))
 			case Deployment_FieldPathSelectorLocation:
 				locationMask.AppendPath(tp.subPath.(DeploymentLocation_FieldPath))
 			case Deployment_FieldPathSelectorAvailableUpgrade:
@@ -429,6 +443,11 @@ func (fieldMask *Deployment_FieldMask) Project(source *Deployment) *Deployment {
 	}
 	if wholeMetadataAccepted == false && len(metadataMask.Paths) > 0 {
 		result.Metadata = metadataMask.Project(source.GetMetadata())
+	}
+	if wholeLabelledDomainsAccepted == false && len(labelledDomainsMask.Paths) > 0 {
+		for _, sourceItem := range source.GetLabelledDomains() {
+			result.LabelledDomains = append(result.LabelledDomains, labelledDomainsMask.Project(sourceItem))
+		}
 	}
 	if wholeLocationAccepted == false && len(locationMask.Paths) > 0 {
 		result.Location = locationMask.Project(source.GetLocation())

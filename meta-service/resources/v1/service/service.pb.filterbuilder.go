@@ -11,6 +11,7 @@ import (
 
 // proto imports
 import (
+	common "github.com/cloudwan/goten-sdk/meta-service/resources/v1/common"
 	meta "github.com/cloudwan/goten-sdk/types/meta"
 	multi_region_policy "github.com/cloudwan/goten-sdk/types/multi_region_policy"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -25,6 +26,7 @@ var (
 // make sure we're using proto imports
 var (
 	_ = &timestamppb.Timestamp{}
+	_ = &common.LabelledDomain{}
 	_ = &meta.Meta{}
 	_ = &multi_region_policy.MultiRegionPolicy{}
 )
@@ -222,6 +224,14 @@ func (b *filterCndBuilder) AllVersions() *filterCndBuilderAllVersions {
 
 func (b *filterCndBuilder) GlobalDomain() *filterCndBuilderGlobalDomain {
 	return &filterCndBuilderGlobalDomain{builder: b.builder}
+}
+
+func (b *filterCndBuilder) LabelledDomains() *filterCndBuilderLabelledDomains {
+	return &filterCndBuilderLabelledDomains{builder: b.builder}
+}
+
+func (b *filterCndBuilder) LeadingService() *filterCndBuilderLeadingService {
+	return &filterCndBuilderLeadingService{builder: b.builder}
 }
 
 func (b *filterCndBuilder) ImportedServices() *filterCndBuilderImportedServices {
@@ -3104,6 +3114,570 @@ func (b *filterCndBuilderGlobalDomain) compare(op gotenfilter.CompareOperator, v
 	return b.builder.addCond(&FilterConditionCompare{
 		Operator:               op,
 		Service_FieldPathValue: NewServiceFieldPathBuilder().GlobalDomain().WithValue(value),
+	})
+}
+
+type filterCndBuilderLabelledDomains struct {
+	builder *FilterBuilder
+}
+
+func (b *filterCndBuilderLabelledDomains) Eq(value []*common.LabelledDomain) *FilterBuilder {
+	return b.compare(gotenfilter.Eq, value)
+}
+
+func (b *filterCndBuilderLabelledDomains) Neq(value []*common.LabelledDomain) *FilterBuilder {
+	return b.compare(gotenfilter.Neq, value)
+}
+
+func (b *filterCndBuilderLabelledDomains) Gt(value []*common.LabelledDomain) *FilterBuilder {
+	return b.compare(gotenfilter.Gt, value)
+}
+
+func (b *filterCndBuilderLabelledDomains) Gte(value []*common.LabelledDomain) *FilterBuilder {
+	return b.compare(gotenfilter.Gte, value)
+}
+
+func (b *filterCndBuilderLabelledDomains) Lt(value []*common.LabelledDomain) *FilterBuilder {
+	return b.compare(gotenfilter.Lt, value)
+}
+
+func (b *filterCndBuilderLabelledDomains) Lte(value []*common.LabelledDomain) *FilterBuilder {
+	return b.compare(gotenfilter.Lte, value)
+}
+
+func (b *filterCndBuilderLabelledDomains) In(values [][]*common.LabelledDomain) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIn{
+		Service_FieldPathArrayOfValues: NewServiceFieldPathBuilder().LabelledDomains().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomains) NotIn(values [][]*common.LabelledDomain) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionNotIn{
+		Service_FieldPathArrayOfValues: NewServiceFieldPathBuilder().LabelledDomains().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomains) IsNull() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNull{
+		FieldPath: NewServiceFieldPathBuilder().LabelledDomains().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomains) IsNan() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNaN{
+		FieldPath: NewServiceFieldPathBuilder().LabelledDomains().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomains) Contains(value *common.LabelledDomain) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionContains{
+		Type:      gotenresource.ConditionContainsTypeValue,
+		FieldPath: NewServiceFieldPathBuilder().LabelledDomains().FieldPath(),
+		Value:     NewServiceFieldPathBuilder().LabelledDomains().WithItemValue(value),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomains) ContainsAnyOf(values []*common.LabelledDomain) *FilterBuilder {
+	pathSelector := NewServiceFieldPathBuilder().LabelledDomains()
+	itemValues := make([]Service_FieldPathArrayItemValue, 0, len(values))
+	for _, value := range values {
+		itemValues = append(itemValues, pathSelector.WithItemValue(value))
+	}
+	return b.builder.addCond(&FilterConditionContains{
+		Type:      gotenresource.ConditionContainsTypeAny,
+		FieldPath: NewServiceFieldPathBuilder().LabelledDomains().FieldPath(),
+		Values:    itemValues,
+	})
+}
+
+func (b *filterCndBuilderLabelledDomains) ContainsAll(values []*common.LabelledDomain) *FilterBuilder {
+	pathSelector := NewServiceFieldPathBuilder().LabelledDomains()
+	itemValues := make([]Service_FieldPathArrayItemValue, 0, len(values))
+	for _, value := range values {
+		itemValues = append(itemValues, pathSelector.WithItemValue(value))
+	}
+	return b.builder.addCond(&FilterConditionContains{
+		Type:      gotenresource.ConditionContainsTypeAll,
+		FieldPath: NewServiceFieldPathBuilder().LabelledDomains().FieldPath(),
+		Values:    itemValues,
+	})
+}
+
+func (b *filterCndBuilderLabelledDomains) compare(op gotenfilter.CompareOperator, value []*common.LabelledDomain) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionCompare{
+		Operator:               op,
+		Service_FieldPathValue: NewServiceFieldPathBuilder().LabelledDomains().WithValue(value),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomains) Label() *filterCndBuilderLabelledDomainsLabel {
+	return &filterCndBuilderLabelledDomainsLabel{builder: b.builder}
+}
+
+func (b *filterCndBuilderLabelledDomains) Domain() *filterCndBuilderLabelledDomainsDomain {
+	return &filterCndBuilderLabelledDomainsDomain{builder: b.builder}
+}
+
+func (b *filterCndBuilderLabelledDomains) AvailableMixins() *filterCndBuilderLabelledDomainsAvailableMixins {
+	return &filterCndBuilderLabelledDomainsAvailableMixins{builder: b.builder}
+}
+
+func (b *filterCndBuilderLabelledDomains) WebGrpcAvailable() *filterCndBuilderLabelledDomainsWebGrpcAvailable {
+	return &filterCndBuilderLabelledDomainsWebGrpcAvailable{builder: b.builder}
+}
+
+func (b *filterCndBuilderLabelledDomains) RestApiAvailable() *filterCndBuilderLabelledDomainsRestApiAvailable {
+	return &filterCndBuilderLabelledDomainsRestApiAvailable{builder: b.builder}
+}
+
+func (b *filterCndBuilderLabelledDomains) IsPrivate() *filterCndBuilderLabelledDomainsIsPrivate {
+	return &filterCndBuilderLabelledDomainsIsPrivate{builder: b.builder}
+}
+
+type filterCndBuilderLabelledDomainsLabel struct {
+	builder *FilterBuilder
+}
+
+func (b *filterCndBuilderLabelledDomainsLabel) Eq(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Eq, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsLabel) Neq(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Neq, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsLabel) Gt(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Gt, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsLabel) Gte(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Gte, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsLabel) Lt(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Lt, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsLabel) Lte(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Lte, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsLabel) In(values []string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIn{
+		Service_FieldPathArrayOfValues: NewServiceFieldPathBuilder().LabelledDomains().Label().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsLabel) NotIn(values []string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionNotIn{
+		Service_FieldPathArrayOfValues: NewServiceFieldPathBuilder().LabelledDomains().Label().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsLabel) IsNull() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNull{
+		FieldPath: NewServiceFieldPathBuilder().LabelledDomains().Label().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsLabel) IsNan() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNaN{
+		FieldPath: NewServiceFieldPathBuilder().LabelledDomains().Label().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsLabel) compare(op gotenfilter.CompareOperator, value string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionCompare{
+		Operator:               op,
+		Service_FieldPathValue: NewServiceFieldPathBuilder().LabelledDomains().Label().WithValue(value),
+	})
+}
+
+type filterCndBuilderLabelledDomainsDomain struct {
+	builder *FilterBuilder
+}
+
+func (b *filterCndBuilderLabelledDomainsDomain) Eq(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Eq, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsDomain) Neq(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Neq, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsDomain) Gt(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Gt, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsDomain) Gte(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Gte, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsDomain) Lt(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Lt, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsDomain) Lte(value string) *FilterBuilder {
+	return b.compare(gotenfilter.Lte, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsDomain) In(values []string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIn{
+		Service_FieldPathArrayOfValues: NewServiceFieldPathBuilder().LabelledDomains().Domain().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsDomain) NotIn(values []string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionNotIn{
+		Service_FieldPathArrayOfValues: NewServiceFieldPathBuilder().LabelledDomains().Domain().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsDomain) IsNull() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNull{
+		FieldPath: NewServiceFieldPathBuilder().LabelledDomains().Domain().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsDomain) IsNan() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNaN{
+		FieldPath: NewServiceFieldPathBuilder().LabelledDomains().Domain().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsDomain) compare(op gotenfilter.CompareOperator, value string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionCompare{
+		Operator:               op,
+		Service_FieldPathValue: NewServiceFieldPathBuilder().LabelledDomains().Domain().WithValue(value),
+	})
+}
+
+type filterCndBuilderLabelledDomainsAvailableMixins struct {
+	builder *FilterBuilder
+}
+
+func (b *filterCndBuilderLabelledDomainsAvailableMixins) Eq(value []string) *FilterBuilder {
+	return b.compare(gotenfilter.Eq, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsAvailableMixins) Neq(value []string) *FilterBuilder {
+	return b.compare(gotenfilter.Neq, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsAvailableMixins) Gt(value []string) *FilterBuilder {
+	return b.compare(gotenfilter.Gt, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsAvailableMixins) Gte(value []string) *FilterBuilder {
+	return b.compare(gotenfilter.Gte, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsAvailableMixins) Lt(value []string) *FilterBuilder {
+	return b.compare(gotenfilter.Lt, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsAvailableMixins) Lte(value []string) *FilterBuilder {
+	return b.compare(gotenfilter.Lte, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsAvailableMixins) In(values [][]string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIn{
+		Service_FieldPathArrayOfValues: NewServiceFieldPathBuilder().LabelledDomains().AvailableMixins().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsAvailableMixins) NotIn(values [][]string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionNotIn{
+		Service_FieldPathArrayOfValues: NewServiceFieldPathBuilder().LabelledDomains().AvailableMixins().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsAvailableMixins) IsNull() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNull{
+		FieldPath: NewServiceFieldPathBuilder().LabelledDomains().AvailableMixins().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsAvailableMixins) IsNan() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNaN{
+		FieldPath: NewServiceFieldPathBuilder().LabelledDomains().AvailableMixins().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsAvailableMixins) Contains(value string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionContains{
+		Type:      gotenresource.ConditionContainsTypeValue,
+		FieldPath: NewServiceFieldPathBuilder().LabelledDomains().AvailableMixins().FieldPath(),
+		Value:     NewServiceFieldPathBuilder().LabelledDomains().AvailableMixins().WithItemValue(value),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsAvailableMixins) ContainsAnyOf(values []string) *FilterBuilder {
+	pathSelector := NewServiceFieldPathBuilder().LabelledDomains().AvailableMixins()
+	itemValues := make([]Service_FieldPathArrayItemValue, 0, len(values))
+	for _, value := range values {
+		itemValues = append(itemValues, pathSelector.WithItemValue(value))
+	}
+	return b.builder.addCond(&FilterConditionContains{
+		Type:      gotenresource.ConditionContainsTypeAny,
+		FieldPath: NewServiceFieldPathBuilder().LabelledDomains().AvailableMixins().FieldPath(),
+		Values:    itemValues,
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsAvailableMixins) ContainsAll(values []string) *FilterBuilder {
+	pathSelector := NewServiceFieldPathBuilder().LabelledDomains().AvailableMixins()
+	itemValues := make([]Service_FieldPathArrayItemValue, 0, len(values))
+	for _, value := range values {
+		itemValues = append(itemValues, pathSelector.WithItemValue(value))
+	}
+	return b.builder.addCond(&FilterConditionContains{
+		Type:      gotenresource.ConditionContainsTypeAll,
+		FieldPath: NewServiceFieldPathBuilder().LabelledDomains().AvailableMixins().FieldPath(),
+		Values:    itemValues,
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsAvailableMixins) compare(op gotenfilter.CompareOperator, value []string) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionCompare{
+		Operator:               op,
+		Service_FieldPathValue: NewServiceFieldPathBuilder().LabelledDomains().AvailableMixins().WithValue(value),
+	})
+}
+
+type filterCndBuilderLabelledDomainsWebGrpcAvailable struct {
+	builder *FilterBuilder
+}
+
+func (b *filterCndBuilderLabelledDomainsWebGrpcAvailable) Eq(value bool) *FilterBuilder {
+	return b.compare(gotenfilter.Eq, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsWebGrpcAvailable) Neq(value bool) *FilterBuilder {
+	return b.compare(gotenfilter.Neq, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsWebGrpcAvailable) Gt(value bool) *FilterBuilder {
+	return b.compare(gotenfilter.Gt, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsWebGrpcAvailable) Gte(value bool) *FilterBuilder {
+	return b.compare(gotenfilter.Gte, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsWebGrpcAvailable) Lt(value bool) *FilterBuilder {
+	return b.compare(gotenfilter.Lt, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsWebGrpcAvailable) Lte(value bool) *FilterBuilder {
+	return b.compare(gotenfilter.Lte, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsWebGrpcAvailable) In(values []bool) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIn{
+		Service_FieldPathArrayOfValues: NewServiceFieldPathBuilder().LabelledDomains().WebGrpcAvailable().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsWebGrpcAvailable) NotIn(values []bool) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionNotIn{
+		Service_FieldPathArrayOfValues: NewServiceFieldPathBuilder().LabelledDomains().WebGrpcAvailable().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsWebGrpcAvailable) IsNull() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNull{
+		FieldPath: NewServiceFieldPathBuilder().LabelledDomains().WebGrpcAvailable().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsWebGrpcAvailable) IsNan() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNaN{
+		FieldPath: NewServiceFieldPathBuilder().LabelledDomains().WebGrpcAvailable().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsWebGrpcAvailable) compare(op gotenfilter.CompareOperator, value bool) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionCompare{
+		Operator:               op,
+		Service_FieldPathValue: NewServiceFieldPathBuilder().LabelledDomains().WebGrpcAvailable().WithValue(value),
+	})
+}
+
+type filterCndBuilderLabelledDomainsRestApiAvailable struct {
+	builder *FilterBuilder
+}
+
+func (b *filterCndBuilderLabelledDomainsRestApiAvailable) Eq(value bool) *FilterBuilder {
+	return b.compare(gotenfilter.Eq, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsRestApiAvailable) Neq(value bool) *FilterBuilder {
+	return b.compare(gotenfilter.Neq, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsRestApiAvailable) Gt(value bool) *FilterBuilder {
+	return b.compare(gotenfilter.Gt, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsRestApiAvailable) Gte(value bool) *FilterBuilder {
+	return b.compare(gotenfilter.Gte, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsRestApiAvailable) Lt(value bool) *FilterBuilder {
+	return b.compare(gotenfilter.Lt, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsRestApiAvailable) Lte(value bool) *FilterBuilder {
+	return b.compare(gotenfilter.Lte, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsRestApiAvailable) In(values []bool) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIn{
+		Service_FieldPathArrayOfValues: NewServiceFieldPathBuilder().LabelledDomains().RestApiAvailable().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsRestApiAvailable) NotIn(values []bool) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionNotIn{
+		Service_FieldPathArrayOfValues: NewServiceFieldPathBuilder().LabelledDomains().RestApiAvailable().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsRestApiAvailable) IsNull() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNull{
+		FieldPath: NewServiceFieldPathBuilder().LabelledDomains().RestApiAvailable().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsRestApiAvailable) IsNan() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNaN{
+		FieldPath: NewServiceFieldPathBuilder().LabelledDomains().RestApiAvailable().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsRestApiAvailable) compare(op gotenfilter.CompareOperator, value bool) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionCompare{
+		Operator:               op,
+		Service_FieldPathValue: NewServiceFieldPathBuilder().LabelledDomains().RestApiAvailable().WithValue(value),
+	})
+}
+
+type filterCndBuilderLabelledDomainsIsPrivate struct {
+	builder *FilterBuilder
+}
+
+func (b *filterCndBuilderLabelledDomainsIsPrivate) Eq(value bool) *FilterBuilder {
+	return b.compare(gotenfilter.Eq, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsIsPrivate) Neq(value bool) *FilterBuilder {
+	return b.compare(gotenfilter.Neq, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsIsPrivate) Gt(value bool) *FilterBuilder {
+	return b.compare(gotenfilter.Gt, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsIsPrivate) Gte(value bool) *FilterBuilder {
+	return b.compare(gotenfilter.Gte, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsIsPrivate) Lt(value bool) *FilterBuilder {
+	return b.compare(gotenfilter.Lt, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsIsPrivate) Lte(value bool) *FilterBuilder {
+	return b.compare(gotenfilter.Lte, value)
+}
+
+func (b *filterCndBuilderLabelledDomainsIsPrivate) In(values []bool) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIn{
+		Service_FieldPathArrayOfValues: NewServiceFieldPathBuilder().LabelledDomains().IsPrivate().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsIsPrivate) NotIn(values []bool) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionNotIn{
+		Service_FieldPathArrayOfValues: NewServiceFieldPathBuilder().LabelledDomains().IsPrivate().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsIsPrivate) IsNull() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNull{
+		FieldPath: NewServiceFieldPathBuilder().LabelledDomains().IsPrivate().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsIsPrivate) IsNan() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNaN{
+		FieldPath: NewServiceFieldPathBuilder().LabelledDomains().IsPrivate().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderLabelledDomainsIsPrivate) compare(op gotenfilter.CompareOperator, value bool) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionCompare{
+		Operator:               op,
+		Service_FieldPathValue: NewServiceFieldPathBuilder().LabelledDomains().IsPrivate().WithValue(value),
+	})
+}
+
+type filterCndBuilderLeadingService struct {
+	builder *FilterBuilder
+}
+
+func (b *filterCndBuilderLeadingService) Eq(value *Name) *FilterBuilder {
+	return b.compare(gotenfilter.Eq, value)
+}
+
+func (b *filterCndBuilderLeadingService) Neq(value *Name) *FilterBuilder {
+	return b.compare(gotenfilter.Neq, value)
+}
+
+func (b *filterCndBuilderLeadingService) Gt(value *Name) *FilterBuilder {
+	return b.compare(gotenfilter.Gt, value)
+}
+
+func (b *filterCndBuilderLeadingService) Gte(value *Name) *FilterBuilder {
+	return b.compare(gotenfilter.Gte, value)
+}
+
+func (b *filterCndBuilderLeadingService) Lt(value *Name) *FilterBuilder {
+	return b.compare(gotenfilter.Lt, value)
+}
+
+func (b *filterCndBuilderLeadingService) Lte(value *Name) *FilterBuilder {
+	return b.compare(gotenfilter.Lte, value)
+}
+
+func (b *filterCndBuilderLeadingService) In(values []*Name) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIn{
+		Service_FieldPathArrayOfValues: NewServiceFieldPathBuilder().LeadingService().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderLeadingService) NotIn(values []*Name) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionNotIn{
+		Service_FieldPathArrayOfValues: NewServiceFieldPathBuilder().LeadingService().WithArrayOfValues(values),
+	})
+}
+
+func (b *filterCndBuilderLeadingService) IsNull() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNull{
+		FieldPath: NewServiceFieldPathBuilder().LeadingService().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderLeadingService) IsNan() *FilterBuilder {
+	return b.builder.addCond(&FilterConditionIsNaN{
+		FieldPath: NewServiceFieldPathBuilder().LeadingService().FieldPath(),
+	})
+}
+
+func (b *filterCndBuilderLeadingService) compare(op gotenfilter.CompareOperator, value *Name) *FilterBuilder {
+	return b.builder.addCond(&FilterConditionCompare{
+		Operator:               op,
+		Service_FieldPathValue: NewServiceFieldPathBuilder().LeadingService().WithValue(value),
 	})
 }
 

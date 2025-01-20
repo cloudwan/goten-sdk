@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package goten.meta.v1;
+
+option go_package = "github.com/cloudwan/goten-sdk/meta-service/resources/v1/common;common";
+option java_multiple_files = true;
+option java_outer_classname = "CommonProto";
+option java_package = "com.goten.meta.pb.v1";
+
+// LabelledDomain provides connectivity information in a context of Service and
+// specific label. Service/Deployment may provide multiple addresses, for
+// example offering different quality class, like optimized for high/low
+// throughput.
+message LabelledDomain {
+  string label = 1;
+
+  string domain = 2;
+
+  repeated string available_mixins = 3;
+
+  bool web_grpc_available = 4;
+
+  bool rest_api_available = 5;
+
+  bool is_private = 6;
+}

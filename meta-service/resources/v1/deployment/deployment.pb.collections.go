@@ -10,6 +10,7 @@ import (
 
 // proto imports
 import (
+	common "github.com/cloudwan/goten-sdk/meta-service/resources/v1/common"
 	region "github.com/cloudwan/goten-sdk/meta-service/resources/v1/region"
 	service "github.com/cloudwan/goten-sdk/meta-service/resources/v1/service"
 	meta "github.com/cloudwan/goten-sdk/types/meta"
@@ -24,6 +25,7 @@ var (
 // make sure we're using proto imports
 var (
 	_ = &structpb.Struct{}
+	_ = &common.LabelledDomain{}
 	_ = &region.Region{}
 	_ = &service.Service{}
 	_ = &meta.Meta{}

@@ -6,6 +6,7 @@ package resource
 
 // proto imports
 import (
+	common "github.com/cloudwan/goten-sdk/meta-service/resources/v1/common"
 	service "github.com/cloudwan/goten-sdk/meta-service/resources/v1/service"
 	meta "github.com/cloudwan/goten-sdk/types/meta"
 	multi_region_policy "github.com/cloudwan/goten-sdk/types/multi_region_policy"
@@ -15,6 +16,7 @@ import (
 // make sure we're using proto imports
 var (
 	_ = &timestamppb.Timestamp{}
+	_ = &common.LabelledDomain{}
 	_ = &service.Service{}
 	_ = &meta.Meta{}
 	_ = &multi_region_policy.MultiRegionPolicy{}

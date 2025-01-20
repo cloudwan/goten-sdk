@@ -4,6 +4,7 @@ package goten.meta.v1;
 
 import "google/api/resource.proto";
 import "google/protobuf/struct.proto";
+import "goten-sdk/meta-service/proto/v1/common.proto";
 import "goten-sdk/types/meta.proto";
 
 option go_package = "github.com/cloudwan/goten-sdk/meta-service/resources/v1/deployment;deployment";
@@ -48,6 +49,9 @@ message Deployment {
   // same private network for better performance purposes (less hops). It should
   // be used in conjunction with field local_network_id.
   string private_domain = 6;
+
+  // Additional regional domains with labels where Deployment can be accessed.
+  repeated LabelledDomain labelled_domains = 19;
 
   // Local network identifier - it can be mostly anything, however if two
   // deployments for different services hold same value in same region, then

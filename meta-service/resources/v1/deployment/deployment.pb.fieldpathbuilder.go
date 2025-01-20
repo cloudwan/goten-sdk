@@ -6,6 +6,7 @@ package deployment
 
 // proto imports
 import (
+	common "github.com/cloudwan/goten-sdk/meta-service/resources/v1/common"
 	region "github.com/cloudwan/goten-sdk/meta-service/resources/v1/region"
 	service "github.com/cloudwan/goten-sdk/meta-service/resources/v1/service"
 	meta "github.com/cloudwan/goten-sdk/types/meta"
@@ -18,6 +19,7 @@ import (
 var (
 	_ = &structpb.Struct{}
 	_ = &timestamppb.Timestamp{}
+	_ = &common.LabelledDomain{}
 	_ = &region.Region{}
 	_ = &service.Service{}
 	_ = &meta.Meta{}
@@ -46,6 +48,9 @@ func (DeploymentFieldPathBuilder) PublicDomain() DeploymentPathSelectorPublicDom
 }
 func (DeploymentFieldPathBuilder) PrivateDomain() DeploymentPathSelectorPrivateDomain {
 	return DeploymentPathSelectorPrivateDomain{}
+}
+func (DeploymentFieldPathBuilder) LabelledDomains() DeploymentPathSelectorLabelledDomains {
+	return DeploymentPathSelectorLabelledDomains{}
 }
 func (DeploymentFieldPathBuilder) LocalNetworkId() DeploymentPathSelectorLocalNetworkId {
 	return DeploymentPathSelectorLocalNetworkId{}
@@ -831,6 +836,169 @@ func (s DeploymentPathSelectorPrivateDomain) WithValue(value string) *Deployment
 
 func (s DeploymentPathSelectorPrivateDomain) WithArrayOfValues(values []string) *Deployment_FieldTerminalPathArrayOfValues {
 	return s.FieldPath().WithIArrayOfValues(values).(*Deployment_FieldTerminalPathArrayOfValues)
+}
+
+type DeploymentPathSelectorLabelledDomains struct{}
+
+func (DeploymentPathSelectorLabelledDomains) FieldPath() *Deployment_FieldTerminalPath {
+	return &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorLabelledDomains}
+}
+
+func (s DeploymentPathSelectorLabelledDomains) WithValue(value []*common.LabelledDomain) *Deployment_FieldTerminalPathValue {
+	return s.FieldPath().WithIValue(value).(*Deployment_FieldTerminalPathValue)
+}
+
+func (s DeploymentPathSelectorLabelledDomains) WithArrayOfValues(values [][]*common.LabelledDomain) *Deployment_FieldTerminalPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*Deployment_FieldTerminalPathArrayOfValues)
+}
+
+func (s DeploymentPathSelectorLabelledDomains) WithItemValue(value *common.LabelledDomain) *Deployment_FieldTerminalPathArrayItemValue {
+	return s.FieldPath().WithIArrayItemValue(value).(*Deployment_FieldTerminalPathArrayItemValue)
+}
+func (DeploymentPathSelectorLabelledDomains) WithSubPath(subPath common.LabelledDomain_FieldPath) *Deployment_FieldSubPath {
+	return &Deployment_FieldSubPath{selector: Deployment_FieldPathSelectorLabelledDomains, subPath: subPath}
+}
+
+func (s DeploymentPathSelectorLabelledDomains) WithSubValue(subPathValue common.LabelledDomain_FieldPathValue) *Deployment_FieldSubPathValue {
+	return &Deployment_FieldSubPathValue{Deployment_FieldPath: s.WithSubPath(subPathValue), subPathValue: subPathValue}
+}
+
+func (s DeploymentPathSelectorLabelledDomains) WithSubArrayOfValues(subPathArrayOfValues common.LabelledDomain_FieldPathArrayOfValues) *Deployment_FieldSubPathArrayOfValues {
+	return &Deployment_FieldSubPathArrayOfValues{Deployment_FieldPath: s.WithSubPath(subPathArrayOfValues), subPathArrayOfValues: subPathArrayOfValues}
+}
+
+func (s DeploymentPathSelectorLabelledDomains) WithSubArrayItemValue(subPathArrayItemValue common.LabelledDomain_FieldPathArrayItemValue) *Deployment_FieldSubPathArrayItemValue {
+	return &Deployment_FieldSubPathArrayItemValue{Deployment_FieldPath: s.WithSubPath(subPathArrayItemValue), subPathItemValue: subPathArrayItemValue}
+}
+
+func (DeploymentPathSelectorLabelledDomains) Label() DeploymentPathSelectorLabelledDomainsLabel {
+	return DeploymentPathSelectorLabelledDomainsLabel{}
+}
+
+func (DeploymentPathSelectorLabelledDomains) Domain() DeploymentPathSelectorLabelledDomainsDomain {
+	return DeploymentPathSelectorLabelledDomainsDomain{}
+}
+
+func (DeploymentPathSelectorLabelledDomains) AvailableMixins() DeploymentPathSelectorLabelledDomainsAvailableMixins {
+	return DeploymentPathSelectorLabelledDomainsAvailableMixins{}
+}
+
+func (DeploymentPathSelectorLabelledDomains) WebGrpcAvailable() DeploymentPathSelectorLabelledDomainsWebGrpcAvailable {
+	return DeploymentPathSelectorLabelledDomainsWebGrpcAvailable{}
+}
+
+func (DeploymentPathSelectorLabelledDomains) RestApiAvailable() DeploymentPathSelectorLabelledDomainsRestApiAvailable {
+	return DeploymentPathSelectorLabelledDomainsRestApiAvailable{}
+}
+
+func (DeploymentPathSelectorLabelledDomains) IsPrivate() DeploymentPathSelectorLabelledDomainsIsPrivate {
+	return DeploymentPathSelectorLabelledDomainsIsPrivate{}
+}
+
+type DeploymentPathSelectorLabelledDomainsLabel struct{}
+
+func (DeploymentPathSelectorLabelledDomainsLabel) FieldPath() *Deployment_FieldSubPath {
+	return &Deployment_FieldSubPath{
+		selector: Deployment_FieldPathSelectorLabelledDomains,
+		subPath:  common.NewLabelledDomainFieldPathBuilder().Label().FieldPath(),
+	}
+}
+
+func (s DeploymentPathSelectorLabelledDomainsLabel) WithValue(value string) *Deployment_FieldSubPathValue {
+	return s.FieldPath().WithIValue(value).(*Deployment_FieldSubPathValue)
+}
+
+func (s DeploymentPathSelectorLabelledDomainsLabel) WithArrayOfValues(values []string) *Deployment_FieldSubPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*Deployment_FieldSubPathArrayOfValues)
+}
+
+type DeploymentPathSelectorLabelledDomainsDomain struct{}
+
+func (DeploymentPathSelectorLabelledDomainsDomain) FieldPath() *Deployment_FieldSubPath {
+	return &Deployment_FieldSubPath{
+		selector: Deployment_FieldPathSelectorLabelledDomains,
+		subPath:  common.NewLabelledDomainFieldPathBuilder().Domain().FieldPath(),
+	}
+}
+
+func (s DeploymentPathSelectorLabelledDomainsDomain) WithValue(value string) *Deployment_FieldSubPathValue {
+	return s.FieldPath().WithIValue(value).(*Deployment_FieldSubPathValue)
+}
+
+func (s DeploymentPathSelectorLabelledDomainsDomain) WithArrayOfValues(values []string) *Deployment_FieldSubPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*Deployment_FieldSubPathArrayOfValues)
+}
+
+type DeploymentPathSelectorLabelledDomainsAvailableMixins struct{}
+
+func (DeploymentPathSelectorLabelledDomainsAvailableMixins) FieldPath() *Deployment_FieldSubPath {
+	return &Deployment_FieldSubPath{
+		selector: Deployment_FieldPathSelectorLabelledDomains,
+		subPath:  common.NewLabelledDomainFieldPathBuilder().AvailableMixins().FieldPath(),
+	}
+}
+
+func (s DeploymentPathSelectorLabelledDomainsAvailableMixins) WithValue(value []string) *Deployment_FieldSubPathValue {
+	return s.FieldPath().WithIValue(value).(*Deployment_FieldSubPathValue)
+}
+
+func (s DeploymentPathSelectorLabelledDomainsAvailableMixins) WithArrayOfValues(values [][]string) *Deployment_FieldSubPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*Deployment_FieldSubPathArrayOfValues)
+}
+
+func (s DeploymentPathSelectorLabelledDomainsAvailableMixins) WithItemValue(value string) *Deployment_FieldSubPathArrayItemValue {
+	return s.FieldPath().WithIArrayItemValue(value).(*Deployment_FieldSubPathArrayItemValue)
+}
+
+type DeploymentPathSelectorLabelledDomainsWebGrpcAvailable struct{}
+
+func (DeploymentPathSelectorLabelledDomainsWebGrpcAvailable) FieldPath() *Deployment_FieldSubPath {
+	return &Deployment_FieldSubPath{
+		selector: Deployment_FieldPathSelectorLabelledDomains,
+		subPath:  common.NewLabelledDomainFieldPathBuilder().WebGrpcAvailable().FieldPath(),
+	}
+}
+
+func (s DeploymentPathSelectorLabelledDomainsWebGrpcAvailable) WithValue(value bool) *Deployment_FieldSubPathValue {
+	return s.FieldPath().WithIValue(value).(*Deployment_FieldSubPathValue)
+}
+
+func (s DeploymentPathSelectorLabelledDomainsWebGrpcAvailable) WithArrayOfValues(values []bool) *Deployment_FieldSubPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*Deployment_FieldSubPathArrayOfValues)
+}
+
+type DeploymentPathSelectorLabelledDomainsRestApiAvailable struct{}
+
+func (DeploymentPathSelectorLabelledDomainsRestApiAvailable) FieldPath() *Deployment_FieldSubPath {
+	return &Deployment_FieldSubPath{
+		selector: Deployment_FieldPathSelectorLabelledDomains,
+		subPath:  common.NewLabelledDomainFieldPathBuilder().RestApiAvailable().FieldPath(),
+	}
+}
+
+func (s DeploymentPathSelectorLabelledDomainsRestApiAvailable) WithValue(value bool) *Deployment_FieldSubPathValue {
+	return s.FieldPath().WithIValue(value).(*Deployment_FieldSubPathValue)
+}
+
+func (s DeploymentPathSelectorLabelledDomainsRestApiAvailable) WithArrayOfValues(values []bool) *Deployment_FieldSubPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*Deployment_FieldSubPathArrayOfValues)
+}
+
+type DeploymentPathSelectorLabelledDomainsIsPrivate struct{}
+
+func (DeploymentPathSelectorLabelledDomainsIsPrivate) FieldPath() *Deployment_FieldSubPath {
+	return &Deployment_FieldSubPath{
+		selector: Deployment_FieldPathSelectorLabelledDomains,
+		subPath:  common.NewLabelledDomainFieldPathBuilder().IsPrivate().FieldPath(),
+	}
+}
+
+func (s DeploymentPathSelectorLabelledDomainsIsPrivate) WithValue(value bool) *Deployment_FieldSubPathValue {
+	return s.FieldPath().WithIValue(value).(*Deployment_FieldSubPathValue)
+}
+
+func (s DeploymentPathSelectorLabelledDomainsIsPrivate) WithArrayOfValues(values []bool) *Deployment_FieldSubPathArrayOfValues {
+	return s.FieldPath().WithIArrayOfValues(values).(*Deployment_FieldSubPathArrayOfValues)
 }
 
 type DeploymentPathSelectorLocalNetworkId struct{}

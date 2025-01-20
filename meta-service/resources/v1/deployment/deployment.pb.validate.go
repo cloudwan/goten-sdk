@@ -20,6 +20,7 @@ import (
 
 // proto imports
 import (
+	common "github.com/cloudwan/goten-sdk/meta-service/resources/v1/common"
 	region "github.com/cloudwan/goten-sdk/meta-service/resources/v1/region"
 	service "github.com/cloudwan/goten-sdk/meta-service/resources/v1/service"
 	meta "github.com/cloudwan/goten-sdk/types/meta"
@@ -44,6 +45,7 @@ var (
 // make sure we're using proto imports
 var (
 	_ = &structpb.Struct{}
+	_ = &common.LabelledDomain{}
 	_ = &region.Region{}
 	_ = &service.Service{}
 	_ = &meta.Meta{}
@@ -87,6 +89,13 @@ func (obj *Deployment) GotenValidate() error {
 	}
 	if err := gotenvalidate.ValidateAddress(string(obj.PrivateDomain)); err != nil {
 		return gotenvalidate.NewValidationError("Deployment", "privateDomain", obj.PrivateDomain, "field must contain a valid address", nil)
+	}
+	for idx, elem := range obj.LabelledDomains {
+		if subobj, ok := interface{}(elem).(gotenvalidate.Validator); ok {
+			if err := subobj.GotenValidate(); err != nil {
+				return gotenvalidate.NewValidationError("Deployment", "labelledDomains", obj.LabelledDomains[idx], "nested object validation failed", err)
+			}
+		}
 	}
 	{
 		rlen := utf8.RuneCountInString(obj.LocalNetworkId)

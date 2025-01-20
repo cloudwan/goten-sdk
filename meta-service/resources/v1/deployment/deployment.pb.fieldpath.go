@@ -23,6 +23,7 @@ import (
 
 // proto imports
 import (
+	common "github.com/cloudwan/goten-sdk/meta-service/resources/v1/common"
 	region "github.com/cloudwan/goten-sdk/meta-service/resources/v1/region"
 	service "github.com/cloudwan/goten-sdk/meta-service/resources/v1/service"
 	meta "github.com/cloudwan/goten-sdk/types/meta"
@@ -50,6 +51,7 @@ var (
 // make sure we're using proto imports
 var (
 	_ = &structpb.Struct{}
+	_ = &common.LabelledDomain{}
 	_ = &region.Region{}
 	_ = &service.Service{}
 	_ = &meta.Meta{}
@@ -80,17 +82,18 @@ const (
 	Deployment_FieldPathSelectorRegion                 Deployment_FieldPathSelector = 3
 	Deployment_FieldPathSelectorPublicDomain           Deployment_FieldPathSelector = 4
 	Deployment_FieldPathSelectorPrivateDomain          Deployment_FieldPathSelector = 5
-	Deployment_FieldPathSelectorLocalNetworkId         Deployment_FieldPathSelector = 6
-	Deployment_FieldPathSelectorLocation               Deployment_FieldPathSelector = 7
-	Deployment_FieldPathSelectorIsDisabled             Deployment_FieldPathSelector = 8
-	Deployment_FieldPathSelectorEnvRegistryGeneration  Deployment_FieldPathSelector = 9
-	Deployment_FieldPathSelectorCurrentVersion         Deployment_FieldPathSelector = 10
-	Deployment_FieldPathSelectorDbDataVersion          Deployment_FieldPathSelector = 11
-	Deployment_FieldPathSelectorDbLocationTag          Deployment_FieldPathSelector = 12
-	Deployment_FieldPathSelectorAutomaticVersionSwitch Deployment_FieldPathSelector = 13
-	Deployment_FieldPathSelectorAvailableUpgrade       Deployment_FieldPathSelector = 14
-	Deployment_FieldPathSelectorUpgradeState           Deployment_FieldPathSelector = 15
-	Deployment_FieldPathSelectorDataUpdateStatuses     Deployment_FieldPathSelector = 16
+	Deployment_FieldPathSelectorLabelledDomains        Deployment_FieldPathSelector = 6
+	Deployment_FieldPathSelectorLocalNetworkId         Deployment_FieldPathSelector = 7
+	Deployment_FieldPathSelectorLocation               Deployment_FieldPathSelector = 8
+	Deployment_FieldPathSelectorIsDisabled             Deployment_FieldPathSelector = 9
+	Deployment_FieldPathSelectorEnvRegistryGeneration  Deployment_FieldPathSelector = 10
+	Deployment_FieldPathSelectorCurrentVersion         Deployment_FieldPathSelector = 11
+	Deployment_FieldPathSelectorDbDataVersion          Deployment_FieldPathSelector = 12
+	Deployment_FieldPathSelectorDbLocationTag          Deployment_FieldPathSelector = 13
+	Deployment_FieldPathSelectorAutomaticVersionSwitch Deployment_FieldPathSelector = 14
+	Deployment_FieldPathSelectorAvailableUpgrade       Deployment_FieldPathSelector = 15
+	Deployment_FieldPathSelectorUpgradeState           Deployment_FieldPathSelector = 16
+	Deployment_FieldPathSelectorDataUpdateStatuses     Deployment_FieldPathSelector = 17
 )
 
 func (s Deployment_FieldPathSelector) String() string {
@@ -107,6 +110,8 @@ func (s Deployment_FieldPathSelector) String() string {
 		return "public_domain"
 	case Deployment_FieldPathSelectorPrivateDomain:
 		return "private_domain"
+	case Deployment_FieldPathSelectorLabelledDomains:
+		return "labelled_domains"
 	case Deployment_FieldPathSelectorLocalNetworkId:
 		return "local_network_id"
 	case Deployment_FieldPathSelectorLocation:
@@ -152,6 +157,8 @@ func BuildDeployment_FieldPath(fp gotenobject.RawFieldPath) (Deployment_FieldPat
 			return &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorPublicDomain}, nil
 		case "private_domain", "privateDomain", "private-domain":
 			return &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorPrivateDomain}, nil
+		case "labelled_domains", "labelledDomains", "labelled-domains":
+			return &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorLabelledDomains}, nil
 		case "local_network_id", "localNetworkId", "local-network-id":
 			return &Deployment_FieldTerminalPath{selector: Deployment_FieldPathSelectorLocalNetworkId}, nil
 		case "location":
@@ -182,6 +189,12 @@ func BuildDeployment_FieldPath(fp gotenobject.RawFieldPath) (Deployment_FieldPat
 				return nil, err
 			} else {
 				return &Deployment_FieldSubPath{selector: Deployment_FieldPathSelectorMetadata, subPath: subpath}, nil
+			}
+		case "labelled_domains", "labelledDomains", "labelled-domains":
+			if subpath, err := common.BuildLabelledDomain_FieldPath(fp[1:]); err != nil {
+				return nil, err
+			} else {
+				return &Deployment_FieldSubPath{selector: Deployment_FieldPathSelectorLabelledDomains, subPath: subpath}, nil
 			}
 		case "location":
 			if subpath, err := BuildDeploymentLocation_FieldPath(fp[1:]); err != nil {
@@ -270,6 +283,10 @@ func (fp *Deployment_FieldTerminalPath) Get(source *Deployment) (values []interf
 			values = append(values, source.PublicDomain)
 		case Deployment_FieldPathSelectorPrivateDomain:
 			values = append(values, source.PrivateDomain)
+		case Deployment_FieldPathSelectorLabelledDomains:
+			for _, value := range source.GetLabelledDomains() {
+				values = append(values, value)
+			}
 		case Deployment_FieldPathSelectorLocalNetworkId:
 			values = append(values, source.LocalNetworkId)
 		case Deployment_FieldPathSelectorLocation:
@@ -329,6 +346,9 @@ func (fp *Deployment_FieldTerminalPath) GetSingle(source *Deployment) (interface
 		return source.GetPublicDomain(), source != nil
 	case Deployment_FieldPathSelectorPrivateDomain:
 		return source.GetPrivateDomain(), source != nil
+	case Deployment_FieldPathSelectorLabelledDomains:
+		res := source.GetLabelledDomains()
+		return res, res != nil
 	case Deployment_FieldPathSelectorLocalNetworkId:
 		return source.GetLocalNetworkId(), source != nil
 	case Deployment_FieldPathSelectorLocation:
@@ -379,6 +399,8 @@ func (fp *Deployment_FieldTerminalPath) GetDefault() interface{} {
 		return ""
 	case Deployment_FieldPathSelectorPrivateDomain:
 		return ""
+	case Deployment_FieldPathSelectorLabelledDomains:
+		return ([]*common.LabelledDomain)(nil)
 	case Deployment_FieldPathSelectorLocalNetworkId:
 		return ""
 	case Deployment_FieldPathSelectorLocation:
@@ -421,6 +443,8 @@ func (fp *Deployment_FieldTerminalPath) ClearValue(item *Deployment) {
 			item.PublicDomain = ""
 		case Deployment_FieldPathSelectorPrivateDomain:
 			item.PrivateDomain = ""
+		case Deployment_FieldPathSelectorLabelledDomains:
+			item.LabelledDomains = nil
 		case Deployment_FieldPathSelectorLocalNetworkId:
 			item.LocalNetworkId = ""
 		case Deployment_FieldPathSelectorLocation:
@@ -487,6 +511,8 @@ func (fp *Deployment_FieldTerminalPath) WithIValue(value interface{}) Deployment
 		return &Deployment_FieldTerminalPathValue{Deployment_FieldTerminalPath: *fp, value: value.(string)}
 	case Deployment_FieldPathSelectorPrivateDomain:
 		return &Deployment_FieldTerminalPathValue{Deployment_FieldTerminalPath: *fp, value: value.(string)}
+	case Deployment_FieldPathSelectorLabelledDomains:
+		return &Deployment_FieldTerminalPathValue{Deployment_FieldTerminalPath: *fp, value: value.([]*common.LabelledDomain)}
 	case Deployment_FieldPathSelectorLocalNetworkId:
 		return &Deployment_FieldTerminalPathValue{Deployment_FieldTerminalPath: *fp, value: value.(string)}
 	case Deployment_FieldPathSelectorLocation:
@@ -533,6 +559,8 @@ func (fp *Deployment_FieldTerminalPath) WithIArrayOfValues(values interface{}) D
 		return &Deployment_FieldTerminalPathArrayOfValues{Deployment_FieldTerminalPath: *fp, values: values.([]string)}
 	case Deployment_FieldPathSelectorPrivateDomain:
 		return &Deployment_FieldTerminalPathArrayOfValues{Deployment_FieldTerminalPath: *fp, values: values.([]string)}
+	case Deployment_FieldPathSelectorLabelledDomains:
+		return &Deployment_FieldTerminalPathArrayOfValues{Deployment_FieldTerminalPath: *fp, values: values.([][]*common.LabelledDomain)}
 	case Deployment_FieldPathSelectorLocalNetworkId:
 		return &Deployment_FieldTerminalPathArrayOfValues{Deployment_FieldTerminalPath: *fp, values: values.([]string)}
 	case Deployment_FieldPathSelectorLocation:
@@ -567,6 +595,8 @@ func (fp *Deployment_FieldTerminalPath) WithRawIArrayOfValues(values interface{}
 
 func (fp *Deployment_FieldTerminalPath) WithIArrayItemValue(value interface{}) Deployment_FieldPathArrayItemValue {
 	switch fp.selector {
+	case Deployment_FieldPathSelectorLabelledDomains:
+		return &Deployment_FieldTerminalPathArrayItemValue{Deployment_FieldTerminalPath: *fp, value: value.(*common.LabelledDomain)}
 	case Deployment_FieldPathSelectorDataUpdateStatuses:
 		return &Deployment_FieldTerminalPathArrayItemValue{Deployment_FieldTerminalPath: *fp, value: value.(*Deployment_DbUpdateTaskStatus)}
 	default:
@@ -590,6 +620,10 @@ func (fps *Deployment_FieldSubPath) Selector() Deployment_FieldPathSelector {
 }
 func (fps *Deployment_FieldSubPath) AsMetadataSubPath() (meta.Meta_FieldPath, bool) {
 	res, ok := fps.subPath.(meta.Meta_FieldPath)
+	return res, ok
+}
+func (fps *Deployment_FieldSubPath) AsLabelledDomainsSubPath() (common.LabelledDomain_FieldPath, bool) {
+	res, ok := fps.subPath.(common.LabelledDomain_FieldPath)
 	return res, ok
 }
 func (fps *Deployment_FieldSubPath) AsLocationSubPath() (DeploymentLocation_FieldPath, bool) {
@@ -624,6 +658,10 @@ func (fps *Deployment_FieldSubPath) Get(source *Deployment) (values []interface{
 	switch fps.selector {
 	case Deployment_FieldPathSelectorMetadata:
 		values = append(values, fps.subPath.GetRaw(source.GetMetadata())...)
+	case Deployment_FieldPathSelectorLabelledDomains:
+		for _, item := range source.GetLabelledDomains() {
+			values = append(values, fps.subPath.GetRaw(item)...)
+		}
 	case Deployment_FieldPathSelectorLocation:
 		values = append(values, fps.subPath.GetRaw(source.GetLocation())...)
 	case Deployment_FieldPathSelectorAvailableUpgrade:
@@ -652,6 +690,11 @@ func (fps *Deployment_FieldSubPath) GetSingle(source *Deployment) (interface{}, 
 			return nil, false
 		}
 		return fps.subPath.GetSingleRaw(source.GetMetadata())
+	case Deployment_FieldPathSelectorLabelledDomains:
+		if len(source.GetLabelledDomains()) == 0 {
+			return nil, false
+		}
+		return fps.subPath.GetSingleRaw(source.GetLabelledDomains()[0])
 	case Deployment_FieldPathSelectorLocation:
 		if source.GetLocation() == nil {
 			return nil, false
@@ -691,6 +734,10 @@ func (fps *Deployment_FieldSubPath) ClearValue(item *Deployment) {
 		switch fps.selector {
 		case Deployment_FieldPathSelectorMetadata:
 			fps.subPath.ClearValueRaw(item.Metadata)
+		case Deployment_FieldPathSelectorLabelledDomains:
+			for _, subItem := range item.LabelledDomains {
+				fps.subPath.ClearValueRaw(subItem)
+			}
 		case Deployment_FieldPathSelectorLocation:
 			fps.subPath.ClearValueRaw(item.Location)
 		case Deployment_FieldPathSelectorAvailableUpgrade:
@@ -809,6 +856,10 @@ func (fpv *Deployment_FieldTerminalPathValue) AsPrivateDomainValue() (string, bo
 	res, ok := fpv.value.(string)
 	return res, ok
 }
+func (fpv *Deployment_FieldTerminalPathValue) AsLabelledDomainsValue() ([]*common.LabelledDomain, bool) {
+	res, ok := fpv.value.([]*common.LabelledDomain)
+	return res, ok
+}
 func (fpv *Deployment_FieldTerminalPathValue) AsLocalNetworkIdValue() (string, bool) {
 	res, ok := fpv.value.(string)
 	return res, ok
@@ -872,6 +923,8 @@ func (fpv *Deployment_FieldTerminalPathValue) SetTo(target **Deployment) {
 		(*target).PublicDomain = fpv.value.(string)
 	case Deployment_FieldPathSelectorPrivateDomain:
 		(*target).PrivateDomain = fpv.value.(string)
+	case Deployment_FieldPathSelectorLabelledDomains:
+		(*target).LabelledDomains = fpv.value.([]*common.LabelledDomain)
 	case Deployment_FieldPathSelectorLocalNetworkId:
 		(*target).LocalNetworkId = fpv.value.(string)
 	case Deployment_FieldPathSelectorLocation:
@@ -977,6 +1030,8 @@ func (fpv *Deployment_FieldTerminalPathValue) CompareWith(source *Deployment) (i
 		} else {
 			return 1, true
 		}
+	case Deployment_FieldPathSelectorLabelledDomains:
+		return 0, false
 	case Deployment_FieldPathSelectorLocalNetworkId:
 		leftValue := fpv.value.(string)
 		rightValue := source.GetLocalNetworkId()
@@ -1075,6 +1130,10 @@ func (fpvs *Deployment_FieldSubPathValue) AsMetadataPathValue() (meta.Meta_Field
 	res, ok := fpvs.subPathValue.(meta.Meta_FieldPathValue)
 	return res, ok
 }
+func (fpvs *Deployment_FieldSubPathValue) AsLabelledDomainsPathValue() (common.LabelledDomain_FieldPathValue, bool) {
+	res, ok := fpvs.subPathValue.(common.LabelledDomain_FieldPathValue)
+	return res, ok
+}
 func (fpvs *Deployment_FieldSubPathValue) AsLocationPathValue() (DeploymentLocation_FieldPathValue, bool) {
 	res, ok := fpvs.subPathValue.(DeploymentLocation_FieldPathValue)
 	return res, ok
@@ -1099,6 +1158,8 @@ func (fpvs *Deployment_FieldSubPathValue) SetTo(target **Deployment) {
 	switch fpvs.Selector() {
 	case Deployment_FieldPathSelectorMetadata:
 		fpvs.subPathValue.(meta.Meta_FieldPathValue).SetTo(&(*target).Metadata)
+	case Deployment_FieldPathSelectorLabelledDomains:
+		panic("FieldPath setter is unsupported for array subpaths")
 	case Deployment_FieldPathSelectorLocation:
 		fpvs.subPathValue.(DeploymentLocation_FieldPathValue).SetTo(&(*target).Location)
 	case Deployment_FieldPathSelectorAvailableUpgrade:
@@ -1125,6 +1186,8 @@ func (fpvs *Deployment_FieldSubPathValue) CompareWith(source *Deployment) (int, 
 	switch fpvs.Selector() {
 	case Deployment_FieldPathSelectorMetadata:
 		return fpvs.subPathValue.(meta.Meta_FieldPathValue).CompareWith(source.GetMetadata())
+	case Deployment_FieldPathSelectorLabelledDomains:
+		return 0, false // repeated field
 	case Deployment_FieldPathSelectorLocation:
 		return fpvs.subPathValue.(DeploymentLocation_FieldPathValue).CompareWith(source.GetLocation())
 	case Deployment_FieldPathSelectorAvailableUpgrade:
@@ -1182,6 +1245,10 @@ var _ Deployment_FieldPathArrayItemValue = (*Deployment_FieldTerminalPathArrayIt
 func (fpaiv *Deployment_FieldTerminalPathArrayItemValue) GetRawItemValue() interface{} {
 	return fpaiv.value
 }
+func (fpaiv *Deployment_FieldTerminalPathArrayItemValue) AsLabelledDomainsItemValue() (*common.LabelledDomain, bool) {
+	res, ok := fpaiv.value.(*common.LabelledDomain)
+	return res, ok
+}
 func (fpaiv *Deployment_FieldTerminalPathArrayItemValue) AsDataUpdateStatusesItemValue() (*Deployment_DbUpdateTaskStatus, bool) {
 	res, ok := fpaiv.value.(*Deployment_DbUpdateTaskStatus)
 	return res, ok
@@ -1223,6 +1290,10 @@ func (fpaivs *Deployment_FieldSubPathArrayItemValue) AsMetadataPathItemValue() (
 	res, ok := fpaivs.subPathItemValue.(meta.Meta_FieldPathArrayItemValue)
 	return res, ok
 }
+func (fpaivs *Deployment_FieldSubPathArrayItemValue) AsLabelledDomainsPathItemValue() (common.LabelledDomain_FieldPathArrayItemValue, bool) {
+	res, ok := fpaivs.subPathItemValue.(common.LabelledDomain_FieldPathArrayItemValue)
+	return res, ok
+}
 func (fpaivs *Deployment_FieldSubPathArrayItemValue) AsLocationPathItemValue() (DeploymentLocation_FieldPathArrayItemValue, bool) {
 	res, ok := fpaivs.subPathItemValue.(DeploymentLocation_FieldPathArrayItemValue)
 	return res, ok
@@ -1245,6 +1316,8 @@ func (fpaivs *Deployment_FieldSubPathArrayItemValue) ContainsValue(source *Deplo
 	switch fpaivs.Selector() {
 	case Deployment_FieldPathSelectorMetadata:
 		return fpaivs.subPathItemValue.(meta.Meta_FieldPathArrayItemValue).ContainsValue(source.GetMetadata())
+	case Deployment_FieldPathSelectorLabelledDomains:
+		return false // repeated/map field
 	case Deployment_FieldPathSelectorLocation:
 		return fpaivs.subPathItemValue.(DeploymentLocation_FieldPathArrayItemValue).ContainsValue(source.GetLocation())
 	case Deployment_FieldPathSelectorAvailableUpgrade:
@@ -1315,6 +1388,10 @@ func (fpaov *Deployment_FieldTerminalPathArrayOfValues) GetRawValues() (values [
 		}
 	case Deployment_FieldPathSelectorPrivateDomain:
 		for _, v := range fpaov.values.([]string) {
+			values = append(values, v)
+		}
+	case Deployment_FieldPathSelectorLabelledDomains:
+		for _, v := range fpaov.values.([][]*common.LabelledDomain) {
 			values = append(values, v)
 		}
 	case Deployment_FieldPathSelectorLocalNetworkId:
@@ -1388,6 +1465,10 @@ func (fpaov *Deployment_FieldTerminalPathArrayOfValues) AsPrivateDomainArrayOfVa
 	res, ok := fpaov.values.([]string)
 	return res, ok
 }
+func (fpaov *Deployment_FieldTerminalPathArrayOfValues) AsLabelledDomainsArrayOfValues() ([][]*common.LabelledDomain, bool) {
+	res, ok := fpaov.values.([][]*common.LabelledDomain)
+	return res, ok
+}
 func (fpaov *Deployment_FieldTerminalPathArrayOfValues) AsLocalNetworkIdArrayOfValues() ([]string, bool) {
 	res, ok := fpaov.values.([]string)
 	return res, ok
@@ -1445,6 +1526,10 @@ func (fpsaov *Deployment_FieldSubPathArrayOfValues) GetRawValues() []interface{}
 }
 func (fpsaov *Deployment_FieldSubPathArrayOfValues) AsMetadataPathArrayOfValues() (meta.Meta_FieldPathArrayOfValues, bool) {
 	res, ok := fpsaov.subPathArrayOfValues.(meta.Meta_FieldPathArrayOfValues)
+	return res, ok
+}
+func (fpsaov *Deployment_FieldSubPathArrayOfValues) AsLabelledDomainsPathArrayOfValues() (common.LabelledDomain_FieldPathArrayOfValues, bool) {
+	res, ok := fpsaov.subPathArrayOfValues.(common.LabelledDomain_FieldPathArrayOfValues)
 	return res, ok
 }
 func (fpsaov *Deployment_FieldSubPathArrayOfValues) AsLocationPathArrayOfValues() (DeploymentLocation_FieldPathArrayOfValues, bool) {
