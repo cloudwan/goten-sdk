@@ -33,7 +33,11 @@ func getCurrentRawValue(msg proto.Message, fdPath []preflect.FieldDescriptor) (i
 					FieldByName(strcase.ToCamel(string(fd.Name()))).Interface(), true
 			}
 			if fd.ContainingOneof() != nil {
-				ooFieldValue := reflect.ValueOf(currentMsg.Interface()).Elem().FieldByName(strcase.ToCamel(string(fd.ContainingOneof().Name())))
+				parentObject := reflect.ValueOf(currentMsg.Interface()).Elem()
+				if !parentObject.IsValid() || parentObject.IsZero() {
+					return nil, false
+				}
+				ooFieldValue := parentObject.FieldByName(strcase.ToCamel(string(fd.ContainingOneof().Name())))
 				if !ooFieldValue.IsValid() {
 					return nil, false
 				}
