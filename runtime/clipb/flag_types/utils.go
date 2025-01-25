@@ -42,6 +42,9 @@ func getCurrentRawValue(msg proto.Message, fdPath []preflect.FieldDescriptor) (i
 					return nil, false
 				}
 				underlyingValue := reflect.ValueOf(ooFieldValue.Interface())
+				if !underlyingValue.IsValid() || underlyingValue.IsZero() {
+					return nil, false
+				}
 				rfieldValue := underlyingValue.Elem().FieldByName(strcase.ToCamel(string(fd.Name())))
 				if rfieldValue.IsZero() || !rfieldValue.IsValid() {
 					// for oneof, it can be field name with "_" as suffix.
