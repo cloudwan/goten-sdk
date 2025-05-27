@@ -7,9 +7,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/alecthomas/participle"
-	"github.com/alecthomas/participle/lexer"
-	"github.com/alecthomas/participle/lexer/ebnf"
+	"github.com/alecthomas/participle/v2"
+	"github.com/alecthomas/participle/v2/lexer"
+
+	"github.com/cloudwan/goten-sdk/runtime/resource/filter/ebnf"
 )
 
 // bits stolen from: https://github.com/alecthomas/participle/blob/v0.1.0/_examples/sql/main.go
@@ -205,7 +206,7 @@ func (v Value) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	filterLexer = lexer.Must(ebnf.New(`
+	ebnfDef = ebnf.New(`
 Comment = "--" { "\u0000"…"\uffff"-"\n" } .
 FieldPath = Ident { dot Ident } .
 Ident = (alpha | "_") { "_" | "-" | "/" | alpha | digit } { "_" | "/" | alpha | digit } .
@@ -219,11 +220,10 @@ digit = "0"…"9" .
 opchar = ("<" | ">" | "=" | "!") .
 dot = ("\\." | ".") .
 any = "\u0000"…"\uffff" .
-`))
+`)
 
-	filterParser = participle.MustBuild(
-		&Expression{},
-		participle.Lexer(filterLexer),
+	filterParser = participle.MustBuild[Expression](
+		participle.Lexer(ebnfDef),
 		participle.Unquote("String"),
 		participle.Elide("Whitespace", "Comment"),
 		participle.Map(func(token lexer.Token) (lexer.Token, error) {
@@ -239,7 +239,8 @@ func Parse(data []byte) (*Expression, error) {
 	if len(data) == 2 && data[0] == '(' && data[1] == ')' {
 		filter.And = append(filter.And, AndCondition{})
 	} else {
-		if err := filterParser.Parse(bytes.NewReader(data), filter); err != nil {
+		var err error
+		if filter, err = filterParser.Parse("", bytes.NewReader(data)); err != nil {
 			return nil, fmt.Errorf("error when parsing filter expression: \"%q\": %s", string(data), err)
 		}
 	}

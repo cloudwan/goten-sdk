@@ -54,7 +54,7 @@ type BeginUpgradeRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 	//  name of goten.meta.v1.Deployment
-	Name *deployment.Name `protobuf:"bytes,1,opt,customtype=Name,name=name,proto3" json:"name,omitempty" firestore:"name"`
+	Name *deployment.Name `protobuf:"bytes,1,opt,customtype=Name,name=name,proto3" json:"name,omitempty"`
 }
 
 func (m *BeginUpgradeRequest) Reset() {
@@ -128,11 +128,11 @@ type SetAvailableUpgradeRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 	//  name of goten.meta.v1.Deployment
-	Name                *deployment.Name `protobuf:"bytes,1,opt,customtype=Name,name=name,proto3" json:"name,omitempty" firestore:"name"`
-	TargetApiVersion    string           `protobuf:"bytes,2,opt,name=target_api_version,json=targetApiVersion,proto3" json:"target_api_version,omitempty" firestore:"targetApiVersion"`
-	TotalShardsCount    int64            `protobuf:"varint,3,opt,name=total_shards_count,json=totalShardsCount,proto3" json:"total_shards_count,omitempty" firestore:"totalShardsCount"`
-	TargetDbDataVersion string           `protobuf:"bytes,4,opt,name=target_db_data_version,json=targetDbDataVersion,proto3" json:"target_db_data_version,omitempty" firestore:"targetDbDataVersion"`
-	TargetDbLocationTag string           `protobuf:"bytes,5,opt,name=target_db_location_tag,json=targetDbLocationTag,proto3" json:"target_db_location_tag,omitempty" firestore:"targetDbLocationTag"`
+	Name                *deployment.Name `protobuf:"bytes,1,opt,customtype=Name,name=name,proto3" json:"name,omitempty"`
+	TargetApiVersion    string           `protobuf:"bytes,2,opt,name=target_api_version,json=targetApiVersion,proto3" json:"target_api_version,omitempty"`
+	TotalShardsCount    int64            `protobuf:"varint,3,opt,name=total_shards_count,json=totalShardsCount,proto3" json:"total_shards_count,omitempty"`
+	TargetDbDataVersion string           `protobuf:"bytes,4,opt,name=target_db_data_version,json=targetDbDataVersion,proto3" json:"target_db_data_version,omitempty"`
+	TargetDbLocationTag string           `protobuf:"bytes,5,opt,name=target_db_location_tag,json=targetDbLocationTag,proto3" json:"target_db_location_tag,omitempty"`
 }
 
 func (m *SetAvailableUpgradeRequest) Reset() {
@@ -262,11 +262,11 @@ type NotifyShardsUpgradeReadinessRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 	//  name of goten.meta.v1.Deployment
-	Name             *deployment.Name `protobuf:"bytes,1,opt,customtype=Name,name=name,proto3" json:"name,omitempty" firestore:"name"`
-	ShardsFrom       int64            `protobuf:"varint,2,opt,name=shards_from,json=shardsFrom,proto3" json:"shards_from,omitempty" firestore:"shardsFrom"`
-	ShardsTo         int64            `protobuf:"varint,3,opt,name=shards_to,json=shardsTo,proto3" json:"shards_to,omitempty" firestore:"shardsTo"`
-	Ready            bool             `protobuf:"varint,4,opt,name=ready,proto3" json:"ready,omitempty" firestore:"ready"`
-	TotalShardsCount int64            `protobuf:"varint,5,opt,name=total_shards_count,json=totalShardsCount,proto3" json:"total_shards_count,omitempty" firestore:"totalShardsCount"`
+	Name             *deployment.Name `protobuf:"bytes,1,opt,customtype=Name,name=name,proto3" json:"name,omitempty"`
+	ShardsFrom       int64            `protobuf:"varint,2,opt,name=shards_from,json=shardsFrom,proto3" json:"shards_from,omitempty"`
+	ShardsTo         int64            `protobuf:"varint,3,opt,name=shards_to,json=shardsTo,proto3" json:"shards_to,omitempty"`
+	Ready            bool             `protobuf:"varint,4,opt,name=ready,proto3" json:"ready,omitempty"`
+	TotalShardsCount int64            `protobuf:"varint,5,opt,name=total_shards_count,json=totalShardsCount,proto3" json:"total_shards_count,omitempty"`
 }
 
 func (m *NotifyShardsUpgradeReadinessRequest) Reset() {
@@ -396,13 +396,13 @@ type GetOrRegisterDataUpdateTaskRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 	//  name of goten.meta.v1.Deployment
-	Name *deployment.Name `protobuf:"bytes,1,opt,customtype=Name,name=name,proto3" json:"name,omitempty" firestore:"name"`
+	Name *deployment.Name `protobuf:"bytes,1,opt,customtype=Name,name=name,proto3" json:"name,omitempty"`
 	// Data task tag
-	Tag string `protobuf:"bytes,2,opt,name=tag,proto3" json:"tag,omitempty" firestore:"tag"`
+	Tag string `protobuf:"bytes,2,opt,name=tag,proto3" json:"tag,omitempty"`
 	// Number of shards
-	ShardsCount int64 `protobuf:"varint,3,opt,name=shards_count,json=shardsCount,proto3" json:"shards_count,omitempty" firestore:"shardsCount"`
+	ShardsCount int64 `protobuf:"varint,3,opt,name=shards_count,json=shardsCount,proto3" json:"shards_count,omitempty"`
 	// Db data target version
-	DbDataTargetVersion string `protobuf:"bytes,4,opt,name=db_data_target_version,json=dbDataTargetVersion,proto3" json:"db_data_target_version,omitempty" firestore:"dbDataTargetVersion"`
+	DbDataTargetVersion string `protobuf:"bytes,4,opt,name=db_data_target_version,json=dbDataTargetVersion,proto3" json:"db_data_target_version,omitempty"`
 }
 
 func (m *GetOrRegisterDataUpdateTaskRequest) Reset() {
@@ -517,7 +517,7 @@ type GetOrRegisterDataUpdateTaskResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-	Status        *deployment.Deployment_DbUpdateTaskStatus `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty" firestore:"status"`
+	Status        *deployment.Deployment_DbUpdateTaskStatus `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
 }
 
 func (m *GetOrRegisterDataUpdateTaskResponse) Reset() {
@@ -591,17 +591,17 @@ type UpdateDataTaskUpdateRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 	//  name of goten.meta.v1.Deployment
-	Name *deployment.Name `protobuf:"bytes,1,opt,customtype=Name,name=name,proto3" json:"name,omitempty" firestore:"name"`
+	Name *deployment.Name `protobuf:"bytes,1,opt,customtype=Name,name=name,proto3" json:"name,omitempty"`
 	// Data task tag
-	Tag string `protobuf:"bytes,2,opt,name=tag,proto3" json:"tag,omitempty" firestore:"tag"`
+	Tag string `protobuf:"bytes,2,opt,name=tag,proto3" json:"tag,omitempty"`
 	// Number of shards
-	Shard int64 `protobuf:"varint,3,opt,name=shard,proto3" json:"shard,omitempty" firestore:"shard"`
+	Shard int64 `protobuf:"varint,3,opt,name=shard,proto3" json:"shard,omitempty"`
 	// Whether it is completed
-	Done bool `protobuf:"varint,4,opt,name=done,proto3" json:"done,omitempty" firestore:"done"`
+	Done bool `protobuf:"varint,4,opt,name=done,proto3" json:"done,omitempty"`
 	// Information about progress
-	ProgressStatus *structpb.Struct `protobuf:"bytes,5,opt,name=progress_status,json=progressStatus,proto3" json:"progress_status,omitempty" firestore:"progressStatus"`
+	ProgressStatus *structpb.Struct `protobuf:"bytes,5,opt,name=progress_status,json=progressStatus,proto3" json:"progress_status,omitempty"`
 	// Db data target version
-	DbDataTargetVersion string `protobuf:"bytes,6,opt,name=db_data_target_version,json=dbDataTargetVersion,proto3" json:"db_data_target_version,omitempty" firestore:"dbDataTargetVersion"`
+	DbDataTargetVersion string `protobuf:"bytes,6,opt,name=db_data_target_version,json=dbDataTargetVersion,proto3" json:"db_data_target_version,omitempty"`
 }
 
 func (m *UpdateDataTaskUpdateRequest) Reset() {

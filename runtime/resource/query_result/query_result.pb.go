@@ -51,17 +51,17 @@ type QueryResult struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-	Results       []*anypb.Any `protobuf:"bytes,1,rep,name=results,proto3" json:"results,omitempty" firestore:"results"`
-	NextCursor    []byte       `protobuf:"bytes,2,opt,name=next_cursor,json=nextCursor,proto3" json:"next_cursor,omitempty" firestore:"nextCursor"`
-	PrevCursor    []byte       `protobuf:"bytes,3,opt,name=prev_cursor,json=prevCursor,proto3" json:"prev_cursor,omitempty" firestore:"prevCursor"`
-	TotalCount    int32        `protobuf:"varint,4,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty" firestore:"totalCount"`
-	Offset        int32        `protobuf:"varint,5,opt,name=offset,proto3" json:"offset,omitempty" firestore:"offset"`
+	Results       []*anypb.Any `protobuf:"bytes,1,rep,name=results,proto3" json:"results,omitempty"`
+	NextCursor    []byte       `protobuf:"bytes,2,opt,name=next_cursor,json=nextCursor,proto3" json:"next_cursor,omitempty"`
+	PrevCursor    []byte       `protobuf:"bytes,3,opt,name=prev_cursor,json=prevCursor,proto3" json:"prev_cursor,omitempty"`
+	TotalCount    int32        `protobuf:"varint,4,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`
+	Offset        int32        `protobuf:"varint,5,opt,name=offset,proto3" json:"offset,omitempty"`
 	// watch-specific
-	IsCurrent    bool   `protobuf:"varint,6,opt,name=is_current,json=isCurrent,proto3" json:"is_current,omitempty" firestore:"isCurrent"`
-	IsSoftReset  bool   `protobuf:"varint,7,opt,name=is_soft_reset,json=isSoftReset,proto3" json:"is_soft_reset,omitempty" firestore:"isSoftReset"`
-	IsHardReset  bool   `protobuf:"varint,8,opt,name=is_hard_reset,json=isHardReset,proto3" json:"is_hard_reset,omitempty" firestore:"isHardReset"`
-	SnapshotSize int64  `protobuf:"varint,9,opt,name=snapshot_size,json=snapshotSize,proto3" json:"snapshot_size,omitempty" firestore:"snapshotSize"`
-	ResumeToken  string `protobuf:"bytes,10,opt,name=resume_token,json=resumeToken,proto3" json:"resume_token,omitempty" firestore:"resumeToken"`
+	IsCurrent    bool   `protobuf:"varint,6,opt,name=is_current,json=isCurrent,proto3" json:"is_current,omitempty"`
+	IsSoftReset  bool   `protobuf:"varint,7,opt,name=is_soft_reset,json=isSoftReset,proto3" json:"is_soft_reset,omitempty"`
+	IsHardReset  bool   `protobuf:"varint,8,opt,name=is_hard_reset,json=isHardReset,proto3" json:"is_hard_reset,omitempty"`
+	SnapshotSize int64  `protobuf:"varint,9,opt,name=snapshot_size,json=snapshotSize,proto3" json:"snapshot_size,omitempty"`
+	ResumeToken  string `protobuf:"bytes,10,opt,name=resume_token,json=resumeToken,proto3" json:"resume_token,omitempty"`
 }
 
 func (m *QueryResult) Reset() {

@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"runtime/debug"
 
-	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus/ctxlogrus"
 	"golang.org/x/sync/errgroup"
+
+	"github.com/cloudwan/goten-sdk/runtime/observability"
 )
 
 // Wrapper on errgroup that suppresses panics, returning error instead
@@ -34,7 +35,7 @@ func (g *Group) Go(f func() error) {
 				} else {
 					err = fmt.Errorf("errgroup panic: %v", r)
 				}
-				log := ctxlogrus.Extract(g.ctx)
+				log := observability.LoggerFromContext(g.ctx)
 				if log != nil {
 					log.WithField("error.stacktrace", string(debug.Stack())).Error(err)
 				}

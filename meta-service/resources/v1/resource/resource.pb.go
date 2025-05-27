@@ -55,25 +55,25 @@ type Resource struct {
 	// When creating a new instance, this field is optional and if not provided,
 	// it will be generated automatically. Last ID segment must conform to the
 	// following regex: [a-zA-Z]{1,128}
-	Name *Name `protobuf:"bytes,1,opt,customtype=Name,name=name,proto3" json:"name,omitempty" firestore:"name"`
+	Name *Name `protobuf:"bytes,1,opt,customtype=Name,name=name,proto3" json:"name,omitempty"`
 	// Metadata is an object with information like create, update and delete time
 	// (for async deleted resources), has user labels/annotations, sharding
 	// information, multi-region syncing information and may have non-schema
 	// owners (useful for taking ownership of resources belonging to lower level
 	// services by higher ones).
-	Metadata *meta.Meta `protobuf:"bytes,2,opt,name=metadata,proto3" json:"metadata,omitempty" firestore:"metadata"`
+	Metadata *meta.Meta `protobuf:"bytes,2,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	// Plural name of resource in CamelForm, for example "Devices"
-	PluralName string `protobuf:"bytes,3,opt,name=plural_name,json=pluralName,proto3" json:"plural_name,omitempty" firestore:"pluralName"`
+	PluralName string `protobuf:"bytes,3,opt,name=plural_name,json=pluralName,proto3" json:"plural_name,omitempty"`
 	// Fully qualified name, for example devices.edgelq.com/Device.
 	// It can also be derived from name too.
-	Fqn string `protobuf:"bytes,4,opt,name=fqn,proto3" json:"fqn,omitempty" firestore:"fqn"`
+	Fqn string `protobuf:"bytes,4,opt,name=fqn,proto3" json:"fqn,omitempty"`
 	// List of service versions where this resource is known.
 	// This list will be sorted if created by meta service provided by Goten.
 	// The newest version is first, the oldest last.
-	Versions []string `protobuf:"bytes,5,rep,name=versions,proto3" json:"versions,omitempty" firestore:"versions"`
+	Versions []string `protobuf:"bytes,5,rep,name=versions,proto3" json:"versions,omitempty"`
 	// Versioned information holds values that may be valid for specific versions
 	// only. Sorted exactly like versions list.
-	VersionedInfos []*Resource_VersionedInfo `protobuf:"bytes,6,rep,name=versioned_infos,json=versionedInfos,proto3" json:"versioned_infos,omitempty" firestore:"versionedInfos"`
+	VersionedInfos []*Resource_VersionedInfo `protobuf:"bytes,6,rep,name=versioned_infos,json=versionedInfos,proto3" json:"versioned_infos,omitempty"`
 }
 
 func (m *Resource) Reset() {
@@ -216,9 +216,9 @@ type Resource_VersionedInfo struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 	// Resource version this information applies to.
-	Version string `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty" firestore:"version"`
+	Version string `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
 	// Whether resource is regional.
-	IsRegional bool `protobuf:"varint,2,opt,name=is_regional,json=isRegional,proto3" json:"is_regional,omitempty" firestore:"isRegional"`
+	IsRegional bool `protobuf:"varint,2,opt,name=is_regional,json=isRegional,proto3" json:"is_regional,omitempty"`
 }
 
 func (m *Resource_VersionedInfo) Reset() {

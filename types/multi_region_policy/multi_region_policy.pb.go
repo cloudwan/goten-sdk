@@ -52,12 +52,12 @@ type MultiRegionPolicy struct {
 	unknownFields protoimpl.UnknownFields
 	// List of regions available in the scope.
 	// It is forbidden to create resource within given scope outside allowed regions.
-	EnabledRegions []string `protobuf:"bytes,1,rep,name=enabled_regions,json=enabledRegions,proto3" json:"enabled_regions,omitempty" firestore:"enabledRegions"`
+	EnabledRegions []string `protobuf:"bytes,1,rep,name=enabled_regions,json=enabledRegions,proto3" json:"enabled_regions,omitempty"`
 	// Must be within restricted_regions. Defines region handling CUD requests for
 	// resources not attached to any region.
-	DefaultControlRegion string `protobuf:"bytes,2,opt,name=default_control_region,json=defaultControlRegion,proto3" json:"default_control_region,omitempty" firestore:"defaultControlRegion"`
+	DefaultControlRegion string `protobuf:"bytes,2,opt,name=default_control_region,json=defaultControlRegion,proto3" json:"default_control_region,omitempty"`
 	// List of criteria according to which synchronization is disabled.
-	CriteriaForDisabledSync []*MultiRegionPolicy_CriteriaForDisabledSync `protobuf:"bytes,3,rep,name=criteria_for_disabled_sync,json=criteriaForDisabledSync,proto3" json:"criteria_for_disabled_sync,omitempty" firestore:"criteriaForDisabledSync"`
+	CriteriaForDisabledSync []*MultiRegionPolicy_CriteriaForDisabledSync `protobuf:"bytes,3,rep,name=criteria_for_disabled_sync,json=criteriaForDisabledSync,proto3" json:"criteria_for_disabled_sync,omitempty"`
 }
 
 func (m *MultiRegionPolicy) Reset() {
@@ -168,13 +168,13 @@ type MultiRegionPolicy_CriteriaForDisabledSync struct {
 	unknownFields protoimpl.UnknownFields
 	// Fully qualified name of a resource. If not provided, all are considered. Required format:
 	// "${SERVICE_DOMAIN}/${RESOURCE_SINGLE_NAME_CAMEL}, for example: "devices.service.com/Device"
-	ResourceTypeName string `protobuf:"bytes,1,opt,name=resource_type_name,json=resourceTypeName,proto3" json:"resource_type_name,omitempty" firestore:"resourceTypeName"`
+	ResourceTypeName string `protobuf:"bytes,1,opt,name=resource_type_name,json=resourceTypeName,proto3" json:"resource_type_name,omitempty"`
 	// Source region indicates that this rule prevents syncing into this region. If left blank, then all regions are
 	// considered.
-	SourceRegion string `protobuf:"bytes,2,opt,name=source_region,json=sourceRegion,proto3" json:"source_region,omitempty" firestore:"sourceRegion"`
+	SourceRegion string `protobuf:"bytes,2,opt,name=source_region,json=sourceRegion,proto3" json:"source_region,omitempty"`
 	// Dest region indicates that this rule prevents syncing from this region. If left blank, then all regions are
 	// considered.
-	DestRegion string `protobuf:"bytes,3,opt,name=dest_region,json=destRegion,proto3" json:"dest_region,omitempty" firestore:"destRegion"`
+	DestRegion string `protobuf:"bytes,3,opt,name=dest_region,json=destRegion,proto3" json:"dest_region,omitempty"`
 }
 
 func (m *MultiRegionPolicy_CriteriaForDisabledSync) Reset() {

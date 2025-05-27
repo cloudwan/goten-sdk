@@ -58,48 +58,48 @@ type Service struct {
 	// When creating a new instance, this field is optional and if not provided,
 	// it will be generated automatically. Last ID segment must conform to the
 	// following regex: [a-z][a-z0-9\\-.]{0,28}[a-z0-9]
-	Name *Name `protobuf:"bytes,1,opt,customtype=Name,name=name,proto3" json:"name,omitempty" firestore:"name"`
+	Name *Name `protobuf:"bytes,1,opt,customtype=Name,name=name,proto3" json:"name,omitempty"`
 	// Metadata is an object with information like create, update and delete time
 	// (for async deleted resources), has user labels/annotations, sharding
 	// information, multi-region syncing information and may have non-schema
 	// owners (useful for taking ownership of resources belonging to lower level
 	// services by higher ones).
-	Metadata *meta.Meta `protobuf:"bytes,2,opt,name=metadata,proto3" json:"metadata,omitempty" firestore:"metadata"`
+	Metadata *meta.Meta `protobuf:"bytes,2,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	// Multi region policy defines in which region all kid resources (and their
 	// kids) will by default belong and cross-region syncing policies.
-	MultiRegionPolicy *multi_region_policy.MultiRegionPolicy `protobuf:"bytes,3,opt,name=multi_region_policy,json=multiRegionPolicy,proto3" json:"multi_region_policy,omitempty" firestore:"multiRegionPolicy"`
+	MultiRegionPolicy *multi_region_policy.MultiRegionPolicy `protobuf:"bytes,3,opt,name=multi_region_policy,json=multiRegionPolicy,proto3" json:"multi_region_policy,omitempty"`
 	// Service display name - it is lowerCamelCase of service name, but not
 	// domain. It is taken from api-skeleton file, under "service.name" path.
-	DisplayName string `protobuf:"bytes,4,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty" firestore:"displayName"`
+	DisplayName string `protobuf:"bytes,4,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
 	// All supported versions.
 	// This list will be sorted if created by meta service provided by Goten.
 	// The newest version is first, the oldest last.
-	AllVersions []string `protobuf:"bytes,5,rep,name=all_versions,json=allVersions,proto3" json:"all_versions,omitempty" firestore:"allVersions"`
+	AllVersions []string `protobuf:"bytes,5,rep,name=all_versions,json=allVersions,proto3" json:"all_versions,omitempty"`
 	// Globally available domain for this service. Requests to it should
 	// direct to most suitable (usually the nearest/healthy/most performant)
 	// region.
-	GlobalDomain string `protobuf:"bytes,6,opt,name=global_domain,json=globalDomain,proto3" json:"global_domain,omitempty" firestore:"globalDomain"`
+	GlobalDomain string `protobuf:"bytes,6,opt,name=global_domain,json=globalDomain,proto3" json:"global_domain,omitempty"`
 	// Additional global domains with labels.
-	LabelledDomains []*common.LabelledDomain `protobuf:"bytes,14,rep,name=labelled_domains,json=labelledDomains,proto3" json:"labelled_domains,omitempty" firestore:"labelledDomains"`
+	LabelledDomains []*common.LabelledDomain `protobuf:"bytes,14,rep,name=labelled_domains,json=labelledDomains,proto3" json:"labelled_domains,omitempty"`
 	// If given service is part of service group, this value points to the leading
 	// service.
-	LeadingService *Name `protobuf:"bytes,13,opt,customtype=Name,name=leading_service,json=leadingService,proto3" json:"leading_service,omitempty" firestore:"leadingService"`
+	LeadingService *Name `protobuf:"bytes,13,opt,customtype=Name,name=leading_service,json=leadingService,proto3" json:"leading_service,omitempty"`
 	// All imported on schema-level services. This list declares that resources in
 	// those services can be referenced by this service.
-	ImportedServices []*Reference `protobuf:"bytes,7,rep,customtype=Reference,name=imported_services,json=importedServices,proto3" json:"imported_services,omitempty" firestore:"importedServices"`
+	ImportedServices []*Reference `protobuf:"bytes,7,rep,customtype=Reference,name=imported_services,json=importedServices,proto3" json:"imported_services,omitempty"`
 	// All used services. Unlike imported, they are not imported on schema level.
 	// Its just a declaration that given service may access other services, but
 	// does not try to establish any references.
-	UsedServices []*Reference `protobuf:"bytes,8,rep,customtype=Reference,name=used_services,json=usedServices,proto3" json:"used_services,omitempty" firestore:"usedServices"`
+	UsedServices []*Reference `protobuf:"bytes,8,rep,customtype=Reference,name=used_services,json=usedServices,proto3" json:"used_services,omitempty"`
 	// Information containing which imported service version is used by current
 	// service version. This does not include any used services.
-	ImportedVersions []*Service_ImportedVersions `protobuf:"bytes,9,rep,name=imported_versions,json=importedVersions,proto3" json:"imported_versions,omitempty" firestore:"importedVersions"`
+	ImportedVersions []*Service_ImportedVersions `protobuf:"bytes,9,rep,name=imported_versions,json=importedVersions,proto3" json:"imported_versions,omitempty"`
 	// Generation number used by EnvRegistry config to generate this resource.
-	EnvRegistryGeneration int32 `protobuf:"varint,10,opt,name=env_registry_generation,json=envRegistryGeneration,proto3" json:"env_registry_generation,omitempty" firestore:"envRegistryGeneration"`
+	EnvRegistryGeneration int32 `protobuf:"varint,10,opt,name=env_registry_generation,json=envRegistryGeneration,proto3" json:"env_registry_generation,omitempty"`
 	// If true, then switch to the new version will be automatic (if there is
 	// newer), once db upgrade finishes. Otherwise it will require manual call
 	// from operator.
-	AutomaticVersionSwitch bool `protobuf:"varint,11,opt,name=automatic_version_switch,json=automaticVersionSwitch,proto3" json:"automatic_version_switch,omitempty" firestore:"automaticVersionSwitch"`
+	AutomaticVersionSwitch bool `protobuf:"varint,11,opt,name=automatic_version_switch,json=automaticVersionSwitch,proto3" json:"automatic_version_switch,omitempty"`
 }
 
 func (m *Service) Reset() {
@@ -341,12 +341,12 @@ type Service_ImportedVersions struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 	// Imported service reference
-	TargetService *Reference `protobuf:"bytes,1,opt,customtype=Reference,name=target_service,json=targetService,proto3" json:"target_service,omitempty" firestore:"targetService"`
+	TargetService *Reference `protobuf:"bytes,1,opt,customtype=Reference,name=target_service,json=targetService,proto3" json:"target_service,omitempty"`
 	// Version of the imported service
-	TargetServiceVersion string `protobuf:"bytes,2,opt,name=target_service_version,json=targetServiceVersion,proto3" json:"target_service_version,omitempty" firestore:"targetServiceVersion"`
+	TargetServiceVersion string `protobuf:"bytes,2,opt,name=target_service_version,json=targetServiceVersion,proto3" json:"target_service_version,omitempty"`
 	// Version of the current service that imports target service in its
 	// version.
-	CurrentServiceVersion string `protobuf:"bytes,3,opt,name=current_service_version,json=currentServiceVersion,proto3" json:"current_service_version,omitempty" firestore:"currentServiceVersion"`
+	CurrentServiceVersion string `protobuf:"bytes,3,opt,name=current_service_version,json=currentServiceVersion,proto3" json:"current_service_version,omitempty"`
 }
 
 func (m *Service_ImportedVersions) Reset() {

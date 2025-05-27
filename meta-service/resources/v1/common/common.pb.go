@@ -48,12 +48,12 @@ type LabelledDomain struct {
 	state            protoimpl.MessageState
 	sizeCache        protoimpl.SizeCache
 	unknownFields    protoimpl.UnknownFields
-	Label            string   `protobuf:"bytes,1,opt,name=label,proto3" json:"label,omitempty" firestore:"label"`
-	Domain           string   `protobuf:"bytes,2,opt,name=domain,proto3" json:"domain,omitempty" firestore:"domain"`
-	AvailableMixins  []string `protobuf:"bytes,3,rep,name=available_mixins,json=availableMixins,proto3" json:"available_mixins,omitempty" firestore:"availableMixins"`
-	WebGrpcAvailable bool     `protobuf:"varint,4,opt,name=web_grpc_available,json=webGrpcAvailable,proto3" json:"web_grpc_available,omitempty" firestore:"webGrpcAvailable"`
-	RestApiAvailable bool     `protobuf:"varint,5,opt,name=rest_api_available,json=restApiAvailable,proto3" json:"rest_api_available,omitempty" firestore:"restApiAvailable"`
-	IsPrivate        bool     `protobuf:"varint,6,opt,name=is_private,json=isPrivate,proto3" json:"is_private,omitempty" firestore:"isPrivate"`
+	Label            string   `protobuf:"bytes,1,opt,name=label,proto3" json:"label,omitempty"`
+	Domain           string   `protobuf:"bytes,2,opt,name=domain,proto3" json:"domain,omitempty"`
+	AvailableMixins  []string `protobuf:"bytes,3,rep,name=available_mixins,json=availableMixins,proto3" json:"available_mixins,omitempty"`
+	WebGrpcAvailable bool     `protobuf:"varint,4,opt,name=web_grpc_available,json=webGrpcAvailable,proto3" json:"web_grpc_available,omitempty"`
+	RestApiAvailable bool     `protobuf:"varint,5,opt,name=rest_api_available,json=restApiAvailable,proto3" json:"rest_api_available,omitempty"`
+	IsPrivate        bool     `protobuf:"varint,6,opt,name=is_private,json=isPrivate,proto3" json:"is_private,omitempty"`
 }
 
 func (m *LabelledDomain) Reset() {

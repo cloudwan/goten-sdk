@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus/ctxlogrus"
-
 	"github.com/cloudwan/goten-sdk/runtime/resource"
 )
 
@@ -69,9 +67,8 @@ func (a *Decorator) AssignShards(ctx context.Context, resource resource.Resource
 					fp.ClearValueRaw(resource)
 				}
 			} else {
-				ctxlogrus.Extract(ctx).Errorf(
-					"Cannot parse field path %s for resource of type %s",
-					ring.path, resource.GetResourceDescriptor().GetResourceTypeName().FullyQualifiedTypeName())
+				panic(fmt.Errorf("cannot parse field path %s for resource of type %s",
+					ring.path, resource.GetResourceDescriptor().GetResourceTypeName().FullyQualifiedTypeName()))
 			}
 		}
 	}

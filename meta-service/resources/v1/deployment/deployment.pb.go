@@ -110,49 +110,49 @@ type Deployment struct {
 	// Name of Deployment
 	// ID must be exactly same as region ID it belongs to - it is populated
 	// automatically by Goten components.
-	Name *Name `protobuf:"bytes,1,opt,customtype=Name,name=name,proto3" json:"name,omitempty" firestore:"name"`
+	Name *Name `protobuf:"bytes,1,opt,customtype=Name,name=name,proto3" json:"name,omitempty"`
 	// Metadata is an object with information like create, update and delete time
 	// (for async deleted resources), has user labels/annotations, sharding
 	// information, multi-region syncing information and may have non-schema
 	// owners (useful for taking ownership of resources belonging to lower level
 	// services by higher ones).
-	Metadata *meta.Meta `protobuf:"bytes,2,opt,name=metadata,proto3" json:"metadata,omitempty" firestore:"metadata"`
+	Metadata *meta.Meta `protobuf:"bytes,2,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	// Service display name - it is lowerCamelCase of service name, but not
 	// domain. It is taken from api-skeleton file, under "service.name" path.
-	ServiceName string `protobuf:"bytes,3,opt,name=service_name,json=serviceName,proto3" json:"service_name,omitempty" firestore:"serviceName"`
+	ServiceName string `protobuf:"bytes,3,opt,name=service_name,json=serviceName,proto3" json:"service_name,omitempty"`
 	// Informs in which region cluster running this deployment is located.
-	Region *region.Reference `protobuf:"bytes,4,opt,customtype=Reference,name=region,proto3" json:"region,omitempty" firestore:"region"`
+	Region *region.Reference `protobuf:"bytes,4,opt,customtype=Reference,name=region,proto3" json:"region,omitempty"`
 	// Public domain indicates under which public address service in this
 	// particular region can be accessed.
-	PublicDomain string `protobuf:"bytes,5,opt,name=public_domain,json=publicDomain,proto3" json:"public_domain,omitempty" firestore:"publicDomain"`
+	PublicDomain string `protobuf:"bytes,5,opt,name=public_domain,json=publicDomain,proto3" json:"public_domain,omitempty"`
 	// Private domain indicates how to access this service within local private
 	// network. However, this address should not be available for anyone outside
 	// network. It is only to be used by other service deployments that run within
 	// same private network for better performance purposes (less hops). It should
 	// be used in conjunction with field local_network_id.
-	PrivateDomain string `protobuf:"bytes,6,opt,name=private_domain,json=privateDomain,proto3" json:"private_domain,omitempty" firestore:"privateDomain"`
+	PrivateDomain string `protobuf:"bytes,6,opt,name=private_domain,json=privateDomain,proto3" json:"private_domain,omitempty"`
 	// Additional regional domains with labels where Deployment can be accessed.
-	LabelledDomains []*common.LabelledDomain `protobuf:"bytes,19,rep,name=labelled_domains,json=labelledDomains,proto3" json:"labelled_domains,omitempty" firestore:"labelledDomains"`
+	LabelledDomains []*common.LabelledDomain `protobuf:"bytes,19,rep,name=labelled_domains,json=labelledDomains,proto3" json:"labelled_domains,omitempty"`
 	// Local network identifier - it can be mostly anything, however if two
 	// deployments for different services hold same value in same region, then
 	// Goten components will try to optimize access by using private_domain field
 	// instead of public_domain.
-	LocalNetworkId string `protobuf:"bytes,7,opt,name=local_network_id,json=localNetworkId,proto3" json:"local_network_id,omitempty" firestore:"localNetworkId"`
+	LocalNetworkId string `protobuf:"bytes,7,opt,name=local_network_id,json=localNetworkId,proto3" json:"local_network_id,omitempty"`
 	// Location of given deployment. This value is likely to be equal for all
 	// deployments using same underlying cluster. It may be used by Goten to
 	// optimize multi-region routing.
-	Location *Deployment_Location `protobuf:"bytes,8,opt,name=location,proto3" json:"location,omitempty" firestore:"location"`
+	Location *Deployment_Location `protobuf:"bytes,8,opt,name=location,proto3" json:"location,omitempty"`
 	// Whether this deployment is disabled. It does not trigger any deployment
 	// deletion - it will just notify others (in different regions) that its
 	// no longer available and no request should be routed there. It can
 	// be used as first step to delete deployment.
-	IsDisabled bool `protobuf:"varint,9,opt,name=is_disabled,json=isDisabled,proto3" json:"is_disabled,omitempty" firestore:"isDisabled"`
+	IsDisabled bool `protobuf:"varint,9,opt,name=is_disabled,json=isDisabled,proto3" json:"is_disabled,omitempty"`
 	// Generation number used by EnvRegistry config to generate this resource.
-	EnvRegistryGeneration int32 `protobuf:"varint,10,opt,name=env_registry_generation,json=envRegistryGeneration,proto3" json:"env_registry_generation,omitempty" firestore:"envRegistryGeneration"`
+	EnvRegistryGeneration int32 `protobuf:"varint,10,opt,name=env_registry_generation,json=envRegistryGeneration,proto3" json:"env_registry_generation,omitempty"`
 	// The current version of the service. Note this MAY not be the newest
 	// version! At the very least, if there was a fresh db upgrade, it will be old
 	// version till automatic upgrade finishes (or manual switch happens).
-	CurrentVersion string `protobuf:"bytes,11,opt,name=current_version,json=currentVersion,proto3" json:"current_version,omitempty" firestore:"currentVersion"`
+	CurrentVersion string `protobuf:"bytes,11,opt,name=current_version,json=currentVersion,proto3" json:"current_version,omitempty"`
 	// Current version of data in the database, it must follow convention
 	// v<Number>.<Number>... (may be more numbers). When deployment is created
 	// first time, value is set to the current value. If non-empty lower
@@ -162,19 +162,19 @@ type Deployment struct {
 	// current_version signals main API version by deployment, while
 	// db_data_version indicates underlying database data. It can be used for
 	// internal upgrades, database migrations, or simple in-place updates.
-	DbDataVersion string `protobuf:"bytes,15,opt,name=db_data_version,json=dbDataVersion,proto3" json:"db_data_version,omitempty" firestore:"dbDataVersion"`
+	DbDataVersion string `protobuf:"bytes,15,opt,name=db_data_version,json=dbDataVersion,proto3" json:"db_data_version,omitempty"`
 	// Arbitrary database location tag. This should be used if database migration
 	// is needed (different endpoint, backend, namespace...).
-	DbLocationTag string `protobuf:"bytes,17,opt,name=db_location_tag,json=dbLocationTag,proto3" json:"db_location_tag,omitempty" firestore:"dbLocationTag"`
+	DbLocationTag string `protobuf:"bytes,17,opt,name=db_location_tag,json=dbLocationTag,proto3" json:"db_location_tag,omitempty"`
 	// If true, then switch to the new version will be automatic (if there is
 	// newer), once db upgrade finishes. Otherwise it will require manual call
 	// from operator.
-	AutomaticVersionSwitch bool                         `protobuf:"varint,12,opt,name=automatic_version_switch,json=automaticVersionSwitch,proto3" json:"automatic_version_switch,omitempty" firestore:"automaticVersionSwitch"`
-	AvailableUpgrade       *Deployment_AvailableUpgrade `protobuf:"bytes,18,opt,name=available_upgrade,json=availableUpgrade,proto3" json:"available_upgrade,omitempty" firestore:"availableUpgrade"`
+	AutomaticVersionSwitch bool                         `protobuf:"varint,12,opt,name=automatic_version_switch,json=automaticVersionSwitch,proto3" json:"automatic_version_switch,omitempty"`
+	AvailableUpgrade       *Deployment_AvailableUpgrade `protobuf:"bytes,18,opt,name=available_upgrade,json=availableUpgrade,proto3" json:"available_upgrade,omitempty"`
 	// Current state of the upgrade task.
-	UpgradeState *Deployment_UpgradeState `protobuf:"bytes,13,opt,name=upgrade_state,json=upgradeState,proto3" json:"upgrade_state,omitempty" firestore:"upgradeState"`
+	UpgradeState *Deployment_UpgradeState `protobuf:"bytes,13,opt,name=upgrade_state,json=upgradeState,proto3" json:"upgrade_state,omitempty"`
 	// Tagged update statuses.
-	DataUpdateStatuses []*Deployment_DbUpdateTaskStatus `protobuf:"bytes,16,rep,name=data_update_statuses,json=dataUpdateStatuses,proto3" json:"data_update_statuses,omitempty" firestore:"dataUpdateStatuses"`
+	DataUpdateStatuses []*Deployment_DbUpdateTaskStatus `protobuf:"bytes,16,rep,name=data_update_statuses,json=dataUpdateStatuses,proto3" json:"data_update_statuses,omitempty"`
 }
 
 func (m *Deployment) Reset() {
@@ -486,15 +486,15 @@ type Deployment_Location struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 	// Continent
-	Continent string `protobuf:"bytes,1,opt,name=continent,proto3" json:"continent,omitempty" firestore:"continent"`
+	Continent string `protobuf:"bytes,1,opt,name=continent,proto3" json:"continent,omitempty"`
 	// Country
-	Country string `protobuf:"bytes,2,opt,name=country,proto3" json:"country,omitempty" firestore:"country"`
+	Country string `protobuf:"bytes,2,opt,name=country,proto3" json:"country,omitempty"`
 	// Agglomeration
-	Agglomeration string `protobuf:"bytes,3,opt,name=agglomeration,proto3" json:"agglomeration,omitempty" firestore:"agglomeration"`
+	Agglomeration string `protobuf:"bytes,3,opt,name=agglomeration,proto3" json:"agglomeration,omitempty"`
 	// City
-	City string `protobuf:"bytes,4,opt,name=city,proto3" json:"city,omitempty" firestore:"city"`
+	City string `protobuf:"bytes,4,opt,name=city,proto3" json:"city,omitempty"`
 	// Cloud provider (like GCP, Azure, AWS...)
-	Cloud string `protobuf:"bytes,5,opt,name=cloud,proto3" json:"cloud,omitempty" firestore:"cloud"`
+	Cloud string `protobuf:"bytes,5,opt,name=cloud,proto3" json:"cloud,omitempty"`
 }
 
 func (m *Deployment_Location) Reset() {
@@ -624,13 +624,13 @@ type Deployment_UpgradeState struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-	TargetVersion string                        `protobuf:"bytes,1,opt,name=target_version,json=targetVersion,proto3" json:"target_version,omitempty" firestore:"targetVersion"`
-	ReadyShards   []int64                       `protobuf:"varint,2,rep,packed,name=ready_shards,json=readyShards,proto3" json:"ready_shards,omitempty" firestore:"readyShards"`
-	PendingShards []int64                       `protobuf:"varint,3,rep,packed,name=pending_shards,json=pendingShards,proto3" json:"pending_shards,omitempty" firestore:"pendingShards"`
-	Stage         Deployment_UpgradeState_Stage `protobuf:"varint,4,opt,name=stage,proto3,enum=goten.meta.v1.Deployment_UpgradeState_Stage" json:"stage,omitempty" firestore:"stage"`
+	TargetVersion string                        `protobuf:"bytes,1,opt,name=target_version,json=targetVersion,proto3" json:"target_version,omitempty"`
+	ReadyShards   []int64                       `protobuf:"varint,2,rep,packed,name=ready_shards,json=readyShards,proto3" json:"ready_shards,omitempty"`
+	PendingShards []int64                       `protobuf:"varint,3,rep,packed,name=pending_shards,json=pendingShards,proto3" json:"pending_shards,omitempty"`
+	Stage         Deployment_UpgradeState_Stage `protobuf:"varint,4,opt,name=stage,proto3,enum=goten.meta.v1.Deployment_UpgradeState_Stage" json:"stage,omitempty"`
 	// Value to switch once update is completed for db_data_version value.
-	DbDataTargetVersion string `protobuf:"bytes,5,opt,name=db_data_target_version,json=dbDataTargetVersion,proto3" json:"db_data_target_version,omitempty" firestore:"dbDataTargetVersion"`
-	DbTargetLocationTag string `protobuf:"bytes,6,opt,name=db_target_location_tag,json=dbTargetLocationTag,proto3" json:"db_target_location_tag,omitempty" firestore:"dbTargetLocationTag"`
+	DbDataTargetVersion string `protobuf:"bytes,5,opt,name=db_data_target_version,json=dbDataTargetVersion,proto3" json:"db_data_target_version,omitempty"`
+	DbTargetLocationTag string `protobuf:"bytes,6,opt,name=db_target_location_tag,json=dbTargetLocationTag,proto3" json:"db_target_location_tag,omitempty"`
 }
 
 func (m *Deployment_UpgradeState) Reset() {
@@ -771,10 +771,10 @@ type Deployment_AvailableUpgrade struct {
 	state            protoimpl.MessageState
 	sizeCache        protoimpl.SizeCache
 	unknownFields    protoimpl.UnknownFields
-	ApiVersion       string `protobuf:"bytes,1,opt,name=api_version,json=apiVersion,proto3" json:"api_version,omitempty" firestore:"apiVersion"`
-	DbDataVersion    string `protobuf:"bytes,2,opt,name=db_data_version,json=dbDataVersion,proto3" json:"db_data_version,omitempty" firestore:"dbDataVersion"`
-	DbLocationTag    string `protobuf:"bytes,3,opt,name=db_location_tag,json=dbLocationTag,proto3" json:"db_location_tag,omitempty" firestore:"dbLocationTag"`
-	TotalShardsCount int64  `protobuf:"varint,4,opt,name=total_shards_count,json=totalShardsCount,proto3" json:"total_shards_count,omitempty" firestore:"totalShardsCount"`
+	ApiVersion       string `protobuf:"bytes,1,opt,name=api_version,json=apiVersion,proto3" json:"api_version,omitempty"`
+	DbDataVersion    string `protobuf:"bytes,2,opt,name=db_data_version,json=dbDataVersion,proto3" json:"db_data_version,omitempty"`
+	DbLocationTag    string `protobuf:"bytes,3,opt,name=db_location_tag,json=dbLocationTag,proto3" json:"db_location_tag,omitempty"`
+	TotalShardsCount int64  `protobuf:"varint,4,opt,name=total_shards_count,json=totalShardsCount,proto3" json:"total_shards_count,omitempty"`
 }
 
 func (m *Deployment_AvailableUpgrade) Reset() {
@@ -888,16 +888,16 @@ type Deployment_DbUpdateTaskStatus struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 	// Identifying tag
-	TaskTag string `protobuf:"bytes,1,opt,name=task_tag,json=taskTag,proto3" json:"task_tag,omitempty" firestore:"taskTag"`
+	TaskTag string `protobuf:"bytes,1,opt,name=task_tag,json=taskTag,proto3" json:"task_tag,omitempty"`
 	// Shards count
-	ShardsCount int64 `protobuf:"varint,2,opt,name=shards_count,json=shardsCount,proto3" json:"shards_count,omitempty" firestore:"shardsCount"`
+	ShardsCount int64 `protobuf:"varint,2,opt,name=shards_count,json=shardsCount,proto3" json:"shards_count,omitempty"`
 	// List of completed shards
-	ReadyShards []int64 `protobuf:"varint,3,rep,packed,name=ready_shards,json=readyShards,proto3" json:"ready_shards,omitempty" firestore:"readyShards"`
+	ReadyShards []int64 `protobuf:"varint,3,rep,packed,name=ready_shards,json=readyShards,proto3" json:"ready_shards,omitempty"`
 	// Target data version
-	TargetVersion string `protobuf:"bytes,4,opt,name=target_version,json=targetVersion,proto3" json:"target_version,omitempty" firestore:"targetVersion"`
+	TargetVersion string `protobuf:"bytes,4,opt,name=target_version,json=targetVersion,proto3" json:"target_version,omitempty"`
 	// Optional generic data submitted by task handler, in case of
 	// resharding/controller reboot.
-	ProgressBar []*structpb.Struct `protobuf:"bytes,5,rep,name=progress_bar,json=progressBar,proto3" json:"progress_bar,omitempty" firestore:"progressBar"`
+	ProgressBar []*structpb.Struct `protobuf:"bytes,5,rep,name=progress_bar,json=progressBar,proto3" json:"progress_bar,omitempty"`
 }
 
 func (m *Deployment_DbUpdateTaskStatus) Reset() {

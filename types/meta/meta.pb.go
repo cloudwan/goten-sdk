@@ -102,37 +102,37 @@ type Meta struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-	CreateTime    *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty" firestore:"createTime"`
-	UpdateTime    *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=update_time,json=updateTime,proto3" json:"update_time,omitempty" firestore:"updateTime"`
-	DeleteTime    *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=delete_time,json=deleteTime,proto3" json:"delete_time,omitempty" firestore:"deleteTime"`
-	Uuid          string                 `protobuf:"bytes,3,opt,name=uuid,proto3" json:"uuid,omitempty" firestore:"uuid"`
-	Tags          []string               `protobuf:"bytes,4,rep,name=tags,proto3" json:"tags,omitempty" firestore:"tags"`
-	Labels        map[string]string      `protobuf:"bytes,5,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3" firestore:"labels"`
-	Annotations   map[string]string      `protobuf:"bytes,6,rep,name=annotations,proto3" json:"annotations,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3" firestore:"annotations"`
+	CreateTime    *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"`
+	UpdateTime    *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=update_time,json=updateTime,proto3" json:"update_time,omitempty"`
+	DeleteTime    *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=delete_time,json=deleteTime,proto3" json:"delete_time,omitempty"`
+	Uuid          string                 `protobuf:"bytes,3,opt,name=uuid,proto3" json:"uuid,omitempty"`
+	Tags          []string               `protobuf:"bytes,4,rep,name=tags,proto3" json:"tags,omitempty"`
+	Labels        map[string]string      `protobuf:"bytes,5,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	Annotations   map[string]string      `protobuf:"bytes,6,rep,name=annotations,proto3" json:"annotations,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// generation is the version number of the spec of the resource.
 	// This number increments when the resource is updated with any changes of its spec.
-	Generation int64 `protobuf:"varint,7,opt,name=generation,proto3" json:"generation,omitempty" firestore:"generation"`
+	Generation int64 `protobuf:"varint,7,opt,name=generation,proto3" json:"generation,omitempty"`
 	// An opaque value that represents the internal version of this object that can
 	// be used by clients to determine when objects have changed. May be used for optimistic
 	// concurrency, change detection, and the watch operation on a resource or set of resources.
 	// Clients must treat these values as opaque and passed unmodified back to the server.
 	// They may only be valid for a particular resource or set of resources.
-	ResourceVersion string `protobuf:"bytes,8,opt,name=resource_version,json=resourceVersion,proto3" json:"resource_version,omitempty" firestore:"resourceVersion"`
+	ResourceVersion string `protobuf:"bytes,8,opt,name=resource_version,json=resourceVersion,proto3" json:"resource_version,omitempty"`
 	// List of objects depended by this object. If ALL objects in the list have
 	// been deleted, this object will be garbage collected, unless, the last owner reference had the unset_on_delete flag
 	// set to true - in this case the object won't be garbage collected, just the owner reference will be unset.
 	// If this object is managed by a controller, then an entry in this list will point to this controller,
 	// with the controller field set to true.
-	OwnerReferences []*OwnerReference `protobuf:"bytes,13,rep,name=owner_references,json=ownerReferences,proto3" json:"owner_references,omitempty" firestore:"ownerReferences"`
+	OwnerReferences []*OwnerReference `protobuf:"bytes,13,rep,name=owner_references,json=ownerReferences,proto3" json:"owner_references,omitempty"`
 	// List of all shard indices by their keys
-	Shards map[string]int64 `protobuf:"bytes,14,rep,name=shards,proto3" json:"shards,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"varint,2,opt,name=value,proto3" firestore:"shards"`
+	Shards map[string]int64 `protobuf:"bytes,14,rep,name=shards,proto3" json:"shards,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"varint,2,opt,name=value,proto3"`
 	// Information about resource region and synchronization
-	Syncing *SyncingMeta `protobuf:"bytes,15,opt,name=syncing,proto3" json:"syncing,omitempty" firestore:"syncing"`
+	Syncing *SyncingMeta `protobuf:"bytes,15,opt,name=syncing,proto3" json:"syncing,omitempty"`
 	// Current lifecycle information about resource.
-	Lifecycle *Lifecycle `protobuf:"bytes,17,opt,name=lifecycle,proto3" json:"lifecycle,omitempty" firestore:"lifecycle"`
+	Lifecycle *Lifecycle `protobuf:"bytes,17,opt,name=lifecycle,proto3" json:"lifecycle,omitempty"`
 	// Information about services access.ownership of given resource. Non populated
 	// value should be treated as unregulated access.
-	Services *ServicesInfo `protobuf:"bytes,18,opt,name=services,proto3" json:"services,omitempty" firestore:"services"`
+	Services *ServicesInfo `protobuf:"bytes,18,opt,name=services,proto3" json:"services,omitempty"`
 }
 
 func (m *Meta) Reset() {
@@ -391,9 +391,9 @@ type LabelSelector struct {
 	// matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
 	// map is equivalent to an element of matchExpressions, whose key field is "key", the
 	// operator is "In", and the values array contains only "value". The requirements are ANDed.
-	MatchLabels map[string]string `protobuf:"bytes,1,rep,name=match_labels,json=matchLabels,proto3" json:"match_labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3" firestore:"matchLabels"`
+	MatchLabels map[string]string `protobuf:"bytes,1,rep,name=match_labels,json=matchLabels,proto3" json:"match_labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// matchExpressions is a list of label selector requirements. The requirements are ANDed.
-	MatchExpressions []*LabelSelectorRequirement `protobuf:"bytes,2,rep,name=match_expressions,json=matchExpressions,proto3" json:"match_expressions,omitempty" firestore:"matchExpressions"`
+	MatchExpressions []*LabelSelectorRequirement `protobuf:"bytes,2,rep,name=match_expressions,json=matchExpressions,proto3" json:"match_expressions,omitempty"`
 }
 
 func (m *LabelSelector) Reset() {
@@ -483,16 +483,16 @@ type LabelSelectorRequirement struct {
 	// key is the label key that the selector applies to.
 	// +patchMergeKey=key
 	// +patchStrategy=merge
-	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty" firestore:"key"`
+	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
 	// operator represents a key's relationship to a set of values.
 	// Valid operators are In, NotIn, Exists and DoesNotExist.
-	Operator string `protobuf:"bytes,2,opt,name=operator,proto3" json:"operator,omitempty" firestore:"operator"`
+	Operator string `protobuf:"bytes,2,opt,name=operator,proto3" json:"operator,omitempty"`
 	// values is an array of string values. If the operator is In or NotIn,
 	// the values array must be non-empty. If the operator is Exists or DoesNotExist,
 	// the values array must be empty. This array is replaced during a strategic
 	// merge patch.
 	// +optional
-	Values []string `protobuf:"bytes,3,rep,name=values,proto3" json:"values,omitempty" firestore:"values"`
+	Values []string `protobuf:"bytes,3,rep,name=values,proto3" json:"values,omitempty"`
 }
 
 func (m *LabelSelectorRequirement) Reset() {
@@ -595,15 +595,15 @@ type OwnerReference struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 	// Resource kind, for example "library.goten.com/Site"
-	Kind string `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty" firestore:"kind"`
+	Kind string `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
 	// For example v1
-	Version string `protobuf:"bytes,8,opt,name=version,proto3" json:"version,omitempty" firestore:"version"`
+	Version string `protobuf:"bytes,8,opt,name=version,proto3" json:"version,omitempty"`
 	// Name of the resource, for example projects/p1/devices/d1
-	Name string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty" firestore:"name"`
+	Name string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	// Region ID owning resource
-	Region string `protobuf:"bytes,9,opt,name=region,proto3" json:"region,omitempty" firestore:"region"`
+	Region string `protobuf:"bytes,9,opt,name=region,proto3" json:"region,omitempty"`
 	// If true, this reference points to the managing controller.
-	Controller bool `protobuf:"varint,6,opt,name=controller,proto3" json:"controller,omitempty" firestore:"controller"`
+	Controller bool `protobuf:"varint,6,opt,name=controller,proto3" json:"controller,omitempty"`
 	// This flag indicates that owner must have schema-based reference for this
 	// owner reference to be valid. Otherwise it will be removed. If there are
 	// no other owners, resource will be deleted. It also works if owner
@@ -613,10 +613,10 @@ type OwnerReference struct {
 	// just stops pointing to ownee via own reference (or never pointed at all).
 	// This flag is useful if higher-level service creates some resource in
 	// lower level service and assigns via schema reference.
-	RequiresOwnerReference bool `protobuf:"varint,10,opt,name=requires_owner_reference,json=requiresOwnerReference,proto3" json:"requires_owner_reference,omitempty" firestore:"requiresOwnerReference"`
+	RequiresOwnerReference bool `protobuf:"varint,10,opt,name=requires_owner_reference,json=requiresOwnerReference,proto3" json:"requires_owner_reference,omitempty"`
 	// This flag indicates if the reference should be unset on the owner deletion.
 	// If set, owner's deletion will not cause the resource deletion, but rather only the owner reference will be unset
-	UnsetOnDelete bool `protobuf:"varint,11,opt,name=unset_on_delete,json=unsetOnDelete,proto3" json:"unset_on_delete,omitempty" firestore:"unsetOnDelete"`
+	UnsetOnDelete bool `protobuf:"varint,11,opt,name=unset_on_delete,json=unsetOnDelete,proto3" json:"unset_on_delete,omitempty"`
 }
 
 func (m *OwnerReference) Reset() {
@@ -776,9 +776,9 @@ type SyncingMeta struct {
 	unknownFields protoimpl.UnknownFields
 	// For regional resources (or their descendants) it is equal to the region ID (present in resource name). Otherwise
 	// it is equal to the region as defined in Policy object under default_control_region field.
-	OwningRegion string `protobuf:"bytes,1,opt,name=owning_region,json=owningRegion,proto3" json:"owning_region,omitempty" firestore:"owningRegion"`
+	OwningRegion string `protobuf:"bytes,1,opt,name=owning_region,json=owningRegion,proto3" json:"owning_region,omitempty"`
 	// List of regions where owning resource can be present. If can be present in all regions, will contain "*".
-	Regions []string `protobuf:"bytes,2,rep,name=regions,proto3" json:"regions,omitempty" firestore:"regions"`
+	Regions []string `protobuf:"bytes,2,rep,name=regions,proto3" json:"regions,omitempty"`
 }
 
 func (m *SyncingMeta) Reset() {
@@ -864,14 +864,14 @@ type Lifecycle struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 	// Current resource state
-	State Lifecycle_State `protobuf:"varint,1,opt,name=state,proto3,enum=goten.types.Lifecycle_State" json:"state,omitempty" firestore:"state"`
+	State Lifecycle_State `protobuf:"varint,1,opt,name=state,proto3,enum=goten.types.Lifecycle_State" json:"state,omitempty"`
 	// Optional flag indicating that resource must not be deleted - at least yet. This flag is
 	// not accessible via API, it is expected developer will populate it if needed from custom
 	// server code. It should be used when some condition (other than blocking back reference)
 	// applies that server is not aware of.
 	// If flag is true, then constraint store will block resource deletion. GC will also defer
 	// from cleaning up, however developer should ensure that eventually deletion will be done.
-	BlockDeletion bool `protobuf:"varint,2,opt,name=block_deletion,json=blockDeletion,proto3" json:"block_deletion,omitempty" firestore:"blockDeletion"`
+	BlockDeletion bool `protobuf:"varint,2,opt,name=block_deletion,json=blockDeletion,proto3" json:"block_deletion,omitempty"`
 }
 
 func (m *Lifecycle) Reset() {
@@ -964,9 +964,9 @@ type ServicesInfo struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 	// Service domain owning resource
-	OwningService string `protobuf:"bytes,1,opt,name=owning_service,json=owningService,proto3" json:"owning_service,omitempty" firestore:"owningService"`
+	OwningService string `protobuf:"bytes,1,opt,name=owning_service,json=owningService,proto3" json:"owning_service,omitempty"`
 	// List of services with allowed access to resource.
-	AllowedServices []string `protobuf:"bytes,2,rep,name=allowed_services,json=allowedServices,proto3" json:"allowed_services,omitempty" firestore:"allowedServices"`
+	AllowedServices []string `protobuf:"bytes,2,rep,name=allowed_services,json=allowedServices,proto3" json:"allowed_services,omitempty"`
 }
 
 func (m *ServicesInfo) Reset() {

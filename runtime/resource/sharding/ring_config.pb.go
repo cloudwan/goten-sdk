@@ -72,10 +72,10 @@ type RingConfig struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 	// Ring size. It affects possible shard numbers assigned to all relevant resources, which are in range: [0:size).
-	Size uint64 `protobuf:"varint,1,opt,name=size,proto3" json:"size,omitempty" firestore:"size"`
+	Size uint64 `protobuf:"varint,1,opt,name=size,proto3" json:"size,omitempty"`
 	// Field path in the resource where shard number is stored, for example "meta.shards.byProjectIdMod4096". Expected
 	// underlying type is int64.
-	FieldPaths []*RingConfig_FieldPath `protobuf:"bytes,2,rep,name=field_paths,json=fieldPaths,proto3" json:"field_paths,omitempty" firestore:"fieldPaths"`
+	FieldPaths []*RingConfig_FieldPath `protobuf:"bytes,2,rep,name=field_paths,json=fieldPaths,proto3" json:"field_paths,omitempty"`
 }
 
 func (m *RingConfig) Reset() {
@@ -161,9 +161,9 @@ type RingConfig_FieldPath struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 	// Path in the resource where shard number is stored.
-	Path string `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty" firestore:"path"`
+	Path string `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
 	// Label identifying field path.
-	Label string `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty" firestore:"label"`
+	Label string `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty"`
 }
 
 func (m *RingConfig_FieldPath) Reset() {
