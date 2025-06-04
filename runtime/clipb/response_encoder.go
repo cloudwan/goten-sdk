@@ -19,6 +19,8 @@ import (
 
 const (
 	MaxTableViewColumnWidth = 200
+	// IndentationString defines the string used for JSON indentation
+	IndentationString = "  "
 )
 
 // ResponseEncoder encodes one or more messages in a desired format.
@@ -42,9 +44,10 @@ type ResponseEncoder interface {
 type ResponseEncoderFormat string
 
 const (
-	// JsonEncoderFormat for streaming requests
+	// JsonEncoderFormat for streaming requests (pretty-printed JSON)
 	JsonEncoderFormat ResponseEncoderFormat = "json"
-
+	// JsonCompactEncoderFormat for streaming requests (compact JSON)
+	JsonCompactEncoderFormat ResponseEncoderFormat = "json-compact"
 	// TableEncoderFormat for non-streaming requests
 	TableEncoderFormat ResponseEncoderFormat = "table"
 )
@@ -55,6 +58,14 @@ func NewResponseEncoder(writer io.Writer, format ResponseEncoderFormat) (Respons
 		return &encoderTypeCheckingWrapper{
 			impl: &jsonResponseEncoder{
 				writer: writer,
+				pretty: true,
+			},
+		}, nil
+	case JsonCompactEncoderFormat:
+		return &encoderTypeCheckingWrapper{
+			impl: &jsonResponseEncoder{
+				writer: writer,
+				pretty: false,
 			},
 		}, nil
 	case TableEncoderFormat:
@@ -98,6 +109,7 @@ func (ectw *encoderTypeCheckingWrapper) Close() error {
 
 type jsonResponseEncoder struct {
 	writer io.Writer
+	pretty bool
 }
 
 var _ ResponseEncoder = &jsonResponseEncoder{}
@@ -105,11 +117,10 @@ var _ ResponseEncoder = &jsonResponseEncoder{}
 func (jre *jsonResponseEncoder) SetColumns(_ []string, _ []string) {}
 
 func (jre *jsonResponseEncoder) Add(msg proto.Message) error {
-	out, err := protojson.Marshal(msg)
+	out, err := jre.marshalProtoJSON(msg)
 	if err != nil {
 		return err
 	}
-
 	_, err = jre.writer.Write(append(out, '\n'))
 	return err
 }
@@ -125,7 +136,7 @@ func (jre *jsonResponseEncoder) SetPageTokens(next, prev resource.Cursor) error 
 	if len(tokens) == 0 {
 		return nil
 	}
-	out, err := json.Marshal(tokens)
+	out, err := jre.marshalJSON(tokens)
 	if err != nil {
 		return err
 	}
@@ -135,19 +146,52 @@ func (jre *jsonResponseEncoder) SetPageTokens(next, prev resource.Cursor) error 
 
 func (jre *jsonResponseEncoder) SetResponseHeaders(headers metadata.MD) error {
 	if len(headers) > 0 {
-		out, err := json.Marshal(headers)
+		out, err := jre.marshalJSON(headers)
 		if err != nil {
 			return err
 		}
 		_, err = jre.writer.Write(append(out, '\n'))
 		return err
-	} else {
-		return nil
 	}
+	return nil
 }
 
 func (jre *jsonResponseEncoder) Close() error {
 	return nil
+}
+
+func (jre *jsonResponseEncoder) marshalProtoJSON(msg proto.Message) ([]byte, error) {
+	// protojson.Marshal cannot output bytes with a deterministic way.
+	// It INTENTIONALLY uses a random size whitespace for pretty-printed JSON.
+	// So we need to marshal it to json.RawMessage first, and then marshal
+	// it to []byte with json.Marshal or json.MarshalIndent.
+	// See: https://github.com/golang/protobuf/issues/1082
+	rawJson, err := protojson.Marshal(msg)
+	if err != nil {
+		return nil, err
+	}
+
+	var rm json.RawMessage = rawJson
+	if jre.pretty {
+		js, err := json.MarshalIndent(rm, "", IndentationString)
+		if err != nil {
+			return nil, err
+		}
+		return js, nil
+	}
+
+	js, err := json.Marshal(rm)
+	if err != nil {
+		return nil, err
+	}
+	return js, nil
+}
+
+func (jre *jsonResponseEncoder) marshalJSON(v interface{}) ([]byte, error) {
+	if jre.pretty {
+		return json.MarshalIndent(v, "", IndentationString)
+	}
+	return json.Marshal(v)
 }
 
 type tableResponseEncoder struct {
