@@ -263,6 +263,10 @@ func (a *apiServiceAccess) DeleteService(ctx context.Context, ref *service.Refer
 	return err
 }
 
+func GetApiAccessBuilder() *gotenaccess.ApiAccessBuilder {
+	return gotenaccess.GetRegistry().FindApiAccessBuilder(service.GetDescriptor())
+}
+
 func init() {
 	gotenaccess.GetRegistry().RegisterApiAccessConstructor(service.GetDescriptor(), func(cc grpc.ClientConnInterface) gotenresource.Access {
 		return service.AsAnyCastAccess(NewApiServiceAccess(service_client.NewServiceServiceClient(cc)))

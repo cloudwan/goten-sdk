@@ -315,6 +315,10 @@ func getParentAndFilter(fullFilter *resource.Filter) (*resource.Filter, *resourc
 	return resultFilter, resultParent
 }
 
+func GetApiAccessBuilder() *gotenaccess.ApiAccessBuilder {
+	return gotenaccess.GetRegistry().FindApiAccessBuilder(resource.GetDescriptor())
+}
+
 func init() {
 	gotenaccess.GetRegistry().RegisterApiAccessConstructor(resource.GetDescriptor(), func(cc grpc.ClientConnInterface) gotenresource.Access {
 		return resource.AsAnyCastAccess(NewApiResourceAccess(resource_client.NewResourceServiceClient(cc)))

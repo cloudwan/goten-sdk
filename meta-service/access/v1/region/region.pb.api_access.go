@@ -263,6 +263,10 @@ func (a *apiRegionAccess) DeleteRegion(ctx context.Context, ref *region.Referenc
 	return err
 }
 
+func GetApiAccessBuilder() *gotenaccess.ApiAccessBuilder {
+	return gotenaccess.GetRegistry().FindApiAccessBuilder(region.GetDescriptor())
+}
+
 func init() {
 	gotenaccess.GetRegistry().RegisterApiAccessConstructor(region.GetDescriptor(), func(cc grpc.ClientConnInterface) gotenresource.Access {
 		return region.AsAnyCastAccess(NewApiRegionAccess(region_client.NewRegionServiceClient(cc)))

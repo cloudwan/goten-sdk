@@ -315,6 +315,10 @@ func getParentAndFilter(fullFilter *deployment.Filter) (*deployment.Filter, *dep
 	return resultFilter, resultParent
 }
 
+func GetApiAccessBuilder() *gotenaccess.ApiAccessBuilder {
+	return gotenaccess.GetRegistry().FindApiAccessBuilder(deployment.GetDescriptor())
+}
+
 func init() {
 	gotenaccess.GetRegistry().RegisterApiAccessConstructor(deployment.GetDescriptor(), func(cc grpc.ClientConnInterface) gotenresource.Access {
 		return deployment.AsAnyCastAccess(NewApiDeploymentAccess(deployment_client.NewDeploymentServiceClient(cc)))
