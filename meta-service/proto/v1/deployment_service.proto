@@ -356,6 +356,10 @@ message UpdateDeploymentRequest {
 message DeleteDeploymentRequest {
   // Name of goten.meta.v1.Deployment
   string name = 1;
+
+  // If set to true, and the resource is not found, method will be successful
+  // and will not return NotFound error.
+  bool allow_missing = 2;
 }
 
 // Deployment service API for Meta

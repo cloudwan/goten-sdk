@@ -13,6 +13,7 @@ type saveOptions struct {
 }
 
 type deleteOptions struct {
+	allowMissing bool
 }
 
 type getOptions struct {
@@ -41,6 +42,7 @@ type SaveOptions interface {
 type DeleteOptions interface {
 	// DEPRECATED, returns always nil
 	GetDeletedResource() Resource
+	AllowMissing() bool
 }
 
 type GetOptions interface {
@@ -81,6 +83,10 @@ func (so *saveOptions) GetCAS() (object.FieldMask, Resource) {
 // DEPRECATED, always returns nil
 func (do *deleteOptions) GetDeletedResource() Resource {
 	return nil
+}
+
+func (do *deleteOptions) AllowMissing() bool {
+	return do.allowMissing
 }
 
 func (opt *getOptions) GetSkipCache() bool {
@@ -166,6 +172,12 @@ func WithPreviousResource(_ Resource) SaveOption {
 // DEPRECATED, has no effect
 func WithCurrentResource(_ Resource) DeleteOption {
 	return func(o *deleteOptions) {
+	}
+}
+
+func WithDeleteAllowMissing() DeleteOption {
+	return func(o *deleteOptions) {
+		o.allowMissing = true
 	}
 }
 

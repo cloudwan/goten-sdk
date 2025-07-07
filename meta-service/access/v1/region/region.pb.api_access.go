@@ -252,12 +252,14 @@ func (a *apiRegionAccess) SaveRegion(ctx context.Context, res *region.Region, op
 	return nil
 }
 
-func (a *apiRegionAccess) DeleteRegion(ctx context.Context, ref *region.Reference, _ ...gotenresource.DeleteOption) error {
+func (a *apiRegionAccess) DeleteRegion(ctx context.Context, ref *region.Reference, opts ...gotenresource.DeleteOption) error {
+	delOpts := gotenresource.MakeDeleteOptions(opts)
 	if !ref.IsFullyQualified() {
 		return status.Errorf(codes.InvalidArgument, "Reference %s is not fully specified", ref)
 	}
 	request := &region_client.DeleteRegionRequest{
-		Name: &ref.Name,
+		Name:         &ref.Name,
+		AllowMissing: delOpts.AllowMissing(),
 	}
 	_, err := a.client.DeleteRegion(ctx, request)
 	return err

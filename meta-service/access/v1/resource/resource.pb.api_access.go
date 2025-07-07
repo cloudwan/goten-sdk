@@ -258,12 +258,14 @@ func (a *apiResourceAccess) SaveResource(ctx context.Context, res *resource.Reso
 	return nil
 }
 
-func (a *apiResourceAccess) DeleteResource(ctx context.Context, ref *resource.Reference, _ ...gotenresource.DeleteOption) error {
+func (a *apiResourceAccess) DeleteResource(ctx context.Context, ref *resource.Reference, opts ...gotenresource.DeleteOption) error {
+	delOpts := gotenresource.MakeDeleteOptions(opts)
 	if !ref.IsFullyQualified() {
 		return status.Errorf(codes.InvalidArgument, "Reference %s is not fully specified", ref)
 	}
 	request := &resource_client.DeleteResourceRequest{
-		Name: &ref.Name,
+		Name:         &ref.Name,
+		AllowMissing: delOpts.AllowMissing(),
 	}
 	_, err := a.client.DeleteResource(ctx, request)
 	return err

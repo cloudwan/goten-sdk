@@ -252,12 +252,14 @@ func (a *apiServiceAccess) SaveService(ctx context.Context, res *service.Service
 	return nil
 }
 
-func (a *apiServiceAccess) DeleteService(ctx context.Context, ref *service.Reference, _ ...gotenresource.DeleteOption) error {
+func (a *apiServiceAccess) DeleteService(ctx context.Context, ref *service.Reference, opts ...gotenresource.DeleteOption) error {
+	delOpts := gotenresource.MakeDeleteOptions(opts)
 	if !ref.IsFullyQualified() {
 		return status.Errorf(codes.InvalidArgument, "Reference %s is not fully specified", ref)
 	}
 	request := &service_client.DeleteServiceRequest{
-		Name: &ref.Name,
+		Name:         &ref.Name,
+		AllowMissing: delOpts.AllowMissing(),
 	}
 	_, err := a.client.DeleteService(ctx, request)
 	return err

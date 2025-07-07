@@ -258,12 +258,14 @@ func (a *apiDeploymentAccess) SaveDeployment(ctx context.Context, res *deploymen
 	return nil
 }
 
-func (a *apiDeploymentAccess) DeleteDeployment(ctx context.Context, ref *deployment.Reference, _ ...gotenresource.DeleteOption) error {
+func (a *apiDeploymentAccess) DeleteDeployment(ctx context.Context, ref *deployment.Reference, opts ...gotenresource.DeleteOption) error {
+	delOpts := gotenresource.MakeDeleteOptions(opts)
 	if !ref.IsFullyQualified() {
 		return status.Errorf(codes.InvalidArgument, "Reference %s is not fully specified", ref)
 	}
 	request := &deployment_client.DeleteDeploymentRequest{
-		Name: &ref.Name,
+		Name:         &ref.Name,
+		AllowMissing: delOpts.AllowMissing(),
 	}
 	_, err := a.client.DeleteDeployment(ctx, request)
 	return err
