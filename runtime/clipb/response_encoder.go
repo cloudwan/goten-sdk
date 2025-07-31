@@ -213,8 +213,10 @@ func (tfe *tableResponseEncoder) Add(msg proto.Message) error {
 	stringFields := make([]string, 0, len(tfe.paths))
 
 	for _, protoPath := range tfe.paths {
-		rawValue, ok := utils.GetValueFromProtoPath(msg, protoPath)
-		if !ok {
+		rawValue, ok, err := utils.GetValueFromProtoPath(msg, protoPath)
+		if err != nil {
+			return fmt.Errorf("failed to value from proto path %s: %w", protoPath, err)
+		} else if !ok {
 			stringFields = append(stringFields, "")
 		} else {
 			rType := reflect.TypeOf(rawValue)
@@ -225,7 +227,7 @@ func (tfe *tableResponseEncoder) Add(msg proto.Message) error {
 			if m, ok := rawValue.(proto.Message); ok {
 				data, err := protojson.Marshal(m)
 				if err != nil {
-					return err
+					return fmt.Errorf("failed to marshal from proto path %s: %w", protoPath, err)
 				}
 				stringFields = append(stringFields, string(data))
 			} else if stringer, ok := rawValue.(fmt.Stringer); ok {
