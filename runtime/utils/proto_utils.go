@@ -16,7 +16,7 @@ import (
 // No special treatment for digits.
 func ToProtoCase(name string) string {
 	var b []byte
-	for i := 0; i < len(name); i++ {
+	for i := range len(name) {
 		c := name[i]
 		if 'A' <= c && c <= 'Z' {
 			b = append(b, '_')
@@ -27,70 +27,12 @@ func ToProtoCase(name string) string {
 	return string(b)
 }
 
-// TODO: Consider removing GetValueFromProtoPath
-
-func GetValueFromProtoPath(msg proto.Message, rawPath string) (interface{}, bool) {
-	descriptor := msg.ProtoReflect().Descriptor()
-	pathItems := strings.Split(rawPath, ".")
-	lastMsgItem := msg
-
-	for i, item := range pathItems {
-		fd := descriptor.Fields().ByName(preflect.Name(ToProtoCase(item)))
-		if fd == nil {
-			panic(fmt.Sprintf("Field path %s not found in message %s", rawPath, descriptor.Name()))
-		}
-		fieldValue := lastMsgItem.ProtoReflect().Get(fd)
-		if !fieldValue.IsValid() {
-			return nil, false
-		}
-		if i == len(pathItems)-1 {
-			if fd.IsList() || fd.IsMap() {
-				refMsgType := reflect.ValueOf(lastMsgItem.ProtoReflect().Interface())
-				if refMsgType.IsZero() {
-					return nil, false
-				}
-				return refMsgType.Elem().FieldByName(strcase.ToCamel(string(fd.Name()))).Interface(), true
-			}
-			if fd.ContainingOneof() != nil {
-				ooFieldValue := reflect.ValueOf(lastMsgItem.ProtoReflect().Interface()).Elem().FieldByName(strcase.ToCamel(string(fd.ContainingOneof().Name())))
-				if !ooFieldValue.IsValid() {
-					return nil, false
-				}
-				underlyingValue := reflect.ValueOf(ooFieldValue.Interface())
-				rfieldValue := underlyingValue.Elem().FieldByName(strcase.ToCamel(string(fd.Name())))
-				if !rfieldValue.IsValid() || rfieldValue.IsZero() {
-					// for oneof, it can be field name with "_" as suffix.
-					rfieldValue = underlyingValue.Elem().FieldByName(strcase.ToCamel(string(fd.Name())) + "_")
-					if !rfieldValue.IsValid() || rfieldValue.IsZero() {
-						return nil, false
-					}
-				}
-				return rfieldValue.Interface(), true
-			} else {
-				rMsg := reflect.ValueOf(lastMsgItem.ProtoReflect().Interface())
-				if !rMsg.IsValid() || rMsg.IsZero() || !rMsg.Elem().IsValid() || rMsg.Elem().IsZero() {
-					return nil, false
-				}
-				rfieldValue := rMsg.Elem().FieldByName(strcase.ToCamel(string(fd.Name())))
-				if rfieldValue.IsZero() || !rfieldValue.IsValid() {
-					return nil, false
-				}
-				return rfieldValue.Interface(), true
-			}
-		} else {
-			descriptor = fieldValue.Message().Descriptor()
-			lastMsgItem = fieldValue.Message().Interface()
-		}
-	}
-	return nil, false
-}
-
-func GetValuesFromProtoPath(msg proto.Message, rawPath string) ([]interface{}, bool, error) {
+func GetValueFromProtoPath(msg proto.Message, rawPath string) (any, bool, error) {
 	origDescriptor := msg.ProtoReflect().Descriptor()
 	pathItems := strings.Split(rawPath, ".")
 
-	var getValues func(msg proto.Message, remainingPathItems []string) ([]interface{}, bool, error)
-	getValues = func(msg proto.Message, remainingPathItems []string) ([]interface{}, bool, error) {
+	var getValues func(msg proto.Message, remainingPathItems []string) (any, bool, error)
+	getValues = func(msg proto.Message, remainingPathItems []string) (any, bool, error) {
 		if len(remainingPathItems) == 0 {
 			return nil, false, fmt.Errorf("empty field path: %s", rawPath)
 		}
@@ -115,7 +57,7 @@ func GetValuesFromProtoPath(msg proto.Message, rawPath string) ([]interface{}, b
 				}
 				mapObject := refMsgType.Elem().FieldByName(strcase.ToCamel(string(fd.Name())))
 				if len(remainingPathItems) == 0 {
-					return []interface{}{mapObject.Interface()}, true, nil
+					return mapObject.Interface(), true, nil
 				}
 				if mapObject.Type().Key().Kind() != reflect.String {
 					return nil, false, fmt.Errorf("only string-type map keys are supported")
@@ -125,7 +67,7 @@ func GetValuesFromProtoPath(msg proto.Message, rawPath string) ([]interface{}, b
 				if !mapItem.IsValid() || mapItem.IsZero() {
 					return nil, false, nil
 				}
-				return []interface{}{mapItem.Interface()}, true, nil
+				return mapItem.Interface(), true, nil
 			}
 			if fd.IsList() {
 				refMsgType := reflect.ValueOf(msg.ProtoReflect().Interface())
@@ -133,8 +75,8 @@ func GetValuesFromProtoPath(msg proto.Message, rawPath string) ([]interface{}, b
 					return nil, false, nil
 				}
 				listValue := refMsgType.Elem().FieldByName(strcase.ToCamel(string(fd.Name())))
-				rValue := make([]interface{}, 0, listValue.Len())
-				for i := 0; i < listValue.Len(); i++ {
+				rValue := make([]any, 0, listValue.Len())
+				for i := range listValue.Len() {
 					rValue = append(rValue, listValue.Index(i).Interface())
 				}
 				return rValue, true, nil
@@ -153,7 +95,7 @@ func GetValuesFromProtoPath(msg proto.Message, rawPath string) ([]interface{}, b
 						return nil, false, nil
 					}
 				}
-				return []interface{}{rfieldValue.Interface()}, true, nil
+				return rfieldValue.Interface(), true, nil
 			}
 			rMsg := reflect.ValueOf(msg.ProtoReflect().Interface())
 			if !rMsg.IsValid() || rMsg.IsZero() || !rMsg.Elem().IsValid() || rMsg.Elem().IsZero() {
@@ -163,7 +105,7 @@ func GetValuesFromProtoPath(msg proto.Message, rawPath string) ([]interface{}, b
 			if rfieldValue.IsZero() || !rfieldValue.IsValid() {
 				return nil, false, nil
 			}
-			return []interface{}{rfieldValue.Interface()}, true, nil
+			return rfieldValue.Interface(), true, nil
 		}
 
 		// Still more path items to go...
@@ -174,15 +116,15 @@ func GetValuesFromProtoPath(msg proto.Message, rawPath string) ([]interface{}, b
 		if fd.IsList() {
 			listValue := fieldValue.List()
 
-			rValue := make([]interface{}, 0, listValue.Len())
-			for i := 0; i < listValue.Len(); i++ {
+			rValue := make([]any, 0, listValue.Len())
+			for i := range listValue.Len() {
 				listValue.Get(i).Message().Interface()
 				subItems, ok, err := getValues(listValue.Get(i).Message().Interface(), remainingPathItems)
 				if err != nil {
 					return nil, false, err
 				}
 				if ok {
-					rValue = append(rValue, subItems...)
+					rValue = append(rValue, subItems)
 				}
 			}
 			return rValue, true, nil
@@ -201,6 +143,36 @@ func GetValuesFromProtoPath(msg proto.Message, rawPath string) ([]interface{}, b
 		return getValues(fieldValue.Message().Interface(), remainingPathItems)
 	}
 	return getValues(msg, pathItems)
+}
+
+// GetValuesFromProtoPath is a variant of
+// the "GetValueFromProtoPath" function defined in the above
+// Always produces one dimensional array like below:
+//
+// - case1: Pack an array if the value is non-array
+// GetValueFromProtoPath: "a"
+// GetValuesFromProtoPath: ["a"]
+//
+// - case2: Flatten if the value is array
+// GetValueFromProtoPath: [["a", "b"], ["c"]]
+// GetValuesFromProtoPath: ["a", "b", "c"]
+func GetValuesFromProtoPath(msg proto.Message, rawPath string) ([]any, bool, error) {
+	value, ok, err := GetValueFromProtoPath(msg, rawPath)
+	if err != nil || !ok {
+		return nil, false, err
+	}
+	var flatten func(value any) []any
+	flatten = func(value any) []any {
+		var all []any = []any{}
+		if asArray, ok := value.([]any); ok {
+			for _, element := range asArray {
+				all = append(all, flatten(element)...)
+			}
+			return all
+		}
+		return []any{value}
+	}
+	return flatten(value), true, nil
 }
 
 func SetFieldPathValueToProtoMsg(target proto.Message, rawPath string, v any) {
