@@ -112,7 +112,7 @@ func NewOutputOptionsAttachedToCmd(cmd *cobra.Command, serviceName string) *Outp
 	opts.ServiceName = serviceName
 
 	flags := cmd.PersistentFlags()
-	flags.StringVarP(&opts.ResponseFormat, FlagResponseFormat, "o", opts.ResponseFormat, "Response format (table or json, table is default)")
+	flags.StringVarP(&opts.ResponseFormat, FlagResponseFormat, "o", opts.ResponseFormat, "Response format (table, json or json-compact, table is default)")
 	flags.BoolVar(&opts.RawResponse, FlagRawResponse, opts.RawResponse, "Displays raw response instead of simplified one (not working right now)")
 	flags.BoolVar(&opts.WithResponseHeaders, FlagWithResponseHeaders, opts.WithResponseHeaders, "Whether should print response headers before actual response")
 
