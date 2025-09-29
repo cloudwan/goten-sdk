@@ -87,10 +87,15 @@ func GetValueFromProtoPath(msg proto.Message, rawPath string) (any, bool, error)
 					return nil, false, nil
 				}
 				underlyingValue := reflect.ValueOf(ooFieldValue.Interface())
+				if !underlyingValue.IsValid() || underlyingValue.IsZero() {
+					return nil, false, nil
+				}
 				rfieldValue := underlyingValue.Elem().FieldByName(strcase.ToCamel(string(fd.Name())))
 				if !rfieldValue.IsValid() || rfieldValue.IsZero() {
 					// for oneof, it can be field name with "_" as suffix.
-					rfieldValue = underlyingValue.Elem().FieldByName(strcase.ToCamel(string(fd.Name())) + "_")
+					if underlyingValue.IsValid() && !underlyingValue.IsZero() {
+						rfieldValue = underlyingValue.Elem().FieldByName(strcase.ToCamel(string(fd.Name())) + "_")
+					}
 					if !rfieldValue.IsValid() || rfieldValue.IsZero() {
 						return nil, false, nil
 					}
