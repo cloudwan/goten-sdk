@@ -9,6 +9,8 @@ import (
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
+	"github.com/olekukonko/tablewriter/renderer"
+	"github.com/olekukonko/tablewriter/tw"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -72,7 +74,10 @@ func NewResponseEncoder(writer io.Writer, format ResponseEncoderFormat) (Respons
 		return &encoderTypeCheckingWrapper{
 			impl: &tableResponseEncoder{
 				writer: writer,
-				table:  tablewriter.NewWriter(writer),
+				table: tablewriter.NewTable(
+					writer,
+					tablewriter.WithRenderer(renderer.NewBlueprint(tw.Rendition{Symbols: tw.NewSymbols(tw.StyleASCII)})),
+				),
 			},
 		}, nil
 	default:
@@ -206,7 +211,7 @@ type tableResponseEncoder struct {
 
 func (tfe *tableResponseEncoder) SetColumns(protoNames []string, displayNames []string) {
 	tfe.paths = protoNames
-	tfe.table.SetHeader(displayNames)
+	tfe.table.Header(displayNames)
 }
 
 func (tfe *tableResponseEncoder) Add(msg proto.Message) error {
