@@ -13,6 +13,7 @@ import (
 
 const (
 	FlagToken                 = "auth-token"
+	FlagAnonymous             = "anonymous"
 	FlagJwtKey                = "jwt-key"
 	FlagEndpoint              = "server-addr"
 	FlagTlsInsecureSkipVerify = "tls-insecure-skip-verify"
@@ -37,6 +38,7 @@ type DialOptions struct {
 	ServiceName string
 
 	Token              string        `envconfig:"AUTH_TOKEN"`
+	Anonymous          bool          `envconfig:"ANONYMOUS"`
 	JwtKey             string        `envconfig:"JWT_KEY"`
 	Endpoint           string        `envconfig:"SERVER_ADDR"`
 	InsecureSkipVerify bool          `envconfig:"TLS_INSECURE_SKIP_VERIFY"`
@@ -80,6 +82,7 @@ func NewDialOptionsAttachedToCmd(cmd *cobra.Command, serviceName string) *DialOp
 
 	flags := cmd.PersistentFlags()
 	flags.StringVar(&opts.Token, FlagToken, opts.Token, "Authorization token")
+	flags.BoolVar(&opts.Anonymous, FlagAnonymous, opts.Anonymous, "Whether to use null credential")
 	flags.StringVar(&opts.JwtKey, FlagJwtKey, opts.JwtKey, "Jwt key")
 	flags.StringVar(&opts.Endpoint, FlagEndpoint, opts.Endpoint, "Server address in form of host:port")
 	flags.BoolVar(&opts.InsecureSkipVerify, FlagTlsInsecureSkipVerify, opts.InsecureSkipVerify, "INSECURE: Skip tls checks")
