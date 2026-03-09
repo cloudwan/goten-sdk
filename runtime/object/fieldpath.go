@@ -1,6 +1,7 @@
 package object
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -8,6 +9,16 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 )
+
+var errReservedFieldPath = status.Error(codes.InvalidArgument, "reserved field path")
+
+func IsReservedFieldPath(err error) bool {
+	return errors.Is(err, errReservedFieldPath)
+}
+
+func ReservedFieldPathError() error {
+	return errReservedFieldPath
+}
 
 type RawFieldPath []string
 

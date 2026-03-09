@@ -59,6 +59,9 @@ func (l *fieldPathList) Get(i int) preflect.Value {
 func (l *fieldPathList) Set(i int, v preflect.Value) {
 	currentPaths := l.mask.GetRawPaths()
 	path, err := l.pathParser(v.String())
+	if IsReservedFieldPath(err) {
+		return
+	}
 	if err != nil {
 		panic(err)
 	}
@@ -71,6 +74,9 @@ func (l *fieldPathList) Set(i int, v preflect.Value) {
 
 func (l *fieldPathList) Append(v preflect.Value) {
 	path, err := l.pathParser(v.String())
+	if IsReservedFieldPath(err) {
+		return
+	}
 	if err != nil {
 		panic(err)
 	}
