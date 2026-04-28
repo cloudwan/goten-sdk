@@ -199,6 +199,9 @@ func (fieldMask *Resource_FieldMask) FromProtoFieldMask(protoFieldMask *googlefi
 	fieldMask.Paths = make([]Resource_FieldPath, 0, len(protoFieldMask.Paths))
 	for _, strPath := range protoFieldMask.Paths {
 		path, err := ParseResource_FieldPath(strPath)
+		if gotenobject.IsReservedFieldPath(err) {
+			continue
+		}
 		if err != nil {
 			return err
 		}
@@ -459,6 +462,9 @@ func (fieldMask *Resource_VersionedInfo_FieldMask) FromProtoFieldMask(protoField
 	fieldMask.Paths = make([]ResourceVersionedInfo_FieldPath, 0, len(protoFieldMask.Paths))
 	for _, strPath := range protoFieldMask.Paths {
 		path, err := ParseResourceVersionedInfo_FieldPath(strPath)
+		if gotenobject.IsReservedFieldPath(err) {
+			continue
+		}
 		if err != nil {
 			return err
 		}

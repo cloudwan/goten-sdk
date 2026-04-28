@@ -167,6 +167,9 @@ func (fieldMask *MultiRegionPolicy_FieldMask) FromProtoFieldMask(protoFieldMask 
 	fieldMask.Paths = make([]MultiRegionPolicy_FieldPath, 0, len(protoFieldMask.Paths))
 	for _, strPath := range protoFieldMask.Paths {
 		path, err := ParseMultiRegionPolicy_FieldPath(strPath)
+		if gotenobject.IsReservedFieldPath(err) {
+			continue
+		}
 		if err != nil {
 			return err
 		}
@@ -414,6 +417,9 @@ func (fieldMask *MultiRegionPolicy_CriteriaForDisabledSync_FieldMask) FromProtoF
 	fieldMask.Paths = make([]MultiRegionPolicyCriteriaForDisabledSync_FieldPath, 0, len(protoFieldMask.Paths))
 	for _, strPath := range protoFieldMask.Paths {
 		path, err := ParseMultiRegionPolicyCriteriaForDisabledSync_FieldPath(strPath)
+		if gotenobject.IsReservedFieldPath(err) {
+			continue
+		}
 		if err != nil {
 			return err
 		}

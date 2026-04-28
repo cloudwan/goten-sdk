@@ -235,6 +235,9 @@ func (fieldMask *Deployment_FieldMask) FromProtoFieldMask(protoFieldMask *google
 	fieldMask.Paths = make([]Deployment_FieldPath, 0, len(protoFieldMask.Paths))
 	for _, strPath := range protoFieldMask.Paths {
 		path, err := ParseDeployment_FieldPath(strPath)
+		if gotenobject.IsReservedFieldPath(err) {
+			continue
+		}
 		if err != nil {
 			return err
 		}
@@ -556,6 +559,9 @@ func (fieldMask *Deployment_Location_FieldMask) FromProtoFieldMask(protoFieldMas
 	fieldMask.Paths = make([]DeploymentLocation_FieldPath, 0, len(protoFieldMask.Paths))
 	for _, strPath := range protoFieldMask.Paths {
 		path, err := ParseDeploymentLocation_FieldPath(strPath)
+		if gotenobject.IsReservedFieldPath(err) {
+			continue
+		}
 		if err != nil {
 			return err
 		}
@@ -797,6 +803,9 @@ func (fieldMask *Deployment_UpgradeState_FieldMask) FromProtoFieldMask(protoFiel
 	fieldMask.Paths = make([]DeploymentUpgradeState_FieldPath, 0, len(protoFieldMask.Paths))
 	for _, strPath := range protoFieldMask.Paths {
 		path, err := ParseDeploymentUpgradeState_FieldPath(strPath)
+		if gotenobject.IsReservedFieldPath(err) {
+			continue
+		}
 		if err != nil {
 			return err
 		}
@@ -1038,6 +1047,9 @@ func (fieldMask *Deployment_AvailableUpgrade_FieldMask) FromProtoFieldMask(proto
 	fieldMask.Paths = make([]DeploymentAvailableUpgrade_FieldPath, 0, len(protoFieldMask.Paths))
 	for _, strPath := range protoFieldMask.Paths {
 		path, err := ParseDeploymentAvailableUpgrade_FieldPath(strPath)
+		if gotenobject.IsReservedFieldPath(err) {
+			continue
+		}
 		if err != nil {
 			return err
 		}
@@ -1276,6 +1288,9 @@ func (fieldMask *Deployment_DbUpdateTaskStatus_FieldMask) FromProtoFieldMask(pro
 	fieldMask.Paths = make([]DeploymentDbUpdateTaskStatus_FieldPath, 0, len(protoFieldMask.Paths))
 	for _, strPath := range protoFieldMask.Paths {
 		path, err := ParseDeploymentDbUpdateTaskStatus_FieldPath(strPath)
+		if gotenobject.IsReservedFieldPath(err) {
+			continue
+		}
 		if err != nil {
 			return err
 		}

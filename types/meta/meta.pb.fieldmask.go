@@ -218,6 +218,9 @@ func (fieldMask *Meta_FieldMask) FromProtoFieldMask(protoFieldMask *googlefieldm
 	fieldMask.Paths = make([]Meta_FieldPath, 0, len(protoFieldMask.Paths))
 	for _, strPath := range protoFieldMask.Paths {
 		path, err := ParseMeta_FieldPath(strPath)
+		if gotenobject.IsReservedFieldPath(err) {
+			continue
+		}
 		if err != nil {
 			return err
 		}
@@ -578,6 +581,9 @@ func (fieldMask *LabelSelector_FieldMask) FromProtoFieldMask(protoFieldMask *goo
 	fieldMask.Paths = make([]LabelSelector_FieldPath, 0, len(protoFieldMask.Paths))
 	for _, strPath := range protoFieldMask.Paths {
 		path, err := ParseLabelSelector_FieldPath(strPath)
+		if gotenobject.IsReservedFieldPath(err) {
+			continue
+		}
 		if err != nil {
 			return err
 		}
@@ -839,6 +845,9 @@ func (fieldMask *LabelSelectorRequirement_FieldMask) FromProtoFieldMask(protoFie
 	fieldMask.Paths = make([]LabelSelectorRequirement_FieldPath, 0, len(protoFieldMask.Paths))
 	for _, strPath := range protoFieldMask.Paths {
 		path, err := ParseLabelSelectorRequirement_FieldPath(strPath)
+		if gotenobject.IsReservedFieldPath(err) {
+			continue
+		}
 		if err != nil {
 			return err
 		}
@@ -1077,6 +1086,9 @@ func (fieldMask *OwnerReference_FieldMask) FromProtoFieldMask(protoFieldMask *go
 	fieldMask.Paths = make([]OwnerReference_FieldPath, 0, len(protoFieldMask.Paths))
 	for _, strPath := range protoFieldMask.Paths {
 		path, err := ParseOwnerReference_FieldPath(strPath)
+		if gotenobject.IsReservedFieldPath(err) {
+			continue
+		}
 		if err != nil {
 			return err
 		}
@@ -1318,6 +1330,9 @@ func (fieldMask *SyncingMeta_FieldMask) FromProtoFieldMask(protoFieldMask *googl
 	fieldMask.Paths = make([]SyncingMeta_FieldPath, 0, len(protoFieldMask.Paths))
 	for _, strPath := range protoFieldMask.Paths {
 		path, err := ParseSyncingMeta_FieldPath(strPath)
+		if gotenobject.IsReservedFieldPath(err) {
+			continue
+		}
 		if err != nil {
 			return err
 		}
@@ -1556,6 +1571,9 @@ func (fieldMask *Lifecycle_FieldMask) FromProtoFieldMask(protoFieldMask *googlef
 	fieldMask.Paths = make([]Lifecycle_FieldPath, 0, len(protoFieldMask.Paths))
 	for _, strPath := range protoFieldMask.Paths {
 		path, err := ParseLifecycle_FieldPath(strPath)
+		if gotenobject.IsReservedFieldPath(err) {
+			continue
+		}
 		if err != nil {
 			return err
 		}
@@ -1787,6 +1805,9 @@ func (fieldMask *ServicesInfo_FieldMask) FromProtoFieldMask(protoFieldMask *goog
 	fieldMask.Paths = make([]ServicesInfo_FieldPath, 0, len(protoFieldMask.Paths))
 	for _, strPath := range protoFieldMask.Paths {
 		path, err := ParseServicesInfo_FieldPath(strPath)
+		if gotenobject.IsReservedFieldPath(err) {
+			continue
+		}
 		if err != nil {
 			return err
 		}

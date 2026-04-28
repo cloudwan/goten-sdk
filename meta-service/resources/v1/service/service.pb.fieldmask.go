@@ -215,6 +215,9 @@ func (fieldMask *Service_FieldMask) FromProtoFieldMask(protoFieldMask *googlefie
 	fieldMask.Paths = make([]Service_FieldPath, 0, len(protoFieldMask.Paths))
 	for _, strPath := range protoFieldMask.Paths {
 		path, err := ParseService_FieldPath(strPath)
+		if gotenobject.IsReservedFieldPath(err) {
+			continue
+		}
 		if err != nil {
 			return err
 		}
@@ -508,6 +511,9 @@ func (fieldMask *Service_ImportedVersions_FieldMask) FromProtoFieldMask(protoFie
 	fieldMask.Paths = make([]ServiceImportedVersions_FieldPath, 0, len(protoFieldMask.Paths))
 	for _, strPath := range protoFieldMask.Paths {
 		path, err := ParseServiceImportedVersions_FieldPath(strPath)
+		if gotenobject.IsReservedFieldPath(err) {
+			continue
+		}
 		if err != nil {
 			return err
 		}
