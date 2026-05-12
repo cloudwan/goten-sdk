@@ -157,3 +157,35 @@ func (p *NameProvider) FillName(name resource.Name) {
 		panic(err)
 	}
 }
+
+// HasAnyValueForName reports whether the provider holds a flag or context
+// value for any segment of any pattern of name. Generated CLI handlers for
+// collection methods (List, Watch) use this to decide whether to leave Parent
+// unset on the request — when no segment information was provided, the server
+// should list across every pattern, not narrow to the parentless variant via
+// the shortest-pattern tiebreak in FillName.
+func (p *NameProvider) HasAnyValueForName(name resource.Name) bool {
+	if name == nil {
+		return false
+	}
+	nameDescriptor := name.GetResourceDescriptor().GetNameDescriptor()
+	_, hasIdFieldName := name.GetIdParts()[nameDescriptor.GetIdFieldName()]
+	isParentName := !hasIdFieldName
+
+	for _, pattern := range nameDescriptor.GetNamePatterns() {
+		segmentCount := pattern.SegmentsCount()
+		if isParentName {
+			segmentCount--
+		}
+		for _, segmentPattern := range pattern.SegmentPatterns()[:segmentCount] {
+			key := strcase.ToKebab(segmentPattern.SingularLowerJson)
+			if v := p.fromFlags[key]; v != nil && *v != "" {
+				return true
+			}
+			if _, ok := p.fromContext[key]; ok {
+				return true
+			}
+		}
+	}
+	return false
+}

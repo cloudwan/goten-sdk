@@ -17,6 +17,37 @@ const (
 	RegionScopeAttribute = "goten.annotations/Region"
 )
 
+func IsRegionalPattern(pattern NamePattern) bool {
+	// Empty patterns arise from typed-nil ParentName values (request parent left
+	// unset, generated getter returns "") and from resources that have no
+	// defined pattern. Neither case is regional, and SegmentPatterns cannot
+	// parse an empty string without panicking.
+	if pattern == "" {
+		return false
+	}
+	for _, segment := range pattern.SegmentPatterns() {
+		if segment.CollectionLowerJson == "regions" {
+			return true
+		}
+	}
+	return false
+}
+
+func IsRegionalName(name Name) bool {
+	return name != nil && IsRegionalPattern(name.GetPattern())
+}
+
+func RegionIDFromName(name Name) string {
+	if !IsRegionalName(name) {
+		return ""
+	}
+	regionID := name.GetIdParts()["regionId"]
+	if regionID == WildcardId {
+		return ""
+	}
+	return regionID
+}
+
 func IsRegionalResource(descriptor Descriptor) bool {
 	msgOpts := descriptor.NewResource().ProtoReflect().Descriptor().Options().(*descriptorpb.MessageOptions)
 	resSpec := proto.GetExtension(msgOpts, resourceann.E_Resource).(*resourceann.ResourceSpec)
