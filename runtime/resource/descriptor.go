@@ -43,6 +43,7 @@ type Descriptor interface {
 
 	SupportsMetadata() bool
 	SupportsDbConstraints() bool
+	IsSystemCatalog() bool
 
 	// ParseFieldPath returns a field path matching given string. If does not exist, error
 	// is returned and returned interface is None.
