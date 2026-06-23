@@ -432,6 +432,7 @@ type TxTracker struct {
 	customLabels    map[string]string
 	customAttrs     map[string]interface{}
 	err             error
+	commitTime      time.Time
 }
 
 func NewTxTracker(txId string) *TxTracker {
@@ -444,6 +445,21 @@ func (t *TxTracker) SetExitErr(err error) {
 	if t != nil {
 		t.err = err
 	}
+}
+
+// SetCommitTime records the time at which the transaction committed.
+func (t *TxTracker) SetCommitTime(commitTime time.Time) {
+	if t != nil {
+		t.commitTime = commitTime
+	}
+}
+
+// GetCommitTime returns the time at which the transaction committed.
+func (t *TxTracker) GetCommitTime() time.Time {
+	if t != nil {
+		return t.commitTime
+	}
+	return time.Time{}
 }
 
 func (t *TxTracker) BeginAttempt(attempt int) {
