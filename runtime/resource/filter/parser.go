@@ -43,12 +43,16 @@ var validOperators = []string{
 }
 
 func (op *CompareOperator) Capture(values []string) error {
+	// Reached while parsing a client-supplied filter, so a surprise here has to
+	// be reported rather than panicked on - and the empty case has to be checked
+	// before values is indexed.
+	if len(values) != 1 {
+		return fmt.Errorf("expected a single comparison operator, got %d: '%s'",
+			len(values), strings.Join(values, " "))
+	}
 	ops := values[0]
 	if ops == "==" {
 		ops = "="
-	}
-	if len(values) > 1 {
-		panic(fmt.Sprintf("vals: '%q'", strings.Join(values, ", ")))
 	}
 
 	for _, valid := range validOperators {
@@ -58,7 +62,9 @@ func (op *CompareOperator) Capture(values []string) error {
 		}
 	}
 
-	return fmt.Errorf("invalid operator: '%s', (expected: %s )", *op, strings.Join(validOperators, " | "))
+	// Reports what was captured, not *op: that still holds whatever the operator
+	// held before this call, which for a fresh parse is nothing at all.
+	return fmt.Errorf("invalid operator: '%s', (expected: %s )", values[0], strings.Join(validOperators, " | "))
 }
 
 func (op *CompareOperator) MatchCompareResult(cmp int) bool {
