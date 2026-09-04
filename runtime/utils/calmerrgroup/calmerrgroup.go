@@ -29,16 +29,13 @@ func (g *Group) Go(f func() error) {
 	g.inner.Go(func() (err error) {
 		defer func() {
 			if r := recover(); r != nil {
-				debug.PrintStack()
 				if rerr, ok := r.(error); ok {
 					err = fmt.Errorf("errgroup panic: %w", rerr)
 				} else {
 					err = fmt.Errorf("errgroup panic: %v", r)
 				}
 				log := observability.LoggerFromContext(g.ctx)
-				if log != nil {
-					log.WithField("error.stacktrace", string(debug.Stack())).Error(err)
-				}
+				log.WithField("error.stacktrace", string(debug.Stack())).Error(err)
 			}
 		}()
 
