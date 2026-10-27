@@ -53,7 +53,8 @@ func CallTrackerFromContext(ctx context.Context) *CallTracker {
 type CallTracker struct {
 	clientHeader      metadata.MD
 	callId            string
-	origCallId        string
+	requestId         string
+	forwarded         bool
 	methodDesc        client.MethodDescriptor
 	beginTime         time.Time
 	endTime           time.Time
@@ -82,31 +83,22 @@ func WithCallTracker(ctx context.Context, methodDesc client.MethodDescriptor) (c
 		originalIp:   UnknownIPAddress,
 		userAgent:    UnknownUserAgent,
 	}
+	tracker.requestId = tracker.callId
+	if md, ok := metadata.FromIncomingContext(ctx); ok {
+		tracker.HandleInHeader(&stats.InHeader{Header: md}, "")
+	}
 	ctx = context.WithValue(ctx, callTrackerContextKey, tracker)
 	return ctx, tracker
 }
 
 func newCallTrackerLegacy(ctx context.Context, methodDesc client.MethodDescriptor) *CallTracker {
-	tracker := &CallTracker{
-		callId:       shortuuid.New(),
-		beginTime:    time.Now().UTC(),
-		methodDesc:   methodDesc,
-		customLabels: map[string]string{},
-		customAttrs:  map[string]interface{}{},
-		originalIp:   UnknownIPAddress,
-		userAgent:    UnknownUserAgent,
-		isLegacy:     true,
-	}
+	_, tracker := WithCallTracker(ctx, methodDesc)
+	tracker.beginTime = time.Now().UTC()
+	tracker.isLegacy = true
 
 	// populate some data from HTTP headers
 	md, ok := metadata.FromIncomingContext(ctx)
 	if ok {
-		tracker.clientHeader = md
-		userAgentVals := md.Get(StdUserAgentHeader)
-		if len(userAgentVals) > 0 {
-			tracker.userAgent = userAgentVals[0]
-		}
-
 		tracker.originalIp = extractCallerIp(md)
 		if tracker.originalIp == UnknownIPAddress {
 			p, ok := peer.FromContext(ctx)
@@ -114,24 +106,11 @@ func newCallTrackerLegacy(ctx context.Context, methodDesc client.MethodDescripto
 				tracker.originalIp = p.Addr.String()
 			}
 		}
-
-		viaRegionVals := md.Get(GotenRoutingRegionHeader)
-		if len(viaRegionVals) > 0 {
-			tracker.executedViaRegion = viaRegionVals[0]
-		}
-
-		fromRegionVals := md.Get(GotenExecutingRegionsHeader)
-		tracker.executedByRegions = fromRegionVals
-
-		callIdVals := md.Get(GotenRequestIdHeader)
-		if len(callIdVals) > 0 {
-			tracker.origCallId = callIdVals[0]
-		}
 	}
 	return tracker
 }
 
-func (t *CallTracker) HandleInHeader(st *stats.InHeader) {
+func (t *CallTracker) HandleInHeader(st *stats.InHeader, fallbackRequestIdHeader string) {
 	t.clientHeader = make(metadata.MD, len(st.Header))
 	for key, values := range st.Header {
 		t.clientHeader[strings.ToLower(key)] = values
@@ -141,6 +120,7 @@ func (t *CallTracker) HandleInHeader(st *stats.InHeader) {
 		t.userAgent = userAgentVals[0]
 	}
 
+	t.executedViaRegion = ""
 	viaRegionVals := t.clientHeader.Get(GotenRoutingRegionHeader)
 	if len(viaRegionVals) > 0 {
 		t.executedViaRegion = viaRegionVals[0]
@@ -148,10 +128,19 @@ func (t *CallTracker) HandleInHeader(st *stats.InHeader) {
 
 	fromRegionVals := t.clientHeader.Get(GotenExecutingRegionsHeader)
 	t.executedByRegions = fromRegionVals
+	t.forwarded = len(fromRegionVals) > 0 && fromRegionVals[0] != ""
 
-	callIdVals := t.clientHeader.Get(GotenRequestIdHeader)
-	if len(callIdVals) > 0 {
-		t.origCallId = callIdVals[0]
+	t.readRequestId(t.clientHeader, fallbackRequestIdHeader)
+}
+
+func (t *CallTracker) readRequestId(md metadata.MD, fallbackHeader string) {
+	t.requestId = t.callId
+	if values := md.Get(GotenRequestIdHeader); len(values) > 0 && values[0] != "" {
+		t.requestId = values[0]
+	} else if fallbackHeader != "" {
+		if values := md.Get(fallbackHeader); len(values) > 0 && values[0] != "" {
+			t.requestId = values[0]
+		}
 	}
 }
 
@@ -283,11 +272,18 @@ func (t *CallTracker) GetEndTime() time.Time {
 	return t.endTime
 }
 
-func (t *CallTracker) GetOrigId() string {
+// GetRequestId returns the ID shared by every RPC in the original request.
+func (t *CallTracker) GetRequestId() string {
 	if t == nil {
 		return ""
 	}
-	return t.origCallId
+	return t.requestId
+}
+
+// IsForwarded reports whether the incoming call already has destination-region
+// metadata. A request ID alone does not indicate that routing has been set.
+func (t *CallTracker) IsForwarded() bool {
+	return t != nil && t.forwarded
 }
 
 func (t *CallTracker) GetUserAgent() string {

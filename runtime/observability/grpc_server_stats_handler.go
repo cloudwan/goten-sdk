@@ -36,6 +36,8 @@ type GrpcServerStatsHandlerCfg struct {
 	TrackKSlowestStreamRequests int
 	TrackKFailedRequests        int
 	IpExtractFunction           func(ctx context.Context, md metadata.MD) string
+	// FallbackRequestIdHeader is used when x-goten-request-id is absent or empty.
+	FallbackRequestIdHeader string
 }
 
 type GrpcServerStats struct {
@@ -118,7 +120,7 @@ func (h *GrpcServerStatsHandler) HandleRPC(ctx context.Context, st stats.RPCStat
 	case *stats.InHeader:
 		tracker := CallTrackerFromContext(ctx)
 		if tracker != nil {
-			tracker.HandleInHeader(tSt)
+			tracker.HandleInHeader(tSt, h.cfg.FallbackRequestIdHeader)
 			if h.cfg.IpExtractFunction != nil {
 				tracker.originalIp = h.cfg.IpExtractFunction(ctx, tracker.clientHeader)
 			} else {
